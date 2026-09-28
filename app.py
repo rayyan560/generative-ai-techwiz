@@ -5,7 +5,7 @@ import datetime
 import asyncio
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, Form, HTTPException, Depends, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.gzip import GZipMiddleware
@@ -274,6 +274,103 @@ async def admin_dashboard(request: Request, view: Optional[str] = None):
         "categories": settings.CATEGORIES,
         "urgency_levels": settings.URGENCY_LEVELS
     })
+
+# -------------------------------------------------------------
+# Project Deliverables / Slide Library
+# -------------------------------------------------------------
+
+PROJECT_DOCUMENTS = {
+    "srs": {
+        "title": "Project Documentation / SRS",
+        "subtitle": "Project scope, requirements and Generative AI capabilities",
+        "icon": "fa-file-contract",
+        "topics": ["Project Introduction", "Problem Statement", "Proposed Solution", "Objectives", "Scope", "Functional Requirements", "Non-Functional Requirements", "User Roles", "AI Features", "Limitations", "Future Enhancements"],
+        "files": [("Open SRS PDF", "/project-docs/file/srs.pdf", "fa-file-pdf")],
+    },
+    "user-guide": {
+        "title": "User Manual / User Guide",
+        "subtitle": "A practical walkthrough of the SupportNova portal",
+        "icon": "fa-book-open-reader",
+        "topics": ["Website Access", "Registration and Login", "AI Interface", "Prompt Submission", "File and Data Upload", "AI-Generated Output", "Chat and History", "Download and Export", "Error Handling", "Major Feature Screenshots"],
+        "files": [("Read User Guide", "/project-docs/file/user-guide.html", "fa-arrow-up-right-from-square")],
+    },
+    "developer-guide": {
+        "title": "Developer Guide / Technical Documentation",
+        "subtitle": "Architecture, integrations, configuration and operations",
+        "icon": "fa-code",
+        "topics": ["Project Architecture", "Python Environment", "FastAPI Structure", "Frontend Structure", "AI/API Integration", "MongoDB Integration", "CSV/JSON Processing", "Prompt Handling", "AI Response Processing", "Dependencies", "Configuration", "Error Handling and Logging"],
+        "files": [("Read Developer Guide", "/project-docs/file/developer-guide.html", "fa-arrow-up-right-from-square")],
+    },
+    "architecture": {
+        "title": "Architecture, DFD & UML",
+        "subtitle": "Visual system design and end-to-end data movement",
+        "icon": "fa-diagram-project",
+        "topics": ["System Architecture Diagram", "Context Diagram", "Level 0 DFD", "Level 1 DFD", "AI Request Flow", "Authentication Flow", "Use Case Diagram", "Class Diagram", "Sequence Diagram", "Activity Diagram", "Component Diagram", "Deployment Diagram"],
+        "files": [("Open Project Documentation", "/project-docs/file/slides.html", "fa-images")],
+    },
+    "database": {
+        "title": "Database Documentation",
+        "subtitle": "MongoDB collections, fields, relationships and backups",
+        "icon": "fa-database",
+        "topics": ["MongoDB Database Design", "Collections", "Documents and Fields", "Relationships and References", "Sample Documents", "Database Schema", "MongoDB Backup", "Database Initialization Script", "Users", "Conversations", "Prompts", "AI Responses", "Uploaded Files", "Feedback and Logs"],
+        "files": [("Open Project Documentation", "/project-docs/file/slides.html", "fa-images")],
+    },
+    "setup": {
+        "title": "Installation, Configuration & Test Data",
+        "subtitle": "Everything needed to run, configure and verify the project",
+        "icon": "fa-screwdriver-wrench",
+        "topics": ["Python Installation", "Virtual Environment", "Required Python Version", "Libraries", "MongoDB Setup", "OpenAI/API Configuration", ".env Configuration", "Running the Application", "Browser Access", "Troubleshooting", "Test Data", "Sample Prompts", "Expected Outputs"],
+        "files": [("Open Project Documentation", "/project-docs/file/slides.html", "fa-images")],
+    },
+    "slides": {
+        "title": "Project Presentation Slides",
+        "subtitle": "A ready-to-present slide deck covering all project topics",
+        "icon": "fa-chalkboard-user",
+        "topics": ["Project Overview", "Problem and Solution", "Features", "User Journey", "Technical Architecture", "Data Flow", "AI Pipeline", "Database Design", "Security", "Installation", "Testing", "Limitations", "Future Roadmap"],
+        "files": [("Open 50-Slide Deck", "/project-docs/file/slides.html", "fa-play")],
+    },
+}
+
+PROJECT_FILES = {
+    "srs.pdf": "SupportNova-Generative AI PowerPlay_SRS.pdf",
+    "user-guide.html": "SupportNova_User_Guide.html",
+    "developer-guide.html": "SupportNova_Developer_Guide.html",
+    "slides.html": "SupportNova_50_Slides_Project_Documentation.html",
+}
+
+@app.get("/admin/documents", response_class=HTMLResponse)
+async def project_documents(request: Request):
+    user = AuthManager.get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    return templates.TemplateResponse(request=request, name="project_documents.html", context={
+        "request": request, "current_user": user, "app_name": settings.APP_NAME,
+        "org_name": settings.ORG_NAME, "documents": PROJECT_DOCUMENTS,
+    })
+
+@app.get("/admin/documents/{slug}", response_class=HTMLResponse)
+async def project_document_page(request: Request, slug: str):
+    user = AuthManager.get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    document = PROJECT_DOCUMENTS.get(slug)
+    if not document:
+        raise HTTPException(status_code=404, detail="Project document not found")
+    return templates.TemplateResponse(request=request, name="project_document_page.html", context={
+        "request": request, "current_user": user, "app_name": settings.APP_NAME,
+        "org_name": settings.ORG_NAME, "document": document, "slug": slug,
+    })
+
+@app.get("/project-docs/file/{filename}")
+async def project_document_file(request: Request, filename: str):
+    user = AuthManager.get_current_user(request)
+    if not user or filename not in PROJECT_FILES:
+        raise HTTPException(status_code=404, detail="Project file not found")
+    file_path = os.path.join(BASE_DIR, PROJECT_FILES[filename])
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Project file is missing")
+    media_type = "application/pdf" if filename.endswith(".pdf") else "text/html"
+    return FileResponse(file_path, media_type=media_type)
 
 @app.get("/agent", response_class=HTMLResponse)
 async def agent_dashboard(request: Request):

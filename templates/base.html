@@ -118,6 +118,10 @@
           <i class="fa-solid fa-book-bookmark icon"></i>
           <span>Knowledge & Policies</span>
         </a>
+        <a href="/admin/documents" class="nav-item {% if request.url.path.startswith('/admin/documents') %}active{% endif %}">
+          <i class="fa-solid fa-layer-group icon"></i>
+          <span>Project Documents & Slides</span>
+        </a>
         <a href="/rules" class="nav-item {% if request.url.path == '/rules' %}active{% endif %}">
           <i class="fa-solid fa-network-wired icon"></i>
           <span>Rules Matrix (105+)</span>

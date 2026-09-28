@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Project Documents & Slides | SupportNova{% endblock %}
+
+{% block content %}
+<div class="customer-hero-card" style="border-left: 5px solid var(--primary);">
+  <div class="hero-customer-profile">
+    <div class="logo" style="width: 58px; height: 58px; background: linear-gradient(135deg, var(--emerald), var(--gold)); border-radius: 16px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow: 0 8px 32px rgba(5,150,105,.3);">
+      <i class="fa-solid fa-layer-group"></i>
+    </div>
+    <div class="hero-info">
+      <h2>Project Documents & Slides <span class="badge badge-primary" style="font-size:.75rem; margin-left:8px;">PROJECT HUB</span></h2>
+      <div class="hero-meta-grid">
+        <div class="hero-meta-item"><i class="fa-solid fa-folder-open" style="color:var(--primary);"></i><span>All submission deliverables in one place</span></div>
+        <div class="hero-meta-item"><i class="fa-solid fa-book-open" style="color:var(--primary);"></i><span>Separate topic-based document pages</span></div>
+        <div class="hero-meta-item"><i class="fa-solid fa-chalkboard-user" style="color:var(--primary);"></i><span>Presentation-ready slide deck included</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-account-summary"><div class="label">DELIVERABLES</div><div class="value" style="color:var(--primary);">{{ documents|length }}</div><div style="font-size:.82rem;color:var(--text-muted);margin-top:4px;">document sections</div></div>
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:end; gap:16px; margin:28px 0 16px;">
+  <div><div class="section-kicker" style="color:var(--primary); font-weight:800; letter-spacing:1.5px; font-size:.72rem; text-transform:uppercase;">Submission Library</div><h2 style="margin:5px 0 0; color:var(--text-heading);">Explore project material</h2></div>
+  <a href="/admin/documents/slides" class="pill-tab" style="text-decoration:none;"><i class="fa-solid fa-play"></i> Open Slides</a>
+</div>
+
+<div class="metrics-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+{% for slug, doc in documents.items() %}
+  <a href="/admin/documents/{{ slug }}" style="text-decoration:none; color:inherit;">
+    <div class="summary-card" style="height:100%; min-height:205px; transition:transform .2s ease, border-color .2s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='var(--primary)'" onmouseout="this.style.transform=''; this.style.borderColor=''">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+        <div style="width:46px;height:46px;border-radius:14px;background:var(--glass-bg-subtle);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:1.2rem;"><i class="fa-solid {{ doc.icon }}"></i></div>
+        <span style="font-size:.72rem;color:var(--text-muted);font-weight:700;">{{ doc.topics|length }} TOPICS</span>
+      </div>
+      <div style="margin-top:18px;"><div class="summary-card-title">{{ doc.title }}</div><div style="font-size:.84rem;color:var(--text-muted);line-height:1.45;margin-top:7px;">{{ doc.subtitle }}</div></div>
+      <div class="card-link-more" style="margin-top:18px;">View document page <i class="fa-solid fa-arrow-right" style="font-size:.75rem;"></i></div>
+    </div>
+  </a>
+{% endfor %}
+</div>
+{% endblock %}

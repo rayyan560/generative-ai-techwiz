@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} | SupportNova{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+  <a href="/admin/documents" class="icon-glass-btn" style="text-decoration:none;" title="Back to documents"><i class="fa-solid fa-arrow-left"></i></a>
+  <div><div style="font-size:.72rem;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:1.4px;">Project Documents</div><h1 style="margin:3px 0 0;color:var(--text-heading);font-size:1.8rem;">{{ document.title }}</h1></div>
+</div>
+
+<div class="customer-hero-card" style="border-left:5px solid var(--primary);">
+  <div class="hero-customer-profile">
+    <div style="width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--emerald),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;"><i class="fa-solid {{ document.icon }}"></i></div>
+    <div class="hero-info"><h2>{{ document.title }}</h2><div class="hero-meta-grid"><div class="hero-meta-item"><i class="fa-solid fa-circle-info" style="color:var(--primary);"></i><span>{{ document.subtitle }}</span></div><div class="hero-meta-item"><i class="fa-solid fa-list-check" style="color:var(--primary);"></i><span>{{ document.topics|length }} topics prepared for review</span></div></div></div>
+  </div>
+  <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end;">
+  {% for label, href, icon in document.files %}<a href="{{ href }}" target="_blank" class="pill-tab" style="text-decoration:none;"><i class="fa-solid {{ icon }}"></i> {{ label }}</a>{% endfor %}
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;margin-top:22px;align-items:start;">
+  <div class="table-container" style="padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;"><div><h2 style="margin:0;color:var(--text-heading);font-size:1.25rem;">Topic outline</h2><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px;">Use these topics as document sections or presentation slides.</div></div><span class="badge badge-primary">{{ document.topics|length }} TOPICS</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px;">
+    {% for topic in document.topics %}<div style="display:flex;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--glass-border);background:var(--glass-bg-subtle);border-radius:12px;color:var(--text-heading);font-size:.88rem;font-weight:600;"><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(16,185,129,.14);color:var(--primary);font-size:.75rem;font-weight:800;">{{ loop.index }}</span>{{ topic }}</div>{% endfor %}
+    </div>
+  </div>
+  <div class="summary-card" style="min-height:0;">
+    <div class="summary-card-title">Quick actions</div>
+    <div style="font-size:.82rem;color:var(--text-muted);line-height:1.55;margin:10px 0 16px;">Open the source document in a new tab, or return to the complete submission library.</div>
+    {% for label, href, icon in document.files %}<a href="{{ href }}" target="_blank" class="pill-tab" style="display:flex;justify-content:center;text-decoration:none;margin-bottom:9px;"><i class="fa-solid {{ icon }}"></i>&nbsp; {{ label }}</a>{% endfor %}
+    <a href="/admin/documents" class="pill-tab" style="display:flex;justify-content:center;text-decoration:none;"><i class="fa-solid fa-layer-group"></i>&nbsp; All documents</a>
+  </div>
+</div>
+{% endblock %}
