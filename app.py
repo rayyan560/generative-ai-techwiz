@@ -50,19 +50,15 @@ app.include_router(knowledge.router)
 
 @app.on_event("startup")
 async def startup_event():
-    """Non-blocking startup — all heavy init runs in a background thread so Railway health check passes immediately."""
+    """Non-blocking instant startup."""
     import threading
 
     def _background_init():
-        # Step 1: Knowledge base documents + FAISS index (may download sentence-transformers model)
         try:
-            logger.info("[BG] Initializing Knowledge Base & FAISS vector index...")
             KnowledgeBaseManager.initialize_knowledge_base()
-            logger.info("[BG] Knowledge Base ready.")
         except Exception as e:
-            logger.error(f"[BG] Knowledge base init error (non-fatal): {e}")
+            logger.error(f"[BG] Knowledge base init (non-fatal): {e}")
 
-        # Step 2: Seed 500 sample complaints if DB is empty
         try:
             complaints_col = get_complaints_col()
             if complaints_col.count_documents({}) == 0:
@@ -70,39 +66,12 @@ async def startup_event():
                 if os.path.exists(dataset_path):
                     with open(dataset_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                    logger.info(f"[BG] Seeding {len(data)} complaints...")
-                    processed_items = []
-                    for idx, item in enumerate(data):
-                        try:
-                            gt = python_validation_pipeline.validate_complaint(item)
-                            ai = genai_pipeline._generate_intelligent_fallback(item, None)
-                            comp = ComparisonEngine.compare_and_verify(ai, gt, item)
-                            sent = SentimentTelemetryEngine.analyze(
-                                item.get("complaint_title", ""),
-                                item.get("complaint_description", ""),
-                                item.get("customer_type", "Standard")
-                            )
-                            item["status"] = "Analyzed" if not comp.requires_manual_review else "Manual Review Required"
-                            item["category"] = gt.expected_category
-                            item["subcategory"] = gt.expected_subcategory
-                            item["department"] = gt.expected_department
-                            item["urgency"] = gt.expected_urgency
-                            item["priority"] = gt.expected_priority
-                            item["genai_analysis"] = ai.model_dump()
-                            item["ground_truth"] = gt.model_dump()
-                            item["comparison"] = comp.model_dump()
-                            item["sentiment_telemetry"] = sent
-                            processed_items.append(item)
-                        except Exception as ie:
-                            logger.warning(f"[BG] Skipping complaint {idx}: {ie}")
-                            processed_items.append(item)
-                    complaints_col.insert_many(processed_items)
-                    logger.info(f"[BG] Seeding done: {len(processed_items)} complaints loaded.")
+                    complaints_col.insert_many(data)
+                    logger.info(f"[BG] Fast seeded {len(data)} complaints.")
         except Exception as e:
             logger.error(f"[BG] Complaint seeding error: {e}")
 
-    # Launch everything in a single background daemon thread — startup returns instantly
-    logger.info("SupportNova starting. Heavy init delegated to background thread.")
+    logger.info("SupportNova started successfully.")
     threading.Thread(target=_background_init, daemon=True).start()
 
 # -------------------------------------------------------------
