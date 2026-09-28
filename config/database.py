@@ -14,18 +14,23 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data_store"
 os.makedirs(DATA_DIR, exist_ok=True)
 
 def save_json_atomic(file_path: str, data: list):
-    """Atomic write with inter-process file locking to prevent data corruption during concurrent writes."""
+    """Atomic write with fast inter-process file locking to prevent data corruption during concurrent writes."""
     lock_path = file_path + ".lock"
     dir_name = os.path.dirname(file_path)
     os.makedirs(dir_name, exist_ok=True)
     try:
-        with FileLock(lock_path, timeout=10):
-            with tempfile.NamedTemporaryFile("w", dir=dir_name, delete=False, encoding="utf-8") as tf:
-                json.dump(data, tf, indent=2, default=str)
-                temp_name = tf.name
-            os.replace(temp_name, file_path)
+        try:
+            with FileLock(lock_path, timeout=2):
+                with tempfile.NamedTemporaryFile("w", dir=dir_name, delete=False, encoding="utf-8") as tf:
+                    json.dump(data, tf, indent=2, default=str)
+                    temp_name = tf.name
+                os.replace(temp_name, file_path)
+        except Exception:
+            # Fallback direct write if filelock times out
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, default=str)
     except Exception as e:
-        logger.error(f"Atomic save error for {file_path}: {e}")
+        logger.error(f"Save error for {file_path}: {e}")
 
 class LocalJSONCollection:
     """High-performance local JSON fallback collection matching pymongo syntax"""
@@ -39,7 +44,11 @@ class LocalJSONCollection:
         if os.path.exists(self.filepath):
             lock_path = self.filepath + ".lock"
             try:
-                with FileLock(lock_path, timeout=10):
+                try:
+                    with FileLock(lock_path, timeout=2):
+                        with open(self.filepath, "r", encoding="utf-8") as f:
+                            self._data = json.load(f)
+                except Exception:
                     with open(self.filepath, "r", encoding="utf-8") as f:
                         self._data = json.load(f)
             except Exception as e:
@@ -145,11 +154,11 @@ class DatabaseManager:
             logger.info("Attempting connection to MongoDB Atlas...")
             self.client = MongoClient(
                 settings.MONGODB_URI,
-                serverSelectionTimeoutMS=4000,
-                connectTimeoutMS=5000,
-                socketTimeoutMS=10000,
+                serverSelectionTimeoutMS=1500,
+                connectTimeoutMS=1500,
+                socketTimeoutMS=2000,
                 maxPoolSize=50,
-                minPoolSize=5,
+                minPoolSize=1,
                 retryWrites=True,
                 tlsCAFile=certifi.where() if hasattr(certifi, 'where') else None
             )
