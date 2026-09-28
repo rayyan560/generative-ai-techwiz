@@ -25,6 +25,7 @@ async def get_products():
     return {"products": ProductCatalog.get_all_products(), "total": len(ProductCatalog.get_all_products())}
 
 
+
 async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_data):
     def blocking_pipeline():
         try:
@@ -46,7 +47,8 @@ async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_d
             complaint_dict["status"] = "New"
 
         complaints_col = get_complaints_col()
-        complaints_col.insert_one(complaint_dict)
+        # Update the existing record instead of inserting a new one
+        complaints_col.update_one({"complaint_id": new_id}, {"$set": complaint_dict})
         
         audit_col = get_audit_logs_col()
         audit_col.insert_one({
@@ -142,19 +144,23 @@ async def submit_complaint(
         "is_duplicate": is_dup,
         "duplicate_of_id": dup_id,
         "sentiment_telemetry": sentiment_data,
-        "status": "New",
+        "status": "AI Pipeline Processing",
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
+
+    # IMPORTANT: Insert synchronously first so it is immediately trackable by the user!
+    complaints_col.insert_one(complaint_dict.copy())
 
     background_tasks.add_task(_process_complaint_bg, complaint_dict, new_id, total_count, sentiment_data)
 
     return {
         "success": True,
         "complaint_id": new_id,
-        "message": "Your complaint has been officially registered with NovaTech Customer Support Operations. An assigned support specialist is reviewing your case.",
-        "status": "Under Review",
+        "message": "Your complaint has been officially registered with NovaTech Customer Support Operations. AI is currently analyzing your ticket.",
+        "status": "AI Pipeline Processing",
         "submitted_at": complaint_dict["created_at"]
     }
+
 
 
 @router.get("/complaints/my-complaints")
