@@ -847,16 +847,16 @@
   <main class="portal-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 14px;">
       <div class="portal-tabs" style="margin-bottom: 0;">
-        <button class="portal-tab-btn active" id="tabSubmitBtn" onclick="switchPortalTab('submit')">
+        <button class="portal-tab-btn active" id="tabSubmitBtn" type="button" role="tab" aria-selected="true" aria-controls="submitSection" onclick="switchPortalTab('submit')">
           <i class="fa-solid fa-file-circle-plus"></i> Submit Complaint
         </button>
-        <button class="portal-tab-btn" id="tabChatBtn" onclick="switchPortalTab('chat')">
+        <button class="portal-tab-btn" id="tabChatBtn" type="button" role="tab" aria-selected="false" aria-controls="chatSection" onclick="switchPortalTab('chat')">
           <i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> Live Chat & Voice Call
         </button>
-        <button class="portal-tab-btn" id="tabMyComplaintsBtn" onclick="switchPortalTab('my-complaints')">
+        <button class="portal-tab-btn" id="tabMyComplaintsBtn" type="button" role="tab" aria-selected="false" aria-controls="myComplaintsSection" onclick="switchPortalTab('my-complaints')">
           <i class="fa-solid fa-clock-rotate-left"></i> My Complaints <span id="myComplaintsBadge" style="background: rgba(238, 240, 208, 0.2); padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;">0</span>
         </button>
-        <button class="portal-tab-btn" id="tabTrackBtn" onclick="switchPortalTab('track')">
+        <button class="portal-tab-btn" id="tabTrackBtn" type="button" role="tab" aria-selected="false" aria-controls="trackSection" onclick="switchPortalTab('track')">
           <i class="fa-solid fa-magnifying-glass-location"></i> Track Ticket
         </button>
       </div>

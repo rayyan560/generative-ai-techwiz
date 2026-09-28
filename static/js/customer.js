@@ -471,23 +471,44 @@ function switchPortalTab(tab) {
   const myComplaintsSec = document.getElementById("myComplaintsSection");
   const trackSec = document.getElementById("trackSection");
 
-  [submitBtn, chatBtn, myComplaintsBtn, trackBtn].forEach(b => b && b.classList.remove("active"));
-  [submitSec, chatSec, myComplaintsSec, trackSec].forEach(s => s && (s.style.display = "none"));
+  [submitBtn, chatBtn, myComplaintsBtn, trackBtn].forEach(b => {
+    if (!b) return;
+    b.classList.remove("active");
+    b.setAttribute("aria-selected", "false");
+  });
+  [submitSec, chatSec, myComplaintsSec, trackSec].forEach(s => {
+    if (!s) return;
+    s.style.display = "none";
+    s.setAttribute("hidden", "hidden");
+  });
+
+  const show = (button, section) => {
+    if (button) {
+      button.classList.add("active");
+      button.setAttribute("aria-selected", "true");
+    }
+    if (section) {
+      section.style.display = "block";
+      section.removeAttribute("hidden");
+      requestAnimationFrame(() => section.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  };
 
   if (tab === "submit") {
-    submitBtn && submitBtn.classList.add("active");
-    submitSec && (submitSec.style.display = "block");
+    show(submitBtn, submitSec);
   } else if (tab === "chat") {
-    chatBtn && chatBtn.classList.add("active");
-    chatSec && (chatSec.style.display = "block");
+    show(chatBtn, chatSec);
     loadCustChatMessages();
   } else if (tab === "my-complaints") {
-    myComplaintsBtn && myComplaintsBtn.classList.add("active");
-    myComplaintsSec && (myComplaintsSec.style.display = "block");
+    show(myComplaintsBtn, myComplaintsSec);
     loadMyComplaints();
   } else {
-    trackBtn && trackBtn.classList.add("active");
-    trackSec && (trackSec.style.display = "block");
+    show(trackBtn, trackSec);
+  }
+
+  if (tab !== "chat" && custChatPollTimer) {
+    clearInterval(custChatPollTimer);
+    custChatPollTimer = null;
   }
 }
 
@@ -496,11 +517,14 @@ let custChatPollTimer = null;
 async function loadCustChatMessages() {
   const box = document.getElementById("custChatMsgBox");
   if (!box) return;
+  box.setAttribute("aria-busy", "true");
   try {
     const res = await fetch("/api/chat/live/messages?client_id=USR-CUSTOMER");
+    if (!res.ok) throw new Error(`Chat service returned ${res.status}`);
     const data = await res.json();
     const msgs = data.messages || [];
     renderCustChatBubbles(msgs);
+    box.removeAttribute("aria-busy");
     if (custChatPollTimer) clearInterval(custChatPollTimer);
     custChatPollTimer = setInterval(async () => {
       try {
@@ -509,7 +533,11 @@ async function loadCustChatMessages() {
         renderCustChatBubbles(d.messages || []);
       } catch (e) {}
     }, 3500);
-  } catch (e) {}
+  } catch (e) {
+    box.removeAttribute("aria-busy");
+    box.innerHTML = `<div style="align-self:center; text-align:center; color:var(--text-muted); padding:24px;">Chat is temporarily unavailable. Please try again in a moment.</div>`;
+    console.error("Error loading customer chat:", e);
+  }
 }
 
 function formatChatText(text) {
