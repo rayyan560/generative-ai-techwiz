@@ -338,6 +338,59 @@ PROJECT_FILES = {
     "slides.html": "SupportNova_50_Slides_Project_Documentation.html",
 }
 
+TOPIC_DETAILS = {
+    "Project Introduction": ("SupportNova is a Generative AI powered customer complaint and warranty resolution platform. It combines a customer portal, admin operations dashboard, deterministic rules and AI-assisted analysis in one workflow.", ["Customer complaint intake", "AI-assisted triage and resolution", "Admin oversight and auditability"]),
+    "Problem Statement": ("Hardware complaints are often slow to classify, difficult to verify and scattered across manual channels. Support teams need consistent decisions, evidence handling and clear escalation paths.", ["Manual triage causes delays", "Evidence and customer history are fragmented", "Inconsistent decisions create SLA and warranty risk"]),
+    "Proposed Solution": ("The platform accepts structured complaints, descriptions and evidence, then combines Python validation, policy knowledge and Generative AI analysis to produce a traceable recommendation for support staff.", ["Single complaint intake workflow", "Dual-pipeline validation: rules plus AI", "Actionable status, priority and escalation output"]),
+    "Objectives": ("The project aims to reduce response time, improve warranty decision consistency and give operations teams a real-time view of every case.", ["Automate first-level analysis", "Keep human approval in the loop", "Measure SLA, priority and escalation performance"]),
+    "Scope": ("The scope covers customer submission, authentication, complaint tracking, AI analysis, policy knowledge, admin triage, warranty/refund operations and reporting.", ["Included: portal, dashboards, AI pipeline and policy repository", "Included: seeded products, complaints and test flows", "Future external integrations remain optional"]),
+    "Functional Requirements": ("Users can submit and track complaints while staff can filter, triage, escalate and resolve cases through role-based dashboards.", ["Authentication and role-aware navigation", "Complaint creation with product and evidence details", "Filtering by urgency, category, department and status", "Triage, communication, refund and closure actions"]),
+    "Non-Functional Requirements": ("The application should be secure, responsive, observable and reliable enough for operational use.", ["Fast page responses and background initialization", "Environment-based secrets and configuration", "Responsive glass-style interface for desktop and tablet", "Health endpoint for deployment monitoring"]),
+    "User Roles": ("The system separates customer, agent and administrator responsibilities so that each user sees the tools relevant to their work.", ["Customer: submit, chat and track complaints", "Agent: review evidence, triage and communicate", "Admin: oversee queues, rules, analytics and user roles"]),
+    "AI Features": ("Generative AI supports complaint summarization, sentiment and urgency analysis, defect interpretation, response drafting and operational recommendations.", ["Prompt-based complaint analysis", "Multimodal evidence context where configured", "Human-readable explanation and recommended next action"]),
+    "System Limitations": ("AI recommendations depend on the quality of submitted information and configured services. Final warranty, refund and safety decisions remain subject to staff review.", ["AI can be uncertain with incomplete evidence", "External API availability can affect response generation", "Demo data and metrics are not production audit records"]),
+    "Future Enhancements": ("The platform can be extended with richer model evaluation, notification integrations, advanced reporting and deeper workflow automation.", ["Model feedback and evaluation dashboard", "Email, WhatsApp and CRM integrations", "More granular permissions and approval chains"]),
+    "Project Architecture": ("FastAPI serves the web application and API routes, Jinja templates provide the UI, Python modules handle validation and AI processing, and MongoDB-backed repositories store operational data.", ["FastAPI route layer", "Jinja templates plus shared CSS/JavaScript", "Python validation, rules and GenAI pipeline", "MongoDB and local sample data"]),
+    "Python Environment": ("The project runs in an isolated Python virtual environment and installs its dependencies from requirements.txt.", ["Create a virtual environment", "Install requirements.txt", "Configure environment variables before launch"]),
+    "FastAPI Structure": ("The application registers domain routers for authentication, administration, chat, analytics, warranty and knowledge operations. HTML views are rendered through Jinja2Templates.", ["app.py is the application entry point", "routers/ contains domain endpoints", "templates/ contains reusable UI pages"]),
+    "Frontend Structure": ("The frontend uses a shared base layout with a consistent sidebar, topbar, theme system and reusable glassmorphism components.", ["templates/base.html provides navigation", "static/css/style.css contains theme tokens", "static/js contains dashboard and widget behavior"]),
+    "AI/API Integration": ("AI requests are prepared by the GenAI pipeline with context from the complaint, rules and available knowledge. Responses are converted into operational fields and human-readable guidance.", ["Prompt context is assembled server-side", "AI output is compared with deterministic validation", "Failures return a safe fallback response"]),
+    "MongoDB Integration": ("MongoDB stores complaints, knowledge records and operational entities when a configured connection is available. The application also supports seeded sample data for demonstration.", ["Collections are accessed through config/database.py", "Startup initializes knowledge and complaint data", "Secrets stay in environment configuration"]),
+    "Prompt Handling": ("Prompts are built with relevant complaint details and policy context rather than sending isolated user text. This keeps results focused and traceable.", ["Normalize and validate user input", "Add product, policy and conversation context", "Limit output to the fields needed by the workflow"]),
+    "AI Response Processing": ("The response processor extracts summary, urgency, category, priority, sentiment and escalation signals, then exposes them to dashboard filters and actions.", ["Structured fields support filtering", "Human-readable reasoning supports review", "Rule conflicts can trigger manual review"]),
+    "Dependencies": ("The main runtime uses FastAPI, Uvicorn, Pydantic, PyMongo, Jinja2, document parsers, data libraries and AI client packages.", ["requirements.txt is the source of installed packages", "Keep versions compatible with the deployment runtime", "Use the virtual environment for local development"]),
+    "Configuration": ("Runtime behavior is controlled by environment variables and config/settings.py. API keys, database URLs and OAuth secrets must never be committed.", ["Use .env.example as a safe template", "Set BASE_URL and deployment settings", "Keep production secrets in Railway variables"]),
+    "Error Handling and Logging": ("Routes validate access and input, while the application logger records startup and processing failures without exposing secrets to the user.", ["Use HTTP status codes for invalid requests", "Return user-friendly fallback messages", "Inspect server logs for deployment diagnostics"]),
+    "System Architecture Diagram": ("A request flows from the user interface through the web application and Python backend, into AI processing and data storage, before a response is returned to the user.", ["User → Browser → FastAPI", "FastAPI → validation and AI pipeline", "Pipeline → MongoDB/JSON → dashboard response"]),
+    "AI Request Flow": ("A complaint is normalized, enriched with product and policy context, analyzed by validation and AI services, and returned as a traceable case recommendation.", ["Receive and validate request", "Run rules and AI analysis", "Compare results and assign next action"]),
+    "Authentication Flow": ("Users authenticate through the login page. A session cookie identifies the current user and route guards redirect unauthenticated users to login.", ["Submit username and password", "Create signed session token", "Load role-specific dashboard"]),
+    "Database Design": ("The data model is organized around users, complaints, conversations, prompts, AI responses, uploaded files, feedback and logs.", ["Operational records remain queryable", "Embedded analysis supports case review", "Indexes and validation can be added for production scale"]),
+    "Collections": ("Core collections represent the main business objects used by the portal and admin workflows.", ["users", "complaints", "conversations", "knowledge", "ai_responses", "logs"]),
+    "Installation / Setup": ("Local setup requires Python, a virtual environment, dependencies and configured environment variables before starting the FastAPI server.", ["Install Python and create venv", "Run pip install -r requirements.txt", "Run python app.py or the configured Uvicorn command"]),
+    "Running the Application": ("After configuration, start the application and open the local browser URL. Railway uses the /health endpoint to confirm service availability.", ["Start the server", "Open the browser URL", "Verify /health returns status ok"]),
+    "Troubleshooting": ("Most setup issues come from missing environment variables, unavailable MongoDB, dependency mismatches or an incorrect start command.", ["Check Railway deployment logs", "Verify environment variables", "Test /health before testing authenticated pages"]),
+    "Test Data": ("Sample complaints, products, prompts and user flows are included so the dashboards can be demonstrated without production data.", ["Use demo admin and agent accounts", "Test critical, refund and resolved filters", "Verify complaint submission and tracking flows"]),
+    "Project Overview": ("SupportNova demonstrates how Generative AI can be applied to customer support operations while keeping deterministic business rules and human review visible.", ["Portal experience", "Operations intelligence", "AI-assisted resolution"]),
+    "Features": ("The presentation highlights complaint intake, product selection, evidence upload, AI triage, admin dashboards, knowledge policies, analytics and communication tools.", ["Customer and staff experiences", "Policy-aware AI analysis", "Real-time operations controls"]),
+    "Technical Architecture": ("The technical stack combines FastAPI, Jinja, JavaScript, Python analytics, AI services and MongoDB-oriented data access.", ["Web routes and templates", "Domain modules and pipelines", "Deployment-ready health monitoring"]),
+    "Data Flow": ("User input becomes a validated case, is enriched with context, passes through rules and AI analysis, and is stored or displayed as an operational result.", ["Input", "Enrichment and processing", "Decision, storage and response"]),
+    "Testing": ("Testing covers route availability, authentication, complaint workflows, document pages, dashboard filters and safe fallback behavior.", ["Verify public and protected routes", "Test representative complaint priorities", "Check deployment health and logs"]),
+    "Future Roadmap": ("The roadmap focuses on stronger evaluation, richer integrations, production-grade observability and more configurable workflows.", ["Feedback-driven model improvements", "Enterprise notifications and CRM", "Advanced reporting and governance"]),
+}
+
+def build_document_sections(document: Dict[str, Any]) -> Dict[str, Any]:
+    """Attach readable project-specific content to every document topic."""
+    sections = []
+    for topic in document["topics"]:
+        summary, points = TOPIC_DETAILS.get(topic, (
+            f"This section explains how {topic.lower()} fits into the SupportNova Generative AI project and its submission workflow.",
+            [f"Define the purpose of {topic.lower()}", "Connect the topic to the application workflow", "Review this section before final submission"]
+        ))
+        sections.append({"title": topic, "summary": summary, "points": points})
+    enriched = dict(document)
+    enriched["sections"] = sections
+    return enriched
+
 @app.get("/admin/documents", response_class=HTMLResponse)
 async def project_documents(request: Request):
     user = AuthManager.get_current_user(request)
@@ -358,7 +411,7 @@ async def project_document_page(request: Request, slug: str):
         raise HTTPException(status_code=404, detail="Project document not found")
     return templates.TemplateResponse(request=request, name="project_document_page.html", context={
         "request": request, "current_user": user, "app_name": settings.APP_NAME,
-        "org_name": settings.ORG_NAME, "document": document, "slug": slug,
+        "org_name": settings.ORG_NAME, "document": build_document_sections(document), "slug": slug,
     })
 
 @app.get("/project-docs/file/{filename}")
