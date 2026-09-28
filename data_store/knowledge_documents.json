@@ -1,0 +1,668 @@
+[
+  {
+    "document_id": "POL-SUB-17",
+    "filename": "POL-SUB-17.docx",
+    "title": "Subscription & Recurring Billing Terms",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-SUB-17-CHK-001",
+      "POL-SUB-17-CHK-002"
+    ],
+    "_id": "knowledge_documents_1_1790192205"
+  },
+  {
+    "document_id": "POL-CON-10",
+    "filename": "POL-CON-10.docx",
+    "title": "Staff Professional Conduct & Service Quality SOP",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-CON-10-CHK-001",
+      "POL-CON-10-CHK-002",
+      "POL-CON-10-CHK-003"
+    ],
+    "_id": "knowledge_documents_2_1790192205"
+  },
+  {
+    "document_id": "POL-WAR-07",
+    "filename": "POL-WAR-07.docx",
+    "title": "Limited Hardware Warranty Coverage Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-WAR-07-CHK-001",
+      "POL-WAR-07-CHK-002",
+      "POL-WAR-07-CHK-003"
+    ],
+    "_id": "knowledge_documents_3_1790192205"
+  },
+  {
+    "document_id": "POL-B2B-19",
+    "filename": "POL-B2B-19.pdf",
+    "title": "B2B Enterprise SLA & Bulk Refund Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-B2B-19-CHK-001",
+      "POL-B2B-19-CHK-002"
+    ],
+    "_id": "knowledge_documents_4_1790192206"
+  },
+  {
+    "document_id": "POL-DOA-16",
+    "filename": "POL-DOA-16.docx",
+    "title": "Dead-on-Arrival (DOA) Return Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Standard Operating Procedure (SOP)",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-DOA-16-CHK-001",
+      "POL-DOA-16-CHK-002"
+    ],
+    "_id": "knowledge_documents_5_1790192207"
+  },
+  {
+    "document_id": "POL-TEC-12",
+    "filename": "POL-TEC-12.pdf",
+    "title": "Technical Support Diagnostics & Hardware Repair SOP",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-TEC-12-CHK-001",
+      "POL-TEC-12-CHK-002",
+      "POL-TEC-12-CHK-003"
+    ],
+    "_id": "knowledge_documents_6_1790192207"
+  },
+  {
+    "document_id": "POL-CON-10",
+    "filename": "POL-CON-10.pdf",
+    "title": "Staff Professional Conduct & Service Quality SOP",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-CON-10-CHK-001",
+      "POL-CON-10-CHK-002",
+      "POL-CON-10-CHK-003"
+    ],
+    "_id": "knowledge_documents_7_1790192207"
+  },
+  {
+    "document_id": "POL-TEC-12",
+    "filename": "POL-TEC-12.docx",
+    "title": "Technical Support Diagnostics & Hardware Repair SOP",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-TEC-12-CHK-001",
+      "POL-TEC-12-CHK-002",
+      "POL-TEC-12-CHK-003"
+    ],
+    "_id": "knowledge_documents_8_1790192207"
+  },
+  {
+    "document_id": "POL-REF-02-OLD",
+    "filename": "POL-REF-02-OLD.pdf",
+    "title": "Policy REF 02 OLD",
+    "version": "v1.0 (Superseded)",
+    "status": "Superseded",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-REF-02-OLD-CHK-001",
+      "POL-REF-02-OLD-CHK-002"
+    ],
+    "_id": "knowledge_documents_9_1790192207"
+  },
+  {
+    "document_id": "POL-VIP-13",
+    "filename": "POL-VIP-13.pdf",
+    "title": "Policy VIP 13",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-VIP-13-CHK-001",
+      "POL-VIP-13-CHK-002",
+      "POL-VIP-13-CHK-003"
+    ],
+    "_id": "knowledge_documents_10_1790192207"
+  },
+  {
+    "document_id": "POL-DEL-04",
+    "filename": "POL-DEL-04.docx",
+    "title": "Delivery & Logistics Replacement Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-DEL-04-CHK-001",
+      "POL-DEL-04-CHK-002",
+      "POL-DEL-04-CHK-003"
+    ],
+    "_id": "knowledge_documents_11_1790192207"
+  },
+  {
+    "document_id": "POL-REF-02",
+    "filename": "POL-REF-02.pdf",
+    "title": "Customer Refund & Escrow Payout Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 4,
+    "chunk_ids": [
+      "POL-REF-02-CHK-001",
+      "POL-REF-02-CHK-002",
+      "POL-REF-02-CHK-003",
+      "POL-REF-02-CHK-004"
+    ],
+    "_id": "knowledge_documents_12_1790192208"
+  },
+  {
+    "document_id": "POL-REF-02",
+    "filename": "POL-REF-02.docx",
+    "title": "Customer Refund & Escrow Payout Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 4,
+    "chunk_ids": [
+      "POL-REF-02-CHK-001",
+      "POL-REF-02-CHK-002",
+      "POL-REF-02-CHK-003",
+      "POL-REF-02-CHK-004"
+    ],
+    "_id": "knowledge_documents_13_1790192208"
+  },
+  {
+    "document_id": "POL-GWD-15",
+    "filename": "POL-GWD-15.pdf",
+    "title": "Global Warranty & Defect Exchange Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-GWD-15-CHK-001",
+      "POL-GWD-15-CHK-002",
+      "POL-GWD-15-CHK-003"
+    ],
+    "_id": "knowledge_documents_14_1790192208"
+  },
+  {
+    "document_id": "POL-CAN-11",
+    "filename": "POL-CAN-11.docx",
+    "title": "Policy CAN 11",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-CAN-11-CHK-001",
+      "POL-CAN-11-CHK-002",
+      "POL-CAN-11-CHK-003"
+    ],
+    "_id": "knowledge_documents_15_1790192208"
+  },
+  {
+    "document_id": "POL-ESC-14",
+    "filename": "POL-ESC-14.docx",
+    "title": "Escalation Matrix & Manager Sign-off Governance",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-ESC-14-CHK-001",
+      "POL-ESC-14-CHK-002",
+      "POL-ESC-14-CHK-003"
+    ],
+    "_id": "knowledge_documents_16_1790192208"
+  },
+  {
+    "document_id": "POL-FAQ-20",
+    "filename": "POL-FAQ-20.pdf",
+    "title": "Policy FAQ 20",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-FAQ-20-CHK-001",
+      "POL-FAQ-20-CHK-002",
+      "POL-FAQ-20-CHK-003"
+    ],
+    "_id": "knowledge_documents_17_1790192208"
+  },
+  {
+    "document_id": "POL-SUB-17",
+    "filename": "POL-SUB-17.pdf",
+    "title": "Subscription & Recurring Billing Terms",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-SUB-17-CHK-001",
+      "POL-SUB-17-CHK-002"
+    ],
+    "_id": "knowledge_documents_18_1790192209"
+  },
+  {
+    "document_id": "POL-REF-02-OLD",
+    "filename": "POL-REF-02-OLD.docx",
+    "title": "Policy REF 02 OLD",
+    "version": "v1.0 (Superseded)",
+    "status": "Superseded",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-REF-02-OLD-CHK-001",
+      "POL-REF-02-OLD-CHK-002"
+    ],
+    "_id": "knowledge_documents_19_1790192209"
+  },
+  {
+    "document_id": "POL-B2B-19",
+    "filename": "POL-B2B-19.docx",
+    "title": "B2B Enterprise SLA & Bulk Refund Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-B2B-19-CHK-001",
+      "POL-B2B-19-CHK-002"
+    ],
+    "_id": "knowledge_documents_20_1790192209"
+  },
+  {
+    "document_id": "POL-CAN-11",
+    "filename": "POL-CAN-11.pdf",
+    "title": "Policy CAN 11",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-CAN-11-CHK-001",
+      "POL-CAN-11-CHK-002",
+      "POL-CAN-11-CHK-003"
+    ],
+    "_id": "knowledge_documents_21_1790192209"
+  },
+  {
+    "document_id": "POL-BIL-06",
+    "filename": "POL-BIL-06.docx",
+    "title": "Billing Discrepancy & Chargeback Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-BIL-06-CHK-001",
+      "POL-BIL-06-CHK-002",
+      "POL-BIL-06-CHK-003"
+    ],
+    "_id": "knowledge_documents_22_1790192209"
+  },
+  {
+    "document_id": "POL-ESC-14",
+    "filename": "POL-ESC-14.pdf",
+    "title": "Escalation Matrix & Manager Sign-off Governance",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-ESC-14-CHK-001",
+      "POL-ESC-14-CHK-002",
+      "POL-ESC-14-CHK-003"
+    ],
+    "_id": "knowledge_documents_23_1790192210"
+  },
+  {
+    "document_id": "POL-CMP-01",
+    "filename": "POL-CMP-01.docx",
+    "title": "Policy CMP 01",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 4,
+    "chunk_ids": [
+      "POL-CMP-01-CHK-001",
+      "POL-CMP-01-CHK-002",
+      "POL-CMP-01-CHK-003",
+      "POL-CMP-01-CHK-004"
+    ],
+    "_id": "knowledge_documents_24_1790192210"
+  },
+  {
+    "document_id": "POL-SAF-05",
+    "filename": "POL-SAF-05.pdf",
+    "title": "Product Safety & Fire Hazard Escalation Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-SAF-05-CHK-001",
+      "POL-SAF-05-CHK-002",
+      "POL-SAF-05-CHK-003"
+    ],
+    "_id": "knowledge_documents_25_1790192210"
+  },
+  {
+    "document_id": "POL-BIL-06",
+    "filename": "POL-BIL-06.pdf",
+    "title": "Billing Discrepancy & Chargeback Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-BIL-06-CHK-001",
+      "POL-BIL-06-CHK-002",
+      "POL-BIL-06-CHK-003"
+    ],
+    "_id": "knowledge_documents_26_1790192210"
+  },
+  {
+    "document_id": "POL-CMP-01",
+    "filename": "POL-CMP-01.pdf",
+    "title": "Policy CMP 01",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 4,
+    "chunk_ids": [
+      "POL-CMP-01-CHK-001",
+      "POL-CMP-01-CHK-002",
+      "POL-CMP-01-CHK-003",
+      "POL-CMP-01-CHK-004"
+    ],
+    "_id": "knowledge_documents_27_1790192210"
+  },
+  {
+    "document_id": "POL-LOST-18",
+    "filename": "POL-LOST-18.docx",
+    "title": "Policy LOST 18",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-LOST-18-CHK-001",
+      "POL-LOST-18-CHK-002"
+    ],
+    "_id": "knowledge_documents_28_1790192210"
+  },
+  {
+    "document_id": "POL-PRV-09",
+    "filename": "POL-PRV-09.pdf",
+    "title": "Data Privacy & GDPR Governance Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-PRV-09-CHK-001",
+      "POL-PRV-09-CHK-002",
+      "POL-PRV-09-CHK-003"
+    ],
+    "_id": "knowledge_documents_29_1790192210"
+  },
+  {
+    "document_id": "POL-FAQ-20",
+    "filename": "POL-FAQ-20.docx",
+    "title": "Policy FAQ 20",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-FAQ-20-CHK-001",
+      "POL-FAQ-20-CHK-002",
+      "POL-FAQ-20-CHK-003"
+    ],
+    "_id": "knowledge_documents_30_1790192210"
+  },
+  {
+    "document_id": "POL-SAF-05",
+    "filename": "POL-SAF-05.docx",
+    "title": "Product Safety & Fire Hazard Escalation Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-SAF-05-CHK-001",
+      "POL-SAF-05-CHK-002",
+      "POL-SAF-05-CHK-003"
+    ],
+    "_id": "knowledge_documents_31_1790192211"
+  },
+  {
+    "document_id": "POL-PRV-09",
+    "filename": "POL-PRV-09.docx",
+    "title": "Data Privacy & GDPR Governance Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-PRV-09-CHK-001",
+      "POL-PRV-09-CHK-002",
+      "POL-PRV-09-CHK-003"
+    ],
+    "_id": "knowledge_documents_32_1790192211"
+  },
+  {
+    "document_id": "POL-DEL-04",
+    "filename": "POL-DEL-04.pdf",
+    "title": "Delivery & Logistics Replacement Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-DEL-04-CHK-001",
+      "POL-DEL-04-CHK-002",
+      "POL-DEL-04-CHK-003"
+    ],
+    "_id": "knowledge_documents_33_1790192211"
+  },
+  {
+    "document_id": "POL-REP-03",
+    "filename": "POL-REP-03.pdf",
+    "title": "Product Replacement & Repair Operations Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-REP-03-CHK-001",
+      "POL-REP-03-CHK-002",
+      "POL-REP-03-CHK-003"
+    ],
+    "_id": "knowledge_documents_34_1790192211"
+  },
+  {
+    "document_id": "POL-WAR-07",
+    "filename": "POL-WAR-07.pdf",
+    "title": "Limited Hardware Warranty Coverage Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-WAR-07-CHK-001",
+      "POL-WAR-07-CHK-002",
+      "POL-WAR-07-CHK-003"
+    ],
+    "_id": "knowledge_documents_35_1790192211"
+  },
+  {
+    "document_id": "POL-DOA-16",
+    "filename": "POL-DOA-16.pdf",
+    "title": "Dead-on-Arrival (DOA) Return Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Standard Operating Procedure (SOP)",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-DOA-16-CHK-001",
+      "POL-DOA-16-CHK-002"
+    ],
+    "_id": "knowledge_documents_36_1790192211"
+  },
+  {
+    "document_id": "POL-GWD-15",
+    "filename": "POL-GWD-15.docx",
+    "title": "Global Warranty & Defect Exchange Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-GWD-15-CHK-001",
+      "POL-GWD-15-CHK-002",
+      "POL-GWD-15-CHK-003"
+    ],
+    "_id": "knowledge_documents_37_1790192211"
+  },
+  {
+    "document_id": "POL-REP-03",
+    "filename": "POL-REP-03.docx",
+    "title": "Product Replacement & Repair Operations Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-REP-03-CHK-001",
+      "POL-REP-03-CHK-002",
+      "POL-REP-03-CHK-003"
+    ],
+    "_id": "knowledge_documents_38_1790192211"
+  },
+  {
+    "document_id": "POL-VIP-13",
+    "filename": "POL-VIP-13.docx",
+    "title": "Policy VIP 13",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-VIP-13-CHK-001",
+      "POL-VIP-13-CHK-002",
+      "POL-VIP-13-CHK-003"
+    ],
+    "_id": "knowledge_documents_39_1790192211"
+  },
+  {
+    "document_id": "POL-SEC-08",
+    "filename": "POL-SEC-08.docx",
+    "title": "Account Security & Fraud Prevention Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-SEC-08-CHK-001",
+      "POL-SEC-08-CHK-002",
+      "POL-SEC-08-CHK-003"
+    ],
+    "_id": "knowledge_documents_40_1790192211"
+  },
+  {
+    "document_id": "POL-LOST-18",
+    "filename": "POL-LOST-18.pdf",
+    "title": "Policy LOST 18",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 2,
+    "chunk_ids": [
+      "POL-LOST-18-CHK-001",
+      "POL-LOST-18-CHK-002"
+    ],
+    "_id": "knowledge_documents_41_1790192211"
+  },
+  {
+    "document_id": "POL-SEC-08",
+    "filename": "POL-SEC-08.pdf",
+    "title": "Account Security & Fraud Prevention Policy",
+    "version": "v2.0",
+    "status": "Active",
+    "doc_type": "Active Policy",
+    "precedence_score": 100,
+    "total_chunks": 3,
+    "chunk_ids": [
+      "POL-SEC-08-CHK-001",
+      "POL-SEC-08-CHK-002",
+      "POL-SEC-08-CHK-003"
+    ],
+    "_id": "knowledge_documents_42_1790192212"
+  }
+]

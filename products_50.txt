@@ -1,0 +1,53 @@
+# NovaTech Global Enterprise - Official 50 Products Catalog
+# Format: Product_ID | Product_Name | Category | Standard_Warranty | Base_Price_USD
+
+PRD-1001 | NovaBook Pro 16 M3 Max Laptop | Laptops & Computers | 24 Months | $2,499.00
+PRD-1002 | NovaBook Air 14 Ultrabook | Laptops & Computers | 12 Months | $1,299.00
+PRD-1003 | NovaStudio Desktop Workstation | Laptops & Computers | 36 Months | $3,899.00
+PRD-1004 | UltraVision 4K OLED Gaming Monitor 32" | Displays & Monitors | 36 Months | $899.00
+PRD-1005 | UltraVision 34" Curved Ultrawide Display | Displays & Monitors | 24 Months | $699.00
+PRD-1006 | NovaPad Pro 12.9 Tablet | Tablets & E-Readers | 12 Months | $999.00
+PRD-1007 | NovaPad Mini 8.4 Travel Tablet | Tablets & E-Readers | 12 Months | $499.00
+PRD-1008 | NovaSound ANC Studio Headphones | Audio & Sound | 24 Months | $349.00
+PRD-1009 | NovaBuds Pro 2 Wireless Earbuds | Audio & Sound | 12 Months | $199.00
+PRD-1010 | NovaSound Cinema Soundbar 7.1.4 | Audio & Sound | 24 Months | $799.00
+PRD-1011 | ApexView 360 4K AI Security Camera | Smart Home & Security | 24 Months | $249.00
+PRD-1012 | ApexDoorbell Video Intercom Pro | Smart Home & Security | 24 Months | $179.00
+PRD-1013 | SmartHub Pro IoT Central Gateway | Smart Home & Security | 36 Months | $299.00
+PRD-1014 | NovaCharge 140W GaN Fast Charger | Power & Accessories | 18 Months | $89.00
+PRD-1015 | NovaPower 25,000mAh Laptop PowerBank | Power & Accessories | 12 Months | $119.00
+PRD-1016 | Vortex Mechanical RGB Gaming Keyboard | Keyboards & Mice | 24 Months | $159.00
+PRD-1017 | Quantum Wireless Precision Mouse | Keyboards & Mice | 24 Months | $99.00
+PRD-1018 | NovaDesk Ergonomic Standing Desk Pro | Smart Office Furniture | 60 Months | $749.00
+PRD-1019 | NovaChair Ergonomic Mesh Task Chair | Smart Office Furniture | 60 Months | $499.00
+PRD-1020 | HyperRoute WiFi 7 Tri-Band Mesh Router | Networking & Wireless | 36 Months | $399.00
+PRD-1021 | NovaSwitch 24-Port Gigabit PoE Managed Switch | Networking & Wireless | 36 Months | $450.00
+PRD-1022 | NovaNAS 4-Bay Network Storage Server | Storage & Backup | 36 Months | $649.00
+PRD-1023 | NovaDrive 2TB Rugged External NVMe SSD | Storage & Backup | 60 Months | $189.00
+PRD-1024 | NovaDrive 4TB Enterprise Desktop SSD | Storage & Backup | 60 Months | $349.00
+PRD-1025 | NovaFit Horizon GPS Smartwatch v3 | Wearables & Health | 24 Months | $299.00
+PRD-1026 | NovaBand Sport Fitness Tracker | Wearables & Health | 12 Months | $79.00
+PRD-1027 | LuminaBeam 4K Laser Home Cinema Projector | Home Entertainment | 24 Months | $1,899.00
+PRD-1028 | LuminaSmart 65" Quantum Dot Smart TV | Home Entertainment | 36 Months | $1,199.00
+PRD-1029 | NovaPure HEPA Air Purifier Pro | Home Appliances | 24 Months | $299.00
+PRD-1030 | NovaBreeze Ultra-Quiet Smart Bladeless Fan | Home Appliances | 24 Months | $229.00
+PRD-1031 | NovaBrew Smart Programmable Espresso Machine | Kitchen Electronics | 24 Months | $699.00
+PRD-1032 | NovaChef Multi-Function Induction Cooker | Kitchen Electronics | 12 Months | $149.00
+PRD-1033 | RoboVac AI LiDAR Autonomous Vacuum & Mop | Smart Cleaning | 24 Months | $599.00
+PRD-1034 | NovaWash Ultrasonic Jewelry & Lens Cleaner | Personal Care | 12 Months | $49.00
+PRD-1035 | NovaSmile Sonic Electric Toothbrush Pro | Personal Care | 24 Months | $89.00
+PRD-1036 | NovaLens 4K Ultra-Wide Conference Webcam | Office Electronics | 24 Months | $199.00
+PRD-1037 | NovaMic Studio Cardioid USB Microphone | Audio & Sound | 24 Months | $149.00
+PRD-1038 | NovaCapture 4K60 HDR Streaming Card | Gaming & Video | 24 Months | $179.00
+PRD-1039 | NovaDock Dual 4K Thunderbolt 4 Docking Station | Power & Accessories | 36 Months | $269.00
+PRD-1040 | NovaScreen 15.6" Portable USB-C Monitor | Displays & Monitors | 12 Months | $219.00
+PRD-1041 | NovaGame Elite Wireless Controller | Gaming & Video | 12 Months | $79.00
+PRD-1042 | NovaFlight Pro Dual-Stick Flight Simulator | Gaming & Video | 24 Months | $349.00
+PRD-1043 | NovaVR Spatial Reality VR Headset | Virtual Reality | 24 Months | $899.00
+PRD-1044 | NovaPrint Wireless EcoTank Office Printer | Office Electronics | 12 Months | $329.00
+PRD-1045 | NovaScan Document Duplex High-Speed Scanner | Office Electronics | 24 Months | $289.00
+PRD-1046 | NovaTherm Smart Digital Thermostat Pro | Smart Home & Security | 36 Months | $169.00
+PRD-1047 | NovaLock Biometric Smart Deadbolt | Smart Home & Security | 36 Months | $219.00
+PRD-1048 | NovaShield Solar Outdoor Spotlight Cam | Smart Home & Security | 24 Months | $189.00
+PRD-1049 | NovaDrone 4K Pro Obstacle Avoidance Drone | Drones & Imaging | 12 Months | $799.00
+PRD-1050 | NovaCar Smart DashCam 4K Dual Channel | Automotive Electronics | 24 Months | $169.00

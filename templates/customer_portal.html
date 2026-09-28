@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Service &amp; Warranty Resolution Center - NovaTech Global</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=8.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function() {
+      document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+  <style>
+    body {
+      background: #0d0d0c !important;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .portal-nav {
+      background: rgba(18, 17, 14, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(214, 217, 170, 0.25);
+      padding: 14px 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+    }
+    .portal-nav::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 5%;
+      right: 5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(214, 217, 170, 0.6), transparent);
+    }
+    .portal-hero {
+      position: relative;
+      width: 100%;
+      min-height: 530px;
+      overflow: hidden;
+      isolation: isolate;
+      background: #0d0d0c;
+      padding: 80px 24px 70px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid rgba(214, 217, 170, 0.22);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+    }
+    .sn-hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(13, 13, 12, 0.55) 0%, rgba(13, 13, 12, 0.2) 35%, rgba(0,0,0,0) 55%),
+        linear-gradient(to top, rgba(13, 13, 12, 0.96) 0%, rgba(13, 13, 12, 0.55) 40%, rgba(0,0,0,0) 65%),
+        linear-gradient(120deg, rgba(238, 240, 208, 0.12), rgba(245, 158, 11, 0.05));
+    }
+    .hero__media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 45%;
+      z-index: 0;
+      filter: saturate(1.06) contrast(1.04) brightness(.97);
+    }
+    .hero__media--mobile {
+      display: none;
+    }
+    .hero__video {
+      opacity: 0;
+      transition: opacity .9s ease;
+    }
+    .hero__video.is-ready {
+      opacity: 1;
+    }
+    .sn-hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 920px;
+      text-align: center;
+    }
+    .sn-hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.3rem, 4.4vw, 3.4rem);
+      font-weight: 400;
+      color: #fbfcf8;
+      line-height: 1.15;
+      margin: 0 0 14px;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7);
+    }
+    .sn-hero-sub {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      max-width: 680px;
+      margin: 0 auto 26px;
+      line-height: 1.55;
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+    }
+    .sn-pill-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .sn-pill-primary {
+      background: var(--cream, #eef0d0);
+      color: #101010;
+      border: 1px solid rgba(214, 217, 170, 0.9);
+      padding: 12px 28px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px rgba(238, 240, 208, 0.25);
+      transition: all 0.2s ease;
+    }
+    .sn-pill-primary:hover {
+      background: #e2e5be;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(238, 240, 208, 0.35);
+    }
+    .sn-pill-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fbfcf8;
+      border: 1px solid rgba(214, 217, 170, 0.35);
+      padding: 12px 28px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
+    }
+    .sn-pill-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(214, 217, 170, 0.6);
+      transform: translateY(-2px);
+    }
+    .portal-bg-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .portal-grid-matrix {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(214, 217, 170, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(rgba(214, 217, 170, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(214, 217, 170, 0.035) 1px, transparent 1px);
+      background-size: 32px 32px, 64px 64px, 64px 64px;
+      opacity: 0.85;
+      mask-image: radial-gradient(circle at 50% 50%, black 30%, rgba(0,0,0,0.5) 75%, transparent 100%);
+      -webkit-mask-image: radial-gradient(circle at 50% 50%, black 30%, rgba(0,0,0,0.5) 75%, transparent 100%);
+    }
+
+    .portal-ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.65;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .portal-orb-1 {
+      width: 650px;
+      height: 650px;
+      top: 15%;
+      right: -100px;
+      background: radial-gradient(circle, rgba(214, 217, 170, 0.24) 0%, rgba(245, 158, 11, 0.10) 45%, transparent 72%);
+      animation: floatOrb1 18s ease-in-out infinite alternate;
+    }
+
+    .portal-orb-2 {
+      width: 720px;
+      height: 720px;
+      top: 45%;
+      left: -150px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.20) 0%, rgba(5, 150, 105, 0.08) 45%, transparent 72%);
+      animation: floatOrb2 22s ease-in-out infinite alternate;
+    }
+
+    .portal-orb-3 {
+      width: 580px;
+      height: 580px;
+      bottom: 5%;
+      right: 15%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(99, 102, 241, 0.06) 45%, transparent 72%);
+      animation: floatOrb3 16s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatOrb1 {
+      0%   { transform: translate(0, 0) scale(1); opacity: 0.55; }
+      50%  { transform: translate(-60px, 80px) scale(1.12); opacity: 0.75; }
+      100% { transform: translate(40px, 120px) scale(0.95); opacity: 0.60; }
+    }
+
+    @keyframes floatOrb2 {
+      0%   { transform: translate(0, 0) scale(1); opacity: 0.60; }
+      50%  { transform: translate(80px, -60px) scale(1.08); opacity: 0.80; }
+      100% { transform: translate(30px, 50px) scale(0.92); opacity: 0.55; }
+    }
+
+    @keyframes floatOrb3 {
+      0%   { transform: translate(0, 0) scale(1); opacity: 0.50; }
+      50%  { transform: translate(-50px, -40px) scale(1.15); opacity: 0.70; }
+      100% { transform: translate(50px, -80px) scale(0.98); opacity: 0.55; }
+    }
+
+    .portal-cyber-sweep {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(214, 217, 170, 0.6) 40%, rgba(255, 255, 255, 0.9) 50%, rgba(245, 158, 11, 0.6) 60%, transparent 100%);
+      box-shadow: 0 0 25px rgba(214, 217, 170, 0.8);
+      animation: portalRadarSweep 9s ease-in-out infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes portalRadarSweep {
+      0%   { top: 0%; opacity: 0; }
+      10%  { opacity: 0.8; }
+      90%  { opacity: 0.8; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .portal-hud-side {
+      position: fixed;
+      top: 48%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.60;
+      transition: opacity 0.3s ease;
+    }
+    @media (max-width: 1400px) {
+      .portal-hud-side { display: none; }
+    }
+    .portal-hud-left {
+      left: 24px;
+      align-items: flex-start;
+    }
+    .portal-hud-right {
+      right: 24px;
+      align-items: flex-end;
+      text-align: right;
+    }
+    .portal-hud-line {
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, #d4d9aa, transparent);
+      box-shadow: 0 0 8px #d4d9aa;
+    }
+    .portal-hud-right .portal-hud-line {
+      background: linear-gradient(90deg, transparent, #d4d9aa);
+    }
+    .portal-hud-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #d4d9aa;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: rgba(20, 24, 22, 0.85);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(214, 217, 170, 0.3);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .portal-hud-metric {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+
+    .portal-capabilities-bar {
+      max-width: 1100px;
+      margin: -24px auto 36px auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 15;
+    }
+    .portal-capabilities-track {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: rgba(18, 22, 20, 0.88);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid rgba(214, 217, 170, 0.35);
+      border-radius: 9999px;
+      padding: 10px 24px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    }
+    .portal-cap-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.25s ease;
+    }
+    .portal-cap-pill:hover {
+      background: rgba(214, 217, 170, 0.15);
+      border-color: rgba(214, 217, 170, 0.45);
+      transform: translateY(-1px);
+      color: #ffffff;
+    }
+
+    .portal-container {
+      max-width: 1060px;
+      margin: 0 auto 70px auto;
+      background: rgba(20, 24, 22, 0.92);
+      backdrop-filter: blur(28px) saturate(140%);
+      -webkit-backdrop-filter: blur(28px) saturate(140%);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.85), 0 0 50px rgba(214, 217, 170, 0.10), inset 0 1px 2px rgba(255, 255, 255, 0.16);
+      padding: 44px;
+      border: 1px solid rgba(214, 217, 170, 0.35);
+      position: relative;
+      z-index: 10;
+      animation: portalEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .portal-container::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #eef0d0, #f59e0b, #eef0d0, transparent);
+      box-shadow: 0 0 12px #eef0d0;
+    }
+    .portal-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 6px;
+      border-radius: 9999px;
+      border: 1px solid rgba(214, 217, 170, 0.22);
+      width: fit-content;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+    .form-control, input.form-control, textarea.form-control, select.form-control {
+      background: rgba(28, 34, 30, 0.80) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      border: 1px solid rgba(214, 217, 170, 0.32) !important;
+      color: #ffffff !important;
+      font-weight: 500;
+      border-radius: 14px;
+      padding: 13px 18px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .form-control:hover, input.form-control:hover, textarea.form-control:hover, select.form-control:hover {
+      border-color: rgba(214, 217, 170, 0.6) !important;
+      background: rgba(34, 42, 37, 0.90) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+    .form-control:focus, input.form-control:focus, textarea.form-control:focus, select.form-control:focus {
+      background: rgba(38, 48, 42, 0.98) !important;
+      border-color: #eef0d0 !important;
+      box-shadow: 0 0 0 3.5px rgba(238, 240, 208, 0.28), 0 0 24px rgba(238, 240, 208, 0.22) !important;
+      color: #ffffff !important;
+      outline: none;
+    }
+    .form-control::placeholder, input.form-control::placeholder, textarea.form-control::placeholder {
+      color: rgba(203, 213, 225, 0.6) !important;
+    }
+    .form-label {
+      color: #fbfcf8 !important;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+    }
+    .portal-tab-btn {
+      padding: 9px 20px;
+      font-weight: 700;
+      color: #cbd5e1;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 9999px;
+      transition: var(--transition);
+      letter-spacing: 0.1px;
+    }
+    .portal-tab-btn:hover {
+      color: #101010;
+      background: rgba(238, 240, 208, 0.55);
+      transform: translateY(-1px);
+    }
+    .portal-tab-btn.active {
+      color: #101010 !important;
+      background: #eef0d0 !important;
+      box-shadow: 0 4px 14px rgba(238, 240, 208, 0.35);
+      font-weight: 800;
+    }
+    .cyber-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--glass-bg-subtle);
+      padding: 6px 15px;
+      border-radius: 9999px;
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 2px 10px rgba(238, 240, 208, 0.06);
+      font-size: 0.82rem;
+      font-weight: 700;
+      transition: var(--transition);
+    }
+    .cyber-badge:hover {
+      transform: translateY(-1px);
+      border-color: rgba(238, 240, 208, 0.5);
+    }
+    .cyber-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      display: inline-block;
+      animation: cyberPulse 2s infinite;
+    }
+    @keyframes cyberPulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 36px;
+      padding: 0 20px;
+    }
+    .step-indicator::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 50px;
+      right: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, #eef0d0 0%, #10b981 50%, #eef0d0 100%);
+      background-size: 200% 100%;
+      animation: laserFlow 4s linear infinite;
+      z-index: 1;
+      border-radius: 99px;
+      box-shadow: 0 0 10px rgba(238, 240, 208, 0.4);
+    }
+    .step-item {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .step-item:hover {
+      transform: translateY(-2px);
+    }
+    .step-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(28, 34, 30, 0.9);
+      border: 2px solid rgba(214, 217, 170, 0.35);
+      color: #94a3b8;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.92rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+    }
+    .step-item.active .step-badge {
+      background: #eef0d0;
+      color: #101010;
+      border-color: #eef0d0;
+      box-shadow: 0 0 0 4px rgba(238, 240, 208, 0.35), 0 0 25px rgba(238, 240, 208, 0.6);
+      transform: scale(1.14);
+      animation: stepPulse 2s infinite alternate;
+    }
+    @keyframes stepPulse {
+      0%   { box-shadow: 0 0 0 3px rgba(238, 240, 208, 0.35), 0 0 15px rgba(238, 240, 208, 0.4); }
+      100% { box-shadow: 0 0 0 8px rgba(238, 240, 208, 0.1), 0 0 30px rgba(238, 240, 208, 0.7); }
+    }
+    .step-item.completed .step-badge {
+      background: #10b981;
+      color: #ffffff;
+      border-color: #10b981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+    }
+    .step-label {
+      font-size: 0.80rem;
+      font-weight: 700;
+      color: #94a3b8;
+      transition: var(--transition);
+    }
+    .step-item.active .step-label {
+      color: #eef0d0;
+      font-weight: 800;
+      text-shadow: 0 0 10px rgba(238, 240, 208, 0.4);
+    }
+    .step-item.completed .step-label {
+      color: #34d399;
+      font-weight: 800;
+    }
+    .product-preview-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(214, 217, 170, 0.25);
+      border-radius: var(--radius-md);
+      padding: 18px 24px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      animation: slideUpScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .file-dropzone {
+      border: 2px dashed rgba(214, 217, 170, 0.35);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      padding: 26px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .file-dropzone:hover {
+      border-color: #eef0d0;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      transform: translateY(-2px);
+    }
+    .timeline-step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+      padding-bottom: 28px;
+      animation: timelineItemSlide 0.5s ease backwards;
+    }
+    .timeline-step::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 36px;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .timeline-step:last-child::before {
+      display: none;
+    }
+    .timeline-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(238, 240, 208, 0.14);
+      color: var(--cream, #eef0d0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      z-index: 1;
+      box-shadow: 0 2px 10px rgba(238, 240, 208, 0.18);
+    }
+    .timeline-icon.completed {
+      background: var(--success-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
+    }
+    .timeline-icon.active-pulse {
+      background: var(--primary-gradient);
+      color: white;
+      box-shadow: 0 0 0 6px rgba(238, 240, 208, 0.25);
+      animation: pulseNode 1.8s infinite;
+    }
+    @keyframes pulseNode {
+      0% { box-shadow: 0 0 0 0 rgba(238, 240, 208, 0.5); }
+      70% { box-shadow: 0 0 0 10px rgba(238, 240, 208, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(238, 240, 208, 0); }
+    }
+    .voice-pulse-active {
+      animation: micGlow 1s infinite alternate;
+      background: #e11d48 !important;
+      color: white !important;
+    }
+    @keyframes micGlow {
+      0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.6); }
+      100% { box-shadow: 0 0 0 12px rgba(225, 29, 72, 0); }
+    }
+    @keyframes navSlideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeInHero {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes titleFloat {
+      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes portalEnter {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes slideUpScale {
+      from { opacity: 0; transform: translateY(15px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes laserFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes pulseBadge {
+      0% { box-shadow: 0 6px 22px rgba(238, 240, 208, 0.6), 0 0 0 0 rgba(238, 240, 208, 0.4); }
+      50% { box-shadow: 0 8px 28px rgba(238, 240, 208, 0.8), 0 0 0 8px rgba(238, 240, 208, 0); }
+      100% { box-shadow: 0 6px 22px rgba(238, 240, 208, 0.6), 0 0 0 0 rgba(238, 240, 208, 0.4); }
+    }
+    @keyframes timelineItemSlide {
+      from { opacity: 0; transform: translateX(-15px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+
+  <div class="portal-bg-canvas" aria-hidden="true">
+    <div class="portal-grid-matrix"></div>
+    <div class="portal-ambient-orb portal-orb-1"></div>
+    <div class="portal-ambient-orb portal-orb-2"></div>
+    <div class="portal-ambient-orb portal-orb-3"></div>
+    <div class="portal-cyber-sweep"></div>
+  </div>
+
+  <aside class="portal-hud-side portal-hud-left" aria-hidden="true">
+    <div class="portal-hud-line"></div>
+    <div class="portal-hud-chip"><span class="cyber-dot"></span> NEURAL SLA CORE v4.8</div>
+    <div class="portal-hud-metric">LAT: 37.7749° N &bull; LNG: 122.4194° W</div>
+    <div class="portal-hud-metric">SLA GUARANTEE &bull; 99.98% RESOLUTION</div>
+  </aside>
+
+  <aside class="portal-hud-side portal-hud-right" aria-hidden="true">
+    <div class="portal-hud-line"></div>
+    <div class="portal-hud-chip"><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> ISO 27001 SECURED</div>
+    <div class="portal-hud-metric">MULTIMODAL VISION ACTIVE</div>
+    <div class="portal-hud-metric">AES-256-GCM QUANTUM LINK</div>
+  </aside>
+
+  <nav class="portal-nav">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 38px; height: 38px; border-radius: 12px; background: #eef0d0; display: flex; align-items: center; justify-content: center; color: #101010; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(238, 240, 208, 0.4);">N</div>
+        <div>
+          <div style="font-weight: 900; font-size: 1.12rem; color: #fbfcf8; letter-spacing: -0.4px;">NovaTech <span style="color: #eef0d0;">Resolution Center</span></div>
+          <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Powered by SupportNova Intelligence</div>
+        </div>
+      </a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="cyber-badge">
+        <i class="fa-solid fa-language" style="color: var(--primary);"></i>
+        <select id="portalLangSelect" onchange="changePortalLanguage(this.value)" style="background: transparent; border: none; font-size: 0.82rem; font-weight: 700; color: #fbfcf8; outline: none; cursor: pointer;">
+          <option value="en" style="background: #181714; color: #fbfcf8;">English (US)</option>
+          <option value="ur" style="background: #181714; color: #fbfcf8;">Urdu (اردو)</option>
+          <option value="ar" style="background: #181714; color: #fbfcf8;">Arabic (العربية)</option>
+          <option value="es" style="background: #181714; color: #fbfcf8;">Spanish (Español)</option>
+        </select>
+      </div>
+
+      <div class="cyber-badge">
+        <span class="cyber-dot"></span>
+        <span>Hotline: <strong style="color: #fbfcf8; font-family: 'JetBrains Mono', monospace; font-size: 0.84rem;">1-800-NOVATECH</strong></span>
+      </div>
+
+      <!-- Dark / Light Theme Toggle -->
+      <button class="icon-glass-btn" onclick="togglePortalTheme()" title="Toggle Crystal Dark / Light Glass Mode" id="portalThemeToggleBtn" style="color: #fbfcf8;">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+
+      {% if current_user %}
+      <div style="display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(214, 217, 170, 0.35); padding: 5px 14px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3); backdrop-filter: blur(14px);">
+        <img src="{{ current_user.avatar or 'https://ui-avatars.com/api/?name=User&background=4285F4&color=fff' }}" alt="Profile" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid #eef0d0;" id="portalUserAvatar">
+        <div>
+          <div style="font-size: 0.84rem; font-weight: 800; color: #fbfcf8; line-height: 1.1;" id="portalUserName">{{ current_user.display_name or current_user.username }}</div>
+          <div style="font-size: 0.7rem; color: #94a3b8; line-height: 1;" id="portalUserEmail">{{ current_user.email }}</div>
+        </div>
+        <button onclick="openCustomerProfileModal()" class="icon-glass-btn" style="width: 30px; height: 30px; font-size: 0.78rem; color: #fbfcf8;" title="Account & Password Settings">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+
+      {% if current_user.role in ['admin', 'agent'] %}
+      <a href="/admin" class="sn-pill-primary" style="text-decoration: none; padding: 8px 18px; font-size: 0.84rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-gauge-high"></i> Admin Portal
+      </a>
+      {% endif %}
+
+      <a href="/logout" class="icon-glass-btn" title="Sign Out" style="text-decoration: none; color: #e11d48;">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </a>
+
+      {% else %}
+      <button class="google-btn" onclick="triggerCustomerGoogleLogin()" style="margin-bottom: 0; padding: 8px 18px; font-size: 0.86rem; border-radius: 9999px; background: rgba(238, 240, 208, 0.1); border-color: rgba(214, 217, 170, 0.35); color: #eef0d0;">
+        <i class="fa-solid fa-bolt" style="color: #eef0d0; font-size: 0.95rem;"></i>
+        <span>Guest Login</span>
+      </button>
+
+      <a href="/login" class="sn-pill-primary" style="text-decoration: none; padding: 8px 18px; font-size: 0.84rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-user-lock"></i> Login / Register
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <header class="portal-hero sn-full-bleed-hero">
+    <img
+      class="hero__media hero__media--desktop"
+      src="https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/193afe38-41fa-4454-9d48-ed154b66d17c.png"
+      alt="SupportNova Hardware Resolution Center"
+      fetchpriority="high"
+      decoding="async"
+    >
+    <img
+      class="hero__media hero__media--mobile"
+      src="https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/44c2e930-23df-4ffb-98bc-02b0f7014028.png"
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+    >
+    <video
+      class="hero__media hero__media--desktop hero__video"
+      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260814_034538_de4032ce-5035-473d-a5b1-0e2224635a6a.mp4"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+      tabindex="-1"
+    ></video>
+    <div class="sn-hero-overlay"></div>
+    <div class="sn-hero-content">
+      <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+        <span class="cyber-badge">
+          <span class="cyber-dot"></span> Aptech Techwiz 7 &bull; Generative AI Platform
+        </span>
+      </div>
+
+      <h1 class="sn-hero-title" id="heroTitleText">Customer Complaint &amp; Warranty Resolution Center</h1>
+
+      <p class="sn-hero-sub" id="heroSubtitleText">Submit hardware grievances, upload photo evidence for instant AI defect analysis, or dictate issues via voice.</p>
+
+      <div class="sn-pill-actions">
+        <button type="button" class="sn-pill-primary" onclick="switchPortalTab('submit'); document.getElementById('submitSection').scrollIntoView({behavior: 'smooth'});">
+          <i class="fa-solid fa-file-circle-plus"></i> File a Complaint
+        </button>
+        <button type="button" class="sn-pill-secondary" onclick="switchPortalTab('track'); document.getElementById('trackSection').scrollIntoView({behavior: 'smooth'});">
+          <i class="fa-solid fa-magnifying-glass-location"></i> Track Existing Ticket
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="portal-capabilities-bar">
+    <div class="portal-capabilities-track">
+      <div class="portal-cap-pill">
+        <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i>
+        <span>30s Instant AI SLA Evaluation</span>
+      </div>
+      <div class="portal-cap-pill">
+        <i class="fa-solid fa-camera-retro" style="color:#10b981;"></i>
+        <span>Multimodal Defect Computer Vision</span>
+      </div>
+      <div class="portal-cap-pill">
+        <i class="fa-solid fa-shield-halved" style="color:#d4d9aa;"></i>
+        <span>Deterministic Rule Engine</span>
+      </div>
+      <div class="portal-cap-pill">
+        <i class="fa-solid fa-headset" style="color:#38bdf8;"></i>
+        <span>24/7 VoIP & Voice Diagnostics</span>
+      </div>
+      <div class="portal-cap-pill">
+        <div class="cyber-dot" style="background:#10b981;"></div>
+        <span>Automated Instant Warranty Pipeline</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="portal-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 14px;">
+      <div class="portal-tabs" style="margin-bottom: 0;">
+        <button class="portal-tab-btn active" id="tabSubmitBtn" onclick="switchPortalTab('submit')">
+          <i class="fa-solid fa-file-circle-plus"></i> Submit Complaint
+        </button>
+        <button class="portal-tab-btn" id="tabChatBtn" onclick="switchPortalTab('chat')">
+          <i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> Live Chat & Voice Call
+        </button>
+        <button class="portal-tab-btn" id="tabMyComplaintsBtn" onclick="switchPortalTab('my-complaints')">
+          <i class="fa-solid fa-clock-rotate-left"></i> My Complaints <span id="myComplaintsBadge" style="background: rgba(238, 240, 208, 0.2); padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem;">0</span>
+        </button>
+        <button class="portal-tab-btn" id="tabTrackBtn" onclick="switchPortalTab('track')">
+          <i class="fa-solid fa-magnifying-glass-location"></i> Track Ticket
+        </button>
+      </div>
+
+      <button class="pill-tab" style="padding: 8px 18px; font-size: 0.82rem; font-weight: 800; border-color: rgba(238, 240, 208, 0.4); box-shadow: 0 0 16px rgba(238, 240, 208, 0.15);" onclick="triggerAiPreCheck()">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> Run Live AI SLA & Eligibility Pre-Check
+      </button>
+    </div>
+
+    <!-- Step Progress Indicator -->
+    <div class="step-indicator">
+      <div class="step-item active" id="stepIndicator1" onclick="goToStep(1)" title="Go to Profile Info">
+        <div class="step-badge">1</div>
+        <div class="step-label">Profile Info</div>
+      </div>
+      <div class="step-item" id="stepIndicator2" onclick="goToStep(2)" title="Go to Product Catalog">
+        <div class="step-badge">2</div>
+        <div class="step-label">50+ Products</div>
+      </div>
+      <div class="step-item" id="stepIndicator3" onclick="goToStep(3)" title="Go to Facts & Vision">
+        <div class="step-badge">3</div>
+        <div class="step-label">Vision & Facts</div>
+      </div>
+      <div class="step-item" id="stepIndicator4" onclick="goToStep(4)" title="Review & Pre-Check SLA">
+        <div class="step-badge">4</div>
+        <div class="step-label">Resolution SLA</div>
+      </div>
+    </div>
+
+    <!-- Tab 1: Submit Form -->
+    <div id="submitSection">
+      <form id="complaintForm" onsubmit="handleComplaintSubmit(event)">
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-user-tag" style="color:#d4d9aa; font-size:0.85rem;"></i> <span>Full Name *</span></label>
+            <input type="text" name="customer_name" id="formCustomerName" class="form-control" required placeholder="e.g. John Smith" value="{{ current_user.display_name if current_user else 'John Smith' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-envelope" style="color:#d4d9aa; font-size:0.85rem;"></i> <span>Email Address *</span></label>
+            <input type="email" name="customer_email" id="formCustomerEmail" class="form-control" required placeholder="e.g. john.smith@example.com" value="{{ current_user.email if current_user else 'johnsmith@samplemail.com' }}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-phone" style="color:#d4d9aa; font-size:0.85rem;"></i> <span>Contact Phone Number</span></label>
+            <input type="text" name="customer_phone" id="formCustomerPhone" class="form-control" placeholder="e.g. +1 98567 45956" value="{{ current_user.phone if current_user and current_user.phone else '+1 98567 45956' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-crown" style="color:#f59e0b; font-size:0.85rem;"></i> <span>Customer Account Tier</span></label>
+            <select name="customer_type" id="customerTierSelect" class="form-control" onchange="triggerAiPreCheck()">
+              <option value="Standard">Standard Retail Member</option>
+              <option value="Premium">NovaTech Plus Gold Member</option>
+              <option value="VIP">Titanium VIP Executive</option>
+              <option value="Corporate">Commercial B2B Enterprise</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 50 Products Selection / Catalog Autocomplete -->
+        <div class="form-group">
+          <label class="form-label">
+            <span>Select Registered Hardware / Software Product (50 Official Product IDs) *</span>
+            <span style="font-size: 0.76rem; color: var(--primary); font-weight: 800;">Includes Active Warranty Lookup</span>
+          </label>
+          <select id="productSelectDropdown" name="product_or_service" class="form-control" onchange="onProductSelectChange(event)" required>
+            <option value="">-- Choose from 50 Official NovaTech Products or Type Below --</option>
+          </select>
+          
+          <!-- Rich Live Product Preview Card -->
+          <div id="selectedProductBadge" class="product-preview-card" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-laptop-code" id="badgeCategoryIcon"></i>
+              </div>
+              <div>
+                <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-heading);" id="badgeProductName">NovaBook Pro 16</div>
+                <div style="font-size: 0.8rem; color: var(--primary); margin-top: 2px;">
+                  Model ID: <span id="badgeProductId" style="font-family: 'JetBrains Mono', monospace; font-weight: 700;">PRD-1001</span> | 
+                  Category: <span id="badgeProductCategory" style="font-weight: 600;">Laptops</span>
+                </div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge badge-success" style="font-size: 0.82rem; padding: 6px 14px;">
+                <i class="fa-solid fa-shield-check"></i> Warranty: <span id="badgeProductWarranty">24 Months</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span>Order Reference #</span></label>
+            <input type="text" name="order_reference" class="form-control" placeholder="e.g. ORD-89421" value="ORD-84920">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span>Preferred Contact Channel</span></label>
+            <select name="preferred_channel" class="form-control">
+              <option value="Web Form">Web Portal / Online Form</option>
+              <option value="Email">Email Official Notification</option>
+              <option value="Phone">Phone Support Call</option>
+              <option value="Chat">Live Agent Chat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><span>Complaint Title / Summary *</span></label>
+          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" required placeholder="Brief summary of your grievance..." value="Display screen cracked and battery swelling on arrival" oninput="triggerAiPreCheck()">
+        </div>
+
+        <!-- Description with Voice Dictation Button -->
+        <div class="form-group">
+          <div class="form-label">
+            <span>Detailed Description of Incident / Grievance *</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" class="pill-tab" id="voiceMicBtn" onclick="toggleVoiceDictation()" style="padding: 4px 12px; font-size: 0.78rem; font-weight: 800;">
+                <i class="fa-solid fa-microphone"></i> <span id="voiceMicText">Voice Dictation</span>
+              </button>
+              <span id="charCountLabel" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">228 chars</span>
+            </div>
+          </div>
+          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required placeholder="Please provide all relevant facts, dates, serial numbers, and requested resolution..." oninput="updateCharCount(this); triggerAiPreCheck()">I received my order ORD-84920 yesterday. When unboxing the unit, I noticed the glass display screen was cracked across the center, and the battery pack is noticeably warm and bulging along the lower seam. I request an urgent replacement or refund.</textarea>
+        </div>
+
+        <!-- Multimodal AI Vision & Photo Forensic Dropzone -->
+        <div class="form-group">
+          <label class="form-label">
+            <span><i class="fa-solid fa-camera"></i> Multimodal Vision Evidence / Hardware Damage Photo</span>
+            <span style="font-size: 0.76rem; color: var(--cream); font-weight: 700;">Gemini 1.5 Vision Auto-Inspect</span>
+          </label>
+          <div class="file-dropzone sn-scan-line-wrap" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" class="form-control" style="display: none;" onchange="handleVisionImageUpload(this)">
+            <div class="sn-scan-line" id="visionScanLine" style="display: none;"></div>
+            <i class="fa-solid fa-camera-retro" style="font-size: 2.2rem; color: var(--cream); margin-bottom: 8px;"></i>
+            <div style="font-weight: 600; color: var(--text-heading); font-size: 1rem;" id="dropzoneText">Click to Upload Hardware Damage Photo or Receipt</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">AI automatically detects display fractures, battery swelling, burn marks & extracts serial numbers</div>
+          </div>
+
+          <!-- Multimodal Vision Analysis Preview Card -->
+          <div id="visionAnalysisBox" class="cream-highlight-card sn-floating-cream-card" style="display: none; padding: 22px; margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(16, 16, 16, 0.15); padding-bottom: 10px; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink); font-size: 0.95rem;">
+                <i class="fa-solid fa-eye"></i> Multimodal AI Forensic Scan Result
+              </div>
+              <span class="badge badge-danger" id="visionSeverityBadge">P0 Safety Critical</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.88rem; color: var(--ink);">
+              <div><strong>Detected Defect:</strong> <span id="visionDefectType" style="color: #991b1b; font-weight: 700;">-</span></div>
+              <div><strong>AI Confidence:</strong> <span id="visionConfidence" style="color: #065f46; font-weight: 700;">99.2%</span></div>
+              <div><strong>OCR Serial Number:</strong> <span id="visionSerial" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #1e1b4b;">-</span></div>
+              <div><strong>Warranty Policy Impact:</strong> <span id="visionWarrantyImpact">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⚠️¡ Live AI SLA & Eligibility Pre-Check Result Card -->
+        <div id="aiPreCheckBox" class="cream-highlight-card sn-floating-cream-card" style="display: none; padding: 18px 24px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="color: var(--ink); font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-bolt"></i> Live AI SLA & Coverage Estimation:
+            </strong>
+            <span id="preCheckCategoryBadge" class="badge badge-primary">Product Defect</span>
+          </div>
+          <div style="display: flex; gap: 24px; font-size: 0.86rem; color: var(--ink); flex-wrap: wrap;">
+            <div>Predicted SLA: <strong id="preCheckSla" style="color: #065f46;">2 Hours</strong></div>
+            <div>Refund Eligibility: <strong id="preCheckRefund">Eligible</strong></div>
+            <div>Customer Frustration Heat: <strong id="preCheckFrustration" style="color: #991b1b;">78% (High)</strong></div>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitFormBtn">
+          <i class="fa-solid fa-paper-plane"></i> Submit Official Complaint to Support Operations
+        </button>
+      </form>
+
+      <!-- Success Confirmation Box -->
+      <div id="submissionSuccessBox" class="cream-highlight-card sn-floating-cream-card" style="display: none; padding: 38px; margin-top: 28px; text-align: center;">
+        <i class="fa-solid fa-circle-check" style="font-size: 3.5rem; color: #047857; margin-bottom: 14px;"></i>
+        <h3 style="color: var(--ink); font-size: 1.7rem; font-weight: 400; font-family: var(--font-serif);">Complaint Successfully Registered</h3>
+        <p style="color: #1f2937; margin-top: 8px; font-size: 1.05rem;">Your official ticket reference number is: <strong id="registeredComplaintId" style="font-size: 1.35rem; color: var(--ink); letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.06); padding: 4px 14px; border-radius: 8px;">-</strong></p>
+        <p style="color: #374151; font-size: 0.92rem; margin-top: 8px;">Our specialized engineering support team has received your query and will process your case under corporate SLA guidelines.</p>
+        <div style="display: flex; justify-content: center; gap: 14px; margin-top: 24px;">
+          <button class="nav-pill-dark" style="padding: 12px 30px; font-weight: 600; font-size: 0.95rem;" onclick="copyAndTrack()">
+            Track Your Ticket Now &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: My Live Complaints -->
+    <div id="myComplaintsSection" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+        <div>
+          <h3 style="font-size: 1.35rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">My Submitted Complaints History</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Track the real-time review status, AI triage assessment, and resolution for your grievances.</div>
+        </div>
+        <button class="pill-tab" onclick="loadMyComplaints()" style="padding: 8px 18px; font-size: 0.84rem; font-weight: 800;">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+      </div>
+
+      <div class="table-container" style="box-shadow: none; border-radius: var(--radius-md);">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ticket Ref</th>
+              <th>Product</th>
+              <th>Complaint Title</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Submitted At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="myComplaintsTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin"></i> Fetching your submitted complaints...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Track Ticket -->
+    <div id="trackSection" style="display: none;">
+      <div style="display: flex; gap: 14px; margin-bottom: 30px;">
+        <input type="text" id="trackInput" class="form-control" placeholder="Enter Ticket Reference ID (e.g. CMP-00001)" style="flex-grow: 1; font-size: 1rem; font-family: 'JetBrains Mono', monospace; font-weight: 700;">
+        <button class="pill-tab active" style="padding: 0 36px; font-weight: 800; font-size: 0.95rem;" onclick="trackTicket()">
+          <i class="fa-solid fa-magnifying-glass" style="margin-right: 8px;"></i> Track Ticket
+        </button>
+      </div>
+
+      <div id="trackResultBox" style="display: none; border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 36px; background: var(--glass-bg); box-shadow: var(--glass-shadow-hover); backdrop-filter: var(--glass-blur);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--glass-border-subtle); padding-bottom: 22px; margin-bottom: 26px;">
+          <div>
+            <h3 id="trackTitle" style="color: var(--text-heading); font-size: 1.5rem; font-weight: 900;">-</h3>
+            <div id="trackSub" style="color: var(--text-muted); font-size: 0.88rem; margin-top: 6px;">-</div>
+          </div>
+          <span id="trackStatusBadge" class="badge badge-primary" style="font-size: 0.92rem; padding: 8px 22px;">Under Review</span>
+        </div>
+
+        <!-- Official Status Timeline -->
+        <div style="margin-bottom: 32px;">
+          <div class="timeline-step">
+            <div class="timeline-icon completed"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <div style="font-weight: 800; font-size: 0.98rem; color: var(--text-heading);">1. Complaint Received & Intake Registered</div>
+              <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;" id="trackTimeSubmitted">Registered in Support Operations Queue</div>
+            </div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-icon completed"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <div style="font-weight: 800; font-size: 0.98rem; color: var(--text-heading);">2. Dual-Pipeline Triage & Department Routing</div>
+              <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;">Assigned to: <strong id="trackAssignedDept" style="color: var(--primary);">Customer Care Operations</strong></div>
+            </div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-icon active-pulse" id="timelineStep3"><i class="fa-solid fa-clock"></i></div>
+            <div>
+              <div style="font-weight: 800; font-size: 0.98rem; color: var(--text-heading);">3. Investigation & Official Resolution</div>
+              <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;" id="trackOfficialResponse">Reviewing against company policy guidelines.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--glass-bg-subtle); border-radius: var(--radius-md); padding: 24px; border: 1px solid var(--glass-border);">
+          <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Official Communication from NovaTech Support Operations:
+          </div>
+          <p id="trackCustomerMessage" style="font-size: 0.96rem; color: var(--text-body); white-space: pre-wrap; line-height: 1.65;"></p>
+        </div>
+
+        <!-- Satisfaction Rating Widget -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-heading);">How satisfied are you with this resolution update?</div>
+          <div style="display: flex; gap: 8px;" id="ratingStars">
+            <button class="icon-glass-btn" onclick="rateSatisfaction(1)">★</button>
+            <button class="icon-glass-btn" onclick="rateSatisfaction(2)">★</button>
+            <button class="icon-glass-btn" onclick="rateSatisfaction(3)">★</button>
+            <button class="icon-glass-btn" onclick="rateSatisfaction(4)">★</button>
+            <button class="icon-glass-btn" onclick="rateSatisfaction(5)">★</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="chatSection" style="display: none; margin-top: 24px;">
+      <div style="background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; height: 560px;">
+        <div style="padding: 16px 24px; background: linear-gradient(135deg, rgba(238, 240, 208, 0.15), rgba(37,211,102,0.1)); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <img id="custChatOfficerImg" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=160&auto=format&fit=crop&q=80" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #25d366;">
+            <div>
+              <div style="font-weight: 800; font-size: 0.98rem; color: var(--text-heading);" id="custChatOfficerName">Rayyan Ahmed Khan</div>
+              <div style="font-size: 0.72rem; color: #059669; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #25d366; box-shadow: 0 0 8px #25d366;"></span>
+                <span>Super Admin &amp; Operations Director &bull; Online</span>
+              </div>
+            </div>
+          </div>
+          <button class="call-btn" onclick="startClientVoiceCall()" style="background: linear-gradient(135deg, #25d366, #128c7e); border: none; padding: 9px 22px; border-radius: 9999px; font-weight: 800; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37,211,102,0.4);" title="Start Internet Voice Call">
+            <i class="fa-solid fa-phone"></i> Voice Call Admin
+          </button>
+        </div>
+
+        <div id="custChatMsgBox" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.02);">
+          <div style="align-self: center; font-size: 0.72rem; color: var(--text-muted); background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); padding: 4px 14px; border-radius: 9999px;">
+            Encrypted Channel with Support Team
+          </div>
+        </div>
+
+        <div style="padding: 12px 18px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; align-items: center; background: var(--glass-bg);">
+          <input type="file" id="custChatFileInput" style="display: none;" onchange="uploadCustChatFile(this)">
+          <button type="button" onclick="document.getElementById('custChatFileInput').click()" title="Attach File or Image" style="width: 42px; height: 42px; border-radius: 50%; background: var(--glass-bg-hover); border: 1px solid var(--glass-border); color: var(--text-heading); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+            <i class="fa-solid fa-paperclip"></i>
+          </button>
+          <input type="text" id="custChatInput" placeholder="Type a message or attach photo/file... (Enter to Send)"
+            onkeydown="if(event.key==='Enter'){sendCustChatMessage();}"
+            style="flex: 1; background: var(--glass-input-bg); border: 1px solid var(--glass-border); border-radius: 9999px; padding: 12px 20px; color: var(--text-heading); font-size: 0.9rem; outline: none; font-family: inherit;">
+          <button onclick="sendCustChatMessage()" style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #25d366, #128c7e); border: none; color: #fff; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(37,211,102,0.4);">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="snVoiceCallBackdrop" class="sn-call-backdrop" style="display: none;">
+    <div class="sn-call-card">
+      <div class="sn-call-topbar">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>WhatsApp Voice Call</span>
+      </div>
+
+      <div class="sn-call-body">
+        <div class="sn-call-avatar-wrap">
+          <img id="snCallAvatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=180&auto=format&fit=crop&q=80" class="sn-call-avatar" alt="Officer Avatar">
+          <div class="sn-call-avatar-pulse"></div>
+          <div class="sn-call-wa-badge"><i class="fa-brands fa-whatsapp"></i></div>
+        </div>
+
+        <div id="snCallName" class="sn-call-name">Rayyan Ahmed Khan</div>
+        <div id="snCallSub" class="sn-call-sub">Super Admin &amp; CEO</div>
+
+        <div id="snCallStatus" class="sn-call-status">
+          <span style="width: 10px; height: 10px; background: #25d366; border-radius: 50%; display: inline-block; animation: pulse 1s infinite;"></span>
+          <span id="snCallStatusText">CALLING...</span>
+        </div>
+
+        <div class="sn-call-arrows" id="snCallArrows">
+          <i class="fa-solid fa-chevron-up sn-call-arrow"></i>
+          <i class="fa-solid fa-chevron-up sn-call-arrow"></i>
+          <i class="fa-solid fa-chevron-up sn-call-arrow"></i>
+        </div>
+      </div>
+
+      <div class="sn-call-actions" id="snCallActionRow">
+        <button class="sn-call-btn-circle sn-call-btn-opt" onclick="toggleMuteCall(this)" title="Mute Mic">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <button class="sn-call-btn-circle sn-call-btn-decline" onclick="endCurrentCall()" title="End Call">
+          <i class="fa-solid fa-phone-slash"></i>
+        </button>
+        <button class="sn-call-btn-circle sn-call-btn-opt" onclick="toggleSpeakerCall(this)" title="Speaker On">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Profile & Set Password Modal -->
+  <div id="customerProfileModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+    <div style="background: var(--glass-bg); backdrop-filter: blur(40px); width: 92%; max-width: 480px; border-radius: var(--radius-xl); border: 1px solid var(--glass-border); padding: 36px; box-shadow: var(--glass-shadow-hover); position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border-subtle); padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-user-shield" style="color: var(--primary); font-size: 1.3rem;"></i>
+          <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">Profile & Password Settings</h3>
+        </div>
+        <button onclick="closeCustomerProfileModal()" class="icon-glass-btn" style="font-size: 1.2rem;">&times;</button>
+      </div>
+
+      <form id="customerProfileForm" onsubmit="handleCustomerProfileSave(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="custModalName" class="form-control" value="{{ current_user.display_name if current_user else '' }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Custom Username</label>
+          <input type="text" id="custModalUsername" class="form-control" value="{{ current_user.username if current_user else '' }}" required placeholder="e.g. johnsmith">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span>Set / Update Password</span>
+            <span style="font-size: 0.72rem; color: var(--primary);"> (For Google or Direct login)</span>
+          </label>
+          <input type="password" id="custModalPassword" class="form-control" placeholder="Enter new password">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" id="custModalPhone" class="form-control" value="{{ current_user.phone if current_user and current_user.phone else '' }}" placeholder="+1 98567 45956">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;">
+          <button type="button" class="pill-tab" onclick="closeCustomerProfileModal()">Cancel</button>
+          <button type="submit" class="submit-btn" style="padding: 10px 24px; font-weight: 800;" id="custProfileSaveBtn">
+            <i class="fa-solid fa-floppy-disk"></i> Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Guest / Demo Auth Modal -->
+  <div id="googleAuthModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+    <div style="background: var(--glass-bg); backdrop-filter: blur(40px); width: 92%; max-width: 440px; border-radius: var(--radius-xl); border: 1px solid var(--glass-border); padding: 36px; box-shadow: var(--glass-shadow-hover); text-align: center; position: relative;">
+      
+      <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(238, 240, 208, 0.15); border: 1px solid rgba(238, 240, 208, 0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 4px 18px rgba(238, 240, 208, 0.2);">
+        <i class="fa-solid fa-bolt" style="color: var(--cream, #eef0d0); font-size: 1.6rem;"></i>
+      </div>
+      
+      <h3 style="font-size: 1.35rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">Quick Guest Access</h3>
+      <p style="font-size: 0.86rem; color: var(--text-muted); margin-top: 4px; margin-bottom: 22px;">Enter your email to instantly access NovaTech Customer Portal</p>
+
+      <div class="form-group" style="text-align: left; margin-bottom: 14px;">
+        <label class="form-label">Email Address *</label>
+        <input type="email" id="custGoogleEmailInput" class="form-control" placeholder="e.g. guest@supportnova.io" required>
+      </div>
+      <div class="form-group" style="text-align: left; margin-bottom: 22px;">
+        <label class="form-label">Full Name *</label>
+        <input type="text" id="custGoogleNameInput" class="form-control" placeholder="e.g. John Smith" required>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="pill-tab" style="flex: 1; padding: 12px; font-weight: 700;" onclick="closeCustomerGoogleModal()">Cancel</button>
+        <button type="button" class="submit-auth-btn" style="flex: 1.5; margin-top: 0;" onclick="submitCustomerDirectGoogleAuth()">
+          <i class="fa-solid fa-arrow-right"></i> Enter Portal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/call-widget.js?v=5.0"></script>
+  <script src="/static/js/customer.js?v=5.0"></script>
+  <script src="/static/js/chatbot.js?v=5.0"></script>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       ULTRA-HIGH GRAPHICS INTERACTIVE ENGINE (Cyber Constellation & 3D Tilt)
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <script>
+    (function initUltraGraphics() {
+      // 1. Interactive Cyber Constellation Canvas in Hero
+      const canvas = document.getElementById('cyberConstellationCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = canvas.parentElement.offsetWidth;
+        let height = canvas.height = canvas.parentElement.offsetHeight;
+        let mouse = { x: width / 2, y: height / 2, active: false };
+
+        const particles = [];
+        const count = Math.min(Math.floor(width / 24), 45);
+
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.7,
+            vy: (Math.random() - 0.5) * 0.7,
+            radius: Math.random() * 2.2 + 1,
+            color: i % 3 === 0 ? 'rgba(238, 240, 208,' : (i % 3 === 1 ? 'rgba(245, 158, 11,' : 'rgba(255, 255, 255,')
+          });
+        }
+
+        window.addEventListener('resize', () => {
+          if (!canvas.parentElement) return;
+          width = canvas.width = canvas.parentElement.offsetWidth;
+          height = canvas.height = canvas.parentElement.offsetHeight;
+        });
+
+        canvas.parentElement.addEventListener('mousemove', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          mouse.x = e.clientX - rect.left;
+          mouse.y = e.clientY - rect.top;
+          mouse.active = true;
+        });
+
+        canvas.parentElement.addEventListener('mouseleave', () => {
+          mouse.active = false;
+        });
+
+        function renderConstellation() {
+          ctx.clearRect(0, 0, width, height);
+
+          for (let i = 0; i < particles.length; i++) {
+            const p1 = particles[i];
+
+            if (mouse.active) {
+              const dx = mouse.x - p1.x;
+              const dy = mouse.y - p1.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < 140) {
+                const force = (140 - dist) / 140;
+                p1.x -= (dx / dist) * force * 1.6;
+                p1.y -= (dy / dist) * force * 1.6;
+              }
+            }
+
+            p1.x += p1.vx;
+            p1.y += p1.vy;
+
+            if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+            if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p1.color + '0.8)';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = p1.color + '0.9)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            for (let j = i + 1; j < particles.length; j++) {
+              const p2 = particles[j];
+              const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+              if (dist < 120) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                const alpha = (1 - dist / 120) * 0.35;
+                ctx.strokeStyle = `rgba(238, 240, 208, ${alpha})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+              }
+            }
+          }
+          requestAnimationFrame(renderConstellation);
+        }
+        renderConstellation();
+      }
+
+      // 2. Interactive 3D Card Tilt on Hover
+      const tiltCards = document.querySelectorAll('.hero-stat-pill, .product-preview-card, .portal-container');
+      tiltCards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -5;
+          const rotateY = ((x - centerX) / centerX) * 5;
+          card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.01, 1.01, 1.01)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+      });
+    })();
+
+    // Portal Theme Switcher
+    function initPortalTheme() {
+      const saved = localStorage.getItem("supportnova_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
+      updatePortalThemeIcon(saved);
+    }
+
+    function togglePortalTheme() {
+      const current = document.documentElement.getAttribute("data-theme") || "dark";
+      const next = current === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("supportnova_theme", next);
+      updatePortalThemeIcon(next);
+      if (typeof showToast === 'function') {
+        showToast(`Theme switched to ${next === 'dark' ? 'Obsidian Cyber Glass' : 'Crystal Light Glass'}`, 'info');
+      }
+    }
+
+    function updatePortalThemeIcon(theme) {
+      const btn = document.getElementById("portalThemeToggleBtn");
+      if (btn) {
+        btn.innerHTML = theme === "dark" ? '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>' : '<i class="fa-solid fa-moon"></i>';
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      initPortalTheme();
+      var v = document.querySelector('.hero__video');
+      if (v && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        function reveal() { v.classList.add('is-ready'); }
+        if (v.readyState >= 3) reveal();
+        else v.addEventListener('canplay', reveal, { once: true });
+        v.addEventListener('loadeddata', function () {
+          var p = v.play();
+          if (p && p.catch) p.catch(function () {});
+        }, { once: true });
+      }
+    });
+  </script>
+</body>
+</html>
+

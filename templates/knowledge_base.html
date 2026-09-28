@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Base & Policy Versioning - SupportNova{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+  <div>
+    <h1 style="font-size: 1.6rem; color: var(--text-heading); font-weight: 900;">Knowledge Base & Policy Repository</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage 20+ Company Policies, SOPs, Version Controls & RAG Traceable Document Chunks</p>
+  </div>
+  <div style="display: flex; gap: 12px;">
+    <button class="pill-tab" style="background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%); color: white; border-color: transparent;" onclick="openPolicyConflictModal()">
+      <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Run Policy Drift & Conflict Auditor (RAG)
+    </button>
+    <button class="pill-tab active" onclick="document.getElementById('uploadPolicyModal').style.display='flex'">
+      <i class="fa-solid fa-cloud-arrow-up" style="margin-right: 6px;"></i> Upload Policy (PDF / DOCX)
+    </button>
+  </div>
+</div>
+
+<!-- Uploaded Policy Documents Cards Grid -->
+<div class="metrics-grid" id="policyCardsGrid">
+  <div class="summary-card">
+    <div class="summary-card-title">Active Company Policies</div>
+    <div class="summary-card-value" id="activePolicyCount" style="color: #10b981;">20 Active</div>
+    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Precedence: High (Active > SOP > FAQ)</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-title">Traceable Chunks Indexed</div>
+    <div class="summary-card-value" id="totalChunksCount" style="color: #3b82f6;">78 Chunks</div>
+    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Extracted via PyMuPDF & python-docx</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-title">Version Control Status</div>
+    <div class="summary-card-value" style="color: var(--cream, #eef0d0);">v2.0 Standard</div>
+    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">1 Superseded Policy Archived</div>
+  </div>
+</div>
+
+<!-- Knowledge Documents List Table -->
+<div class="table-container" style="margin-top: 24px;">
+  <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+    <span>Indexed Knowledge Base Documents (20+ SRS Compliant)</span>
+    <input type="text" id="policyFilterInput" placeholder="Filter policies..." onkeyup="filterPolicyTable()" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+  </div>
+  <table class="data-table" id="knowledgeTable">
+    <thead>
+      <tr>
+        <th>Document ID</th>
+        <th>Document Title</th>
+        <th>Document Type</th>
+        <th>Version</th>
+        <th>Status</th>
+        <th>Precedence Score</th>
+        <th>Chunks</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="knowledgeTableBody">
+      <!-- Populated via JS -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Upload Policy Modal -->
+<div id="uploadPolicyModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(12px);">
+  <div class="modal-dialog-anim sn-modal-dialog-card" style="width: 520px; border-radius: 24px; padding: 32px;">
+    <h3 style="margin-bottom: 18px; font-size: 1.3rem; color: var(--text-heading); font-weight: 800;">Upload New Company Policy / SOP</h3>
+    <form id="uploadPolicyForm" onsubmit="handlePolicyUpload(event)">
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Policy Document File (PDF or DOCX) *</label>
+        <input type="file" name="file" accept=".pdf,.docx,.txt,.md" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9);">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Category *</label>
+        <select name="category" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9);">
+          <option value="Customer Relations">Customer Relations</option>
+          <option value="Refund Request">Refund Request</option>
+          <option value="Delivery & Shipping">Delivery & Shipping</option>
+          <option value="Product Defect">Product Defect</option>
+          <option value="Safety Hazard">Safety Hazard</option>
+          <option value="Account Security">Account Security</option>
+          <option value="Billing & Charges">Billing & Charges</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Version</label>
+        <input type="text" name="version" value="v2.0" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9);">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="pill-tab" onclick="document.getElementById('uploadPolicyModal').style.display='none'">Cancel</button>
+        <button type="submit" class="pill-tab active">Upload & Parse</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Policy Document Inspection Drawer / Modal -->
+<div id="policyInspectModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(14px);">
+  <div class="modal-dialog-anim triage-modal-dialog" style="width: 88%; max-width: 980px; max-height: 88vh; border-radius: 24px; overflow-y: auto; padding: 32px; position: relative;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 16px; margin-bottom: 20px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <h2 style="font-size: 1.4rem; color: var(--text-heading); font-weight: 800;" id="inspectDocTitle">Policy Document Inspection</h2>
+          <span class="badge badge-success" id="inspectDocStatus">Active</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;" id="inspectDocSubtitle">Document ID: POL-WAR-07 | Version: v2.0</div>
+      </div>
+      <button onclick="closePolicyInspectModal()" class="icon-glass-btn" style="font-size: 1.2rem;">&times;</button>
+    </div>
+
+    <!-- Metadata Card -->
+    <div class="triage-subcard" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 18px; margin-bottom: 24px;">
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Category</div>
+        <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-heading); margin-top: 2px;" id="inspectDocCategory">Warranty & Repairs</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Precedence Score</div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary); margin-top: 2px;" id="inspectDocPrecedence">100 (Highest)</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Indexed Chunks</div>
+        <div style="font-size: 0.95rem; font-weight: 700; color: #10b981; margin-top: 2px;" id="inspectDocChunkCount">3 Traceable Chunks</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">File Format</div>
+        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;" id="inspectDocFilename">policy_war_07.pdf</div>
+      </div>
+    </div>
+
+    <!-- Indexed Chunks Section -->
+    <div style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="font-size: 1.1rem; color: var(--text-heading); font-weight: 800;">Traceable Document Chunks & Rule Clauses</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Deterministic Ground-Truth Grounding</span>
+      </div>
+      
+      <div id="inspectChunksList" style="display: flex; flex-direction: column; gap: 14px; max-height: 400px; overflow-y: auto; padding-right: 6px;">
+        <!-- Dynamic chunk cards inserted here -->
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--glass-border); padding-top: 18px;">
+      <button type="button" class="pill-tab active" style="padding: 10px 26px; font-weight: 700;" onclick="closePolicyInspectModal()">Done</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Policy Drift & Rule Contradiction Auditor Modal (RAG Auto-Auditor) -->
+<div id="policyConflictModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+  <div class="modal-dialog-anim sn-modal-dialog-card" style="width: 92%; max-width: 1050px; max-height: 90vh; border-radius: var(--radius-xl); overflow-y: auto; padding: 36px; position: relative;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border-subtle); padding-bottom: 18px; margin-bottom: 22px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h2 style="font-size: 1.5rem; color: var(--text-heading); font-weight: 900;">RAG Policy Drift & Rule Contradiction Auditor</h2>
+          <span class="badge badge-danger">3 Contradictions Detected</span>
+        </div>
+        <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Automated Cross-Clause Verification against 105+ Ground-Truth Rule Matrix</div>
+      </div>
+      <button onclick="document.getElementById('policyConflictModal').style.display='none'" class="icon-glass-btn" style="font-size: 1.2rem;">&times;</button>
+    </div>
+
+    <!-- Governance Summary -->
+    <div style="display: flex; gap: 20px; background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 24px; justify-content: space-between; flex-wrap: wrap;">
+      <div>Policies Evaluated: <strong>12 Active SOPs</strong></div>
+      <div>Chunks Evaluated: <strong>154 Traceable Chunks</strong></div>
+      <div>Governance Health Score: <strong style="color: #10b981;">96.4% Compliance</strong></div>
+      <div>Conflict Resolution Mode: <strong style="color: var(--primary);">Deterministic Precedence</strong></div>
+    </div>
+
+    <!-- Conflict Cards List -->
+    <div id="policyConflictsList" style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</div>
+{% endblock %}
+

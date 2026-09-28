@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SupportNova - ResponseX Intelligence{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=8.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    (function() {
+      let saved = localStorage.getItem("supportnova_theme") || localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+</head>
+<body>
+  <!-- TemplateMo 3D Glassmorphism Background & Floating Luxury Orbs -->
+  <div class="background"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Global Background Watermark Layer (SupportNova Brand Seal) -->
+  <div class="global-brand-watermark" aria-hidden="true"></div>
+
+  <!-- Floating Live Toast Notifications Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Universal Command Palette Modal (Cmd + K / Ctrl + K) -->
+  <div id="commandPaletteModal" class="command-palette-backdrop" style="display: none;" onclick="closeCommandPalette(event)">
+    <div class="command-palette-modal" onclick="event.stopPropagation()">
+      <div class="command-palette-search">
+        <i class="fa-solid fa-magnifying-glass" style="color: var(--primary); font-size: 1.2rem;"></i>
+        <input type="text" id="commandInput" placeholder="Type a command, ticket ID, or policy name..." oninput="handleCommandSearch(this.value)">
+        <span style="font-size: 0.75rem; background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); padding: 3px 8px; border-radius: 6px; color: var(--text-muted); font-family: monospace;">ESC</span>
+      </div>
+      <div class="command-palette-results" id="commandResults">
+        <div class="command-item" onclick="navigateCommand('/admin')">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-table-cells-large" style="color: var(--ink, #101010);"></i>
+            <span>All Complaints Queue (520+ Grievances)</span>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Jump &rarr;</span>
+        </div>
+        <div class="command-item" onclick="navigateCommand('/communication')">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-comments" style="color: var(--ink, #101010);"></i>
+            <span>Customer Omnichannel Communication Hub</span>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Jump &rarr;</span>
+        </div>
+        <div class="command-item" onclick="navigateCommand('/refunds')">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-hand-holding-dollar" style="color: var(--ink, #101010);"></i>
+            <span>Refund & Escrow Treasury Ledger</span>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Jump &rarr;</span>
+        </div>
+        <div class="command-item" onclick="navigateCommand('/knowledge')">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-book-bookmark" style="color: var(--ink, #101010);"></i>
+            <span>Knowledge Base & Policy Repository</span>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Jump &rarr;</span>
+        </div>
+        <div class="command-item" onclick="toggleTheme()">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-circle-half-stroke" style="color: #c026d3;"></i>
+            <span>Toggle Crystal Dark / Light Glass Mode</span>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Action</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Transparent Glass Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header" style="padding: 22px 18px 20px 18px; border-bottom: 1px solid var(--glass-border);">
+        <div class="brand-title" style="display: flex; align-items: center; gap: 12px;">
+          <div class="logo" style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--emerald), var(--gold)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; color: #fff; box-shadow: 0 8px 32px rgba(5, 150, 105, 0.35); flex-shrink: 0;">
+            <i class="fa-solid fa-shield-halved" style="color: #ffffff; font-size: 1.25rem;"></i>
+          </div>
+          <div>
+            <div class="logo-text" style="font-weight: 700; font-size: 1.25rem; font-family: 'Outfit', sans-serif; letter-spacing: -0.3px; line-height: 1.15;">SupportNova</div>
+            <div class="brand-subtitle" style="font-size: 0.65rem; color: var(--emerald-light); font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 3px;">ResponseX Intelligence</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/admin" class="nav-item {% if request.url.path == '/admin' and not request.query_params.get('view') %}active{% endif %}">
+          <i class="fa-solid fa-shield-halved icon"></i>
+          <span>Super Admin Operations</span>
+        </a>
+        <a href="/agent" class="nav-item {% if request.url.path == '/agent' %}active{% endif %}">
+          <i class="fa-solid fa-microchip icon"></i>
+          <span>Agent Triage Desk</span>
+        </a>
+        <a href="/warranty" class="nav-item {% if request.url.path == '/warranty' or (request.url.path == '/admin' and request.query_params.get('view') == 'refunds') %}active{% endif %}">
+          <i class="fa-solid fa-scale-balanced icon"></i>
+          <span>Warranty & Refund Desk</span>
+        </a>
+        <a href="/communication" class="nav-item {% if request.url.path == '/communication' or (request.url.path == '/admin' and request.query_params.get('view') == 'communication') %}active{% endif %}">
+          <i class="fa-brands fa-whatsapp icon"></i>
+          <span>Live WhatsApp Hub</span>
+        </a>
+        <a href="/analytics" class="nav-item {% if request.url.path == '/analytics' %}active{% endif %}">
+          <i class="fa-solid fa-chart-line icon"></i>
+          <span>Financial & SLA Tracking</span>
+        </a>
+        <a href="/knowledge" class="nav-item {% if request.url.path == '/knowledge' %}active{% endif %}">
+          <i class="fa-solid fa-book-bookmark icon"></i>
+          <span>Knowledge & Policies</span>
+        </a>
+        <a href="/rules" class="nav-item {% if request.url.path == '/rules' %}active{% endif %}">
+          <i class="fa-solid fa-network-wired icon"></i>
+          <span>Rules Matrix (105+)</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="openAdminUsersModal()">
+          <i class="fa-solid fa-users-gear icon"></i>
+          <span>Users & RBAC Roles</span>
+        </a>
+        <a href="/" target="_blank" class="nav-item" style="margin-top: auto; border-top: 1px solid var(--glass-border-subtle); padding-top: 16px;">
+          <i class="fa-solid fa-arrow-up-right-from-square icon"></i>
+          <span>Public Customer View</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+      <!-- Transparent Glass Top Navbar -->
+      <header class="topbar">
+        <div class="search-pill-container" onclick="openCommandPalette()">
+          <i class="fa-solid fa-magnifying-glass" style="color: var(--primary); font-size: 0.88rem;"></i>
+          <input type="text" id="globalSearchInput" class="search-input" placeholder="Search ticket, product, rule... (Press Cmd + K)" readonly>
+          <span style="font-size: 0.72rem; font-family: monospace; background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); padding: 2px 7px; border-radius: 6px; color: var(--text-muted);">Ctrl + K</span>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Real-time Live Connection Pill -->
+          <div id="liveStreamPill" style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 800; color: #059669; background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 9999px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
+            <span id="liveStatusText">Live Feed Active</span>
+          </div>
+
+          <div class="live-rec-badge" style="display: none;">
+            <i class="fa-solid fa-circle" style="font-size: 0.55rem; animation: pulse 1.5s infinite;"></i>
+            <span>Call Active 00:00</span>
+          </div>
+
+          <!-- Staff Online / Offline Presence Toggle Button -->
+          <button class="pill-tab" id="staffPresenceToggleBtn" onclick="toggleStaffPresence()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(16, 185, 129, 0.4); color: #059669; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; gap: 6px;" title="Toggle your online availability for customer internet calls">
+            <span id="staffPresenceDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
+            <span id="staffPresenceText">Staff Online</span>
+          </button>
+
+          <!-- Dark / Light Theme Toggle -->
+          <button class="icon-glass-btn" onclick="toggleTheme()" title="Toggle Crystal Dark / Light Glass Mode" id="themeToggleBtn">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+
+          <!-- Audio Sound Effects Toggle -->
+          <button class="icon-glass-btn" onclick="toggleSound()" title="Toggle Audio SoundFX" id="soundToggleBtn">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+
+          <button class="call-btn" id="callSimBtn" onclick="toggleCallSimulation()">
+            <i class="fa-solid fa-phone"></i>
+            <span id="callBtnText">On Call</span>
+          </button>
+
+          <div style="position: relative;">
+            <button class="pill-tab" onclick="toggleRoleSwitchMenu()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(238, 240, 208, 0.4); display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-arrows-rotate" style="color: var(--primary);"></i> Switch Staff Role
+            </button>
+            <div id="roleSwitchMenu" style="display: none; position: absolute; right: 0; top: 120%; background: var(--glass-bg); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 8px; box-shadow: var(--glass-shadow-hover); width: 280px; z-index: 100;">
+              <div onclick="quickSwitchStaffRole('admin')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; transition: var(--transition);" onmouseover="this.style.background='var(--glass-bg-hover)'" onmouseout="this.style.background='transparent'">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading);">Rayyan Ahmed Khan</div>
+                  <div style="font-size: 0.72rem; color: var(--primary); font-weight: 700;">Super Admin (Operations Director)</div>
+                </div>
+              </div>
+              <div onclick="quickSwitchStaffRole('agent')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; transition: var(--transition);" onmouseover="this.style.background='var(--glass-bg-hover)'" onmouseout="this.style.background='transparent'">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading);">Marcus Chen</div>
+                  <div style="font-size: 0.72rem; color: var(--cream, #eef0d0); font-weight: 700;">Lead Triage Specialist (Agent)</div>
+                </div>
+              </div>
+              <div onclick="quickSwitchStaffRole('warranty_manager')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; transition: var(--transition);" onmouseover="this.style.background='var(--glass-bg-hover)'" onmouseout="this.style.background='transparent'">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading);">Sarah Jenkins</div>
+                  <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">Warranty & Refund Manager</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="user-profile-pill" onclick="openProfileSettingsModal()" style="cursor: pointer;" title="Click to Edit Profile & Credentials">
+            <img src="{{ (current_user.avatar if current_user and current_user.avatar else 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80') }}" alt="User Avatar" class="avatar-img" id="topbarAvatarImg">
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-heading);" id="topbarUserName">
+                {{ current_user.display_name if current_user and current_user.display_name else 'Rayyan Ahmed Khan' }}
+              </div>
+              <div style="font-size: 0.7rem; color: #059669; display: flex; align-items: center; gap: 4px; font-weight: 700;">
+                <span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow: 0 0 6px #10b981;"></span>
+                <span>{{ current_user.designation if current_user and current_user.designation else 'Grievance Operations Director & CEO' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="icon-glass-btn" onclick="openProfileSettingsModal()" title="Account & Password Settings">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+
+          <a href="/logout" title="Sign Out" class="icon-glass-btn" style="text-decoration: none; color: #e11d48;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </a>
+        </div>
+      </header>
+
+      <!-- Page Specific Content -->
+      <section class="dashboard-view">
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+
+  <!-- Profile & Credentials Edit Glass Modal -->
+  <div id="profileSettingsModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+    <div class="modal-dialog-anim sn-modal-dialog-card" style="width: 92%; max-width: 500px; border-radius: var(--radius-xl); padding: 36px; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border-subtle); padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-user-pen" style="color: var(--primary); font-size: 1.3rem;"></i>
+          <h3 style="font-size: 1.3rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">Account & Security Settings</h3>
+        </div>
+        <button onclick="closeProfileSettingsModal()" class="icon-glass-btn" style="font-size: 1.2rem;">&times;</button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 22px; background: var(--glass-bg-subtle); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+        <img src="{{ (current_user.avatar if current_user and current_user.avatar else 'https://ui-avatars.com/api/?name=Admin&background=4285F4&color=fff') }}" id="modalPreviewAvatar" style="width: 54px; height: 54px; border-radius: 16px; object-fit: cover; border: 2px solid var(--primary);">
+        <div>
+          <div style="font-weight: 800; font-size: 1rem; color: var(--text-heading);">{{ current_user.display_name if current_user else 'Admin' }}</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">{{ current_user.email if current_user else 'admin@supportnova.io' }}</div>
+          <div style="font-size: 0.72rem; color: var(--cream, #eef0d0); font-weight: 700; margin-top: 2px;">
+            <i class="fa-solid fa-shield-check"></i> Auth Provider: {{ (current_user.auth_provider if current_user else 'Local') | upper }}
+          </div>
+        </div>
+      </div>
+
+      <form id="profileEditForm" onsubmit="handleSaveProfile(event)">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: var(--text-heading);">Display Name</label>
+          <input type="text" id="editDisplayName" class="form-control" value="{{ current_user.display_name if current_user else '' }}" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: var(--text-heading);">Username</label>
+          <input type="text" id="editUsername" class="form-control" value="{{ current_user.username if current_user else '' }}" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: var(--text-heading);">
+            <span>Set / Change Password</span>
+            <span style="font-size: 0.72rem; color: var(--primary);"> (Leave blank to keep unchanged)</span>
+          </label>
+          <input type="password" id="editPassword" class="form-control" placeholder="Enter new password">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: var(--text-heading);">Contact Phone</label>
+          <input type="text" id="editPhone" class="form-control" value="{{ current_user.phone if current_user and current_user.phone else '' }}" placeholder="+1 ...">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label" style="font-size: 0.84rem; font-weight: 700; color: var(--text-heading);">Profile Photo / Avatar URL</label>
+          <input type="url" id="editAvatarUrl" class="form-control" value="{{ current_user.avatar if current_user and current_user.avatar else '' }}" placeholder="https://..." oninput="document.getElementById('modalPreviewAvatar').src = this.value">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="pill-tab" onclick="closeProfileSettingsModal()">Cancel</button>
+          <button type="submit" class="submit-btn" style="padding: 10px 24px; font-size: 0.92rem; font-weight: 800;" id="saveProfileBtn">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dynamic User Management Modal (RBAC) -->
+  <div id="adminUsersModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+    <div class="modal-dialog-anim sn-modal-dialog-card" style="width: 94%; max-width: 960px; max-height: 88vh; border-radius: var(--radius-xl); padding: 36px; overflow-y: auto; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border-subtle); padding-bottom: 18px; margin-bottom: 22px;">
+        <div>
+          <h2 style="font-size: 1.45rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">
+            <i class="fa-solid fa-users-gear" style="color: var(--primary);"></i> Registered Users & RBAC Administration
+          </h2>
+          <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">Manage accounts, promote admin permissions, and inspect complaint histories.</div>
+        </div>
+        <button onclick="closeAdminUsersModal()" class="icon-glass-btn" style="font-size: 1.3rem;">&times;</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Auth Type</th>
+              <th>Complaints</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersTableBody">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin"></i> Loading registered users...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHATSAPP VOICE CALL INCOMING & ACTIVE OVERLAY MODAL (Matching Screenshot) -->
+  <div id="snVoiceCallBackdrop" class="sn-call-backdrop" style="display: none;">
+    <div class="sn-call-card">
+      <div class="sn-call-topbar">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>WhatsApp Voice Call</span>
+      </div>
+
+      <div class="sn-call-body">
+        <div class="sn-call-avatar-wrap">
+          <img id="snCallAvatar" src="https://ui-avatars.com/api/?name=Customer&background=4f46e5&color=fff&size=180" class="sn-call-avatar" alt="Caller Avatar">
+          <div class="sn-call-avatar-pulse"></div>
+          <div class="sn-call-wa-badge"><i class="fa-brands fa-whatsapp"></i></div>
+        </div>
+
+        <div id="snCallName" class="sn-call-name">Valued Client</div>
+        <div id="snCallSub" class="sn-call-sub">Direct Customer Chat Channel</div>
+
+        <div id="snCallStatus" class="sn-call-status">
+          <span style="width: 10px; height: 10px; background: #25d366; border-radius: 50%; display: inline-block; animation: pulse 1s infinite;"></span>
+          <span id="snCallStatusText">INCOMING...</span>
+        </div>
+
+        <div class="sn-call-arrows" id="snCallArrows">
+          <i class="fa-solid fa-chevron-up sn-call-arrow"></i>
+          <i class="fa-solid fa-chevron-up sn-call-arrow"></i>
+          <i class="fa-solid fa-chevron-up sn-call-arrow"></i>
+        </div>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="sn-call-actions" id="snCallActionRow">
+        <button class="sn-call-btn-circle sn-call-btn-decline" onclick="declineIncomingCall()" title="Decline Call">
+          <i class="fa-solid fa-phone-slash"></i>
+        </button>
+
+        <button class="sn-call-btn-circle sn-call-btn-accept" id="snCallAcceptBtn" onclick="acceptIncomingCall()" title="Accept Call">
+          <i class="fa-solid fa-phone"></i>
+        </button>
+
+        <button class="sn-call-btn-circle sn-call-btn-opt" onclick="quickCallMessage()" title="Send Quick Reply">
+          <i class="fa-solid fa-comment-dots"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js?v=5.0"></script>
+  <script src="/static/js/chatbot.js?v=5.0"></script>
+  <script src="/static/js/call-widget.js?v=5.0"></script>
+  <script>
+    (function initTiltEffect() {
+      document.querySelectorAll('.glass-card-3d, .summary-card, .dashboard-card, .customer-hero-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = (y - centerY) / 25;
+          const rotateY = (centerX - x) / 25;
+          card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(8px)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
+

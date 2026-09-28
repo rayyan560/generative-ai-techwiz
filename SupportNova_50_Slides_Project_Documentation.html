@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SupportNova / ResponseX - 50 Slide Executive Master Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #8b5cf6;
+      --accent: #d946ef;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --cyan: #06b6d4;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #180828 70%, #030712 100%);
+      --glass-bg: rgba(255, 255, 255, 0.06);
+      --glass-bg-card: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-border-subtle: rgba(255, 255, 255, 0.08);
+      --text-heading: #ffffff;
+      --text-body: #e2e8f0;
+      --text-muted: #94a3b8;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-gradient); color: var(--text-body); min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+    
+    /* Top Bar */
+    .deck-header {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border-subtle);
+      z-index: 100;
+    }
+    .deck-logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.15rem; color: #fff; letter-spacing: -0.5px; }
+    .deck-logo i { color: #818cf8; font-size: 1.4rem; }
+    .deck-title-center { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+    .deck-controls { display: flex; align-items: center; gap: 12px; }
+    
+    .btn-nav {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      padding: 7px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-nav:hover { background: rgba(99, 102, 241, 0.3); border-color: #818cf8; transform: translateY(-1px); }
+    .btn-nav.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); border-color: transparent; }
+
+    /* Main Deck Stage */
+    .deck-stage {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .slide-wrapper {
+      width: 100%;
+      max-width: 1300px;
+      height: calc(100vh - 160px);
+      max-height: 840px;
+      display: none;
+      opacity: 0;
+      transform: scale(0.96);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide-wrapper.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+    .slide-card {
+      width: 100%;
+      height: 100%;
+      background: var(--glass-bg-card);
+      backdrop-filter: blur(36px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 44px 56px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      overflow-y: auto;
+      position: relative;
+    }
+    
+    /* Slide Sub-Components */
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+    .slide-heading {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .slide-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+      max-width: 950px;
+    }
+    .slide-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex: 1; }
+    .slide-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; flex: 1; }
+    .slide-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex: 1; }
+    
+    .feature-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border-subtle);
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .feature-box:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .feature-box-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+    }
+    .feature-box-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .feature-box-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+    
+    .code-pill {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #38bdf8;
+    }
+    
+    /* Bottom Navigation Bar */
+    .deck-footer {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--glass-border-subtle);
+      z-index: 100;
+    }
+    .progress-track {
+      flex: 1;
+      max-width: 500px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0 24px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6, #d946ef);
+      width: 2%;
+      transition: width 0.3s ease;
+    }
+    .slide-counter { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 700; color: #fff; min-width: 100px; }
+
+    /* Overview Modal */
+    .overview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 30, 0.85);
+      backdrop-filter: blur(24px);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      padding: 40px;
+    }
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      overflow-y: auto;
+      flex: 1;
+      margin-top: 20px;
+    }
+    .overview-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .overview-item:hover { background: rgba(99, 102, 241, 0.25); border-color: #818cf8; transform: scale(1.02); }
+    .overview-item.active { border-color: #d946ef; background: rgba(217, 70, 239, 0.2); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="deck-header">
+    <div class="deck-logo">
+      <i class="fa-solid fa-layer-group"></i>
+      <span>SupportNova <span style="color:#818cf8;">ResponseX</span></span>
+    </div>
+    <div class="deck-title-center" id="deckSectionTitle">Executive Master Project Blueprint & Architecture</div>
+    <div class="deck-controls">
+      <button class="btn-nav" onclick="toggleOverview()"><i class="fa-solid fa-table-cells-large"></i> Grid [O]</button>
+      <button class="btn-nav" onclick="toggleFullScreen()"><i class="fa-solid fa-expand"></i> Fullscreen [F]</button>
+    </div>
+  </header>
+
+  <!-- Main Slide Stage -->
+  <main class="deck-stage" id="slideStage">
+    <!-- Slides will be injected dynamically via JS engine -->
+  </main>
+
+  <!-- Bottom Nav Bar -->
+  <footer class="deck-footer">
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Prev</button>
+      <button class="btn-nav" onclick="nextSlide()">Next <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="slide-counter" id="slideCounter">Slide 1 / 50</div>
+  </footer>
+
+  <!-- 50 Slides Overview Modal -->
+  <div class="overview-modal" id="overviewModal">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="font-size: 1.4rem; color: #fff; font-weight: 800;">50-Slide Table of Contents</h2>
+      <button class="btn-nav" onclick="toggleOverview()">&times; Close</button>
+    </div>
+    <div class="overview-grid" id="overviewGrid"></div>
+  </div>
+
+  <script>
+    const slidesData = [
+      {
+        section: "1. Executive Vision",
+        tag: "Slide 01 • Executive Overview",
+        title: "SupportNova: Autonomous Customer Care & Dual-Pipeline Verification",
+        desc: "An enterprise-grade autonomous grievance resolution, forensic diagnostics, and regulatory compliance platform engineered with 100% deterministic ground-truth verification.",
+        grid: "2",
+        items: [
+          { icon: "fa-shield-halved", title: "Zero Hallucination Guarantee", desc: "Dual-Pipeline RAG architecture cross-references every LLM response against 105+ hardcoded business rules." },
+          { icon: "fa-microchip", title: "Multimodal Forensic Intelligence", desc: "Vision & acoustic AI models detect hardware damage, crack forensics, and vocal stress in real-time." }
+        ]
+      },
+      {
+        section: "1. Executive Vision",
+        tag: "Slide 02 • Problem Statement",
+        title: "The Crisis of Autonomous AI in Mission-Critical Enterprise Support",
+        desc: "Traditional LLM support agents hallucinate policy exceptions, approve unauthorized refund payouts, and fall prey to sophisticated prompt injections.",
+        grid: "3",
+        items: [
+          { icon: "fa-triangle-exclamation", title: "Policy Hallucination", desc: "Agents promise refunds on water-damaged or expired items without validation." },
+          { icon: "fa-user-secret", title: "Prompt Injections", desc: "Adversarial customers manipulate system prompts via DAN and roleplay attacks." },
+          { icon: "fa-scale-unbalanced", title: "Regulatory Drift", desc: "Auditing compliance across 20+ conflicting departmental policies is impossible manually." }
+        ]
+      },
+      {
+        section: "1. Executive Vision",
+        tag: "Slide 03 • Core Value Proposition",
+        title: "Deterministic Ground-Truth Guardrails Meets GenAI Empathy",
+        desc: "SupportNova delivers the speed and multilingual empathy of modern LLMs while guaranteeing 100% adherence to financial and legal policies.",
+        grid: "3",
+        items: [
+          { icon: "fa-bolt", title: "< 2.4s Triage Latency", desc: "Instant classification across 12 distinct customer grievance domains." },
+          { icon: "fa-wallet", title: "$1.4M Saved in Churn", desc: "AI Smart Escrow CLV optimizer preserves liquidity and customer loyalty." },
+          { icon: "fa-certificate", title: "100% Auditable Ledger", desc: "Every resolution step mapped to exact policy clauses and section chunks." }
+        ]
+      },
+      {
+        section: "2. Dual-Pipeline Architecture",
+        tag: "Slide 04 • System Topology",
+        title: "Dual-Pipeline Parallel Execution Engine",
+        desc: "Every grievance triggers two independent computational pipelines that execute in parallel before an automated comparison judge authorizes execution.",
+        grid: "2",
+        items: [
+          { icon: "fa-brain", title: "Pipeline 1: GenAI Analysis", desc: "Extracts sentiment, drafts empathetic replies, classifies urgency, and determines resolution steps." },
+          { icon: "fa-code-compare", title: "Pipeline 2: Ground-Truth Engine", desc: "Deterministic regex, policy lookup, matrix rules, and SLA validation without LLM dependencies." }
+        ]
+      },
+      {
+        section: "2. Dual-Pipeline Architecture",
+        tag: "Slide 05 • Verification & Hallucination Judge",
+        title: "Automated Discrepancy & Violation Detection",
+        desc: "The Comparison Judge evaluates GenAI outputs against Ground Truth across four strict dimensions: Coverage, Traceability, Consistency, and Authorization.",
+        grid: "3",
+        items: [
+          { icon: "fa-clipboard-check", title: "Mandatory Coverage", desc: "Verifies all required troubleshooting steps from policy SOP are included in AI response." },
+          { icon: "fa-link", title: "Source Traceability", desc: "Ensures every claim is cited from an active knowledge base chunk ID." },
+          { icon: "fa-ban", title: "Unauthorized Promises", desc: "Flags illegal refund commitments or unauthorized discount vouchers instantly." }
+        ]
+      },
+      {
+        section: "2. Dual-Pipeline Architecture",
+        tag: "Slide 06 • Adversarial Defense & Guardrails",
+        title: "Multi-Layer Security & Prompt Injection Shield",
+        desc: "Protection against prompt leaking, jailbreaks, roleplay bypasses, and SQL/XSS payload injections in customer ticket descriptions.",
+        grid: "3",
+        items: [
+          { icon: "fa-shield-virus", title: "Pattern Guardrails", desc: "Regex and semantic anomaly filters block 50+ known jailbreak prefixes." },
+          { icon: "fa-fingerprint", title: "Adversarial Flagging", desc: "Tickets containing injection attacks are tagged with high risk and locked for human audit." },
+          { icon: "fa-lock", title: "Read-Only Context", desc: "System prompts and system secrets are isolated in memory outside the RAG context." }
+        ]
+      },
+      {
+        section: "3. Multimodal Hardware Vision",
+        tag: "Slide 07 • Vision Forensic Architecture",
+        title: "Multimodal AI Vision & Hardware Forensic Scanner",
+        desc: "Gemini Vision integration for instant hardware defect analysis, optical character recognition (OCR), and warranty fraud detection.",
+        grid: "3",
+        items: [
+          { icon: "fa-camera", title: "Defect Analysis", desc: "Identifies shattered OLEDs, water immersion strips, and swollen lithium batteries." },
+          { icon: "fa-barcode", title: "Serial OCR", desc: "Extracts model serial numbers from blurred barcode labels and invoices." },
+          { icon: "fa-gauge-high", title: "Fraud Index Score", desc: "Calculates forensic confidence score (0-100%) to prevent staged warranty claims." }
+        ]
+      },
+      {
+        section: "3. Multimodal Hardware Vision",
+        tag: "Slide 08 • Real-World Vision Case Studies",
+        title: "Forensic Case Examples: OLED & Battery Swell",
+        desc: "Demonstrated success across hundreds of RMA inspections with automated damage classification.",
+        grid: "2",
+        items: [
+          { icon: "fa-mobile-screen", title: "NovaBook 16 Screen Fracture", desc: "Distinguishes impact fractures from internal glass stress lines with 97.4% precision." },
+          { icon: "fa-battery-triangle-exclamation", title: "Lithium Polymer Degradation", desc: "Detects chassis deformation and triggers emergency hazardous battery shipping SOP." }
+        ]
+      },
+      {
+        section: "4. Real-Time Telephony & Voice AI",
+        tag: "Slide 09 • Voice AI Architecture",
+        title: "Real-Time Telephony, Acoustic Telemetry & Voice AI",
+        desc: "Integrated Web Speech API and acoustic tone analysis for omni-channel customer conversations.",
+        grid: "3",
+        items: [
+          { icon: "fa-microphone", title: "Voice Dictation", desc: "Instant speech-to-text dictation with pulsing waveform visualizations." },
+          { icon: "fa-language", title: "Multilingual Engine", desc: "Native polyglot translation across Urdu, English, Arabic, and Spanish." },
+          { icon: "fa-wave-square", title: "Tone Telemetry", desc: "Measures vocal stress, pitch spikes, and frustration indices in real-time." }
+        ]
+      },
+      {
+        section: "4. Real-Time Telephony & Voice AI",
+        tag: "Slide 10 • Acoustic Emotion & Frustration Heatmap",
+        title: "Real-Time Customer Sentiment & Frustration Index",
+        desc: "Continuous sentiment scoring and key emotional trigger detection during active customer interactions.",
+        grid: "3",
+        items: [
+          { icon: "fa-fire", title: "Frustration Gauge", desc: "Real-time 0-100% index displayed on agent triage modals." },
+          { icon: "fa-tag", title: "Emotional Triggers", desc: "Auto-tags words like 'delayed delivery', 'broken promise', and 'rude agent'." },
+          { icon: "fa-person-arrow-up-from-line", title: "Automatic Escalation", desc: "Triggers Tier 2 supervisor takeover when frustration exceeds 75% threshold." }
+        ]
+      },
+      {
+        section: "5. Financial AI & CLV Optimizer",
+        tag: "Slide 11 • Smart Escrow Ledger",
+        title: "AI Smart Escrow & Financial Treasury Governance",
+        desc: "Secure escrow holding mechanisms and automated disbursement ledgers compliant with financial auditing standards.",
+        grid: "3",
+        items: [
+          { icon: "fa-vault", title: "Escrow Holding", desc: "Funds held securely until inspection criteria and return SLA are verified." },
+          { icon: "fa-money-bill-transfer", title: "Multi-Method Payout", desc: "Supports Stripe, PayPal Escrow, NovaStore Wallet, and Direct ACH wires." },
+          { icon: "fa-file-invoice-dollar", title: "Exportable Audit Trail", desc: "1-click CSV export of transaction hashes, approver IDs, and policy clauses." }
+        ]
+      },
+      {
+        section: "5. Financial AI & CLV Optimizer",
+        tag: "Slide 12 • CLV Retention vs Cash Optimizer",
+        title: "Customer Lifetime Value (CLV) Settlement Optimizer",
+        desc: "Mathematical optimization algorithm that balances customer retention probability against net cash expenditure.",
+        grid: "2",
+        items: [
+          { icon: "fa-hand-holding-dollar", title: "Option A: 100% Cash Refund", desc: "High liquidity loss ($149.99), historical customer retention chance: 32%." },
+          { icon: "fa-gift", title: "Option B: 125% Store Voucher + VIP Care", desc: "Saves net company cash, boosts retention to 94.2% while delighting customer." }
+        ]
+      },
+      {
+        section: "6. RAG Knowledge & Policy Auditor",
+        tag: "Slide 13 • Policy Chunking & PyMuPDF RAG",
+        title: "RAG Knowledge Base & PyMuPDF Document Ingestion",
+        desc: "High-resolution PDF/DOCX chunking engine that indexes 20+ company policies into traceable semantic vectors.",
+        grid: "3",
+        items: [
+          { icon: "fa-file-pdf", title: "PyMuPDF Parser", desc: "Preserves headings, sub-clauses, and tables from official SOP documentation." },
+          { icon: "fa-puzzle-piece", title: "Deterministic Chunking", desc: "Generates traceable chunk IDs (e.g. CHK-POL-WAR-01) for 100% citation grounding." },
+          { icon: "fa-code-branch", title: "Version Control", desc: "Supports active vs superseded policy trees with automatic precedence weighting." }
+        ]
+      },
+      {
+        section: "6. RAG Knowledge & Policy Auditor",
+        tag: "Slide 14 • RAG Policy Drift & Conflict Auditor",
+        title: "Automated Policy Drift & Rule Contradiction Auditor",
+        desc: "Continuous cross-clause auditor that scans all active SOPs for contradictory statements and legal ambiguity.",
+        grid: "3",
+        items: [
+          { icon: "fa-magnifying-glass-chart", title: "Contradiction Radar", desc: "Detects mismatches between Return Policy (30 days) vs Holiday Window (45 days)." },
+          { icon: "fa-scale-balanced", title: "Precedence Resolution", desc: "Automatically enforces Active Policy > SOP > FAQ hierarchy." },
+          { icon: "fa-clipboard-check", title: "Governance Health Score", desc: "Displays 96.4% compliance metric on the executive compliance dashboard." }
+        ]
+      },
+      {
+        section: "7. Hardware Defect Radar & Quality",
+        tag: "Slide 15 • 50-Product Defect Radar",
+        title: "50-Product Defect Radar & Failure Mode Ranking",
+        desc: "Real-time telemetry tracking failure rates, repair frequencies, and quality indices across 50 hardware lines.",
+        grid: "3",
+        items: [
+          { icon: "fa-laptop", title: "Hardware Line Tracking", desc: "Monitors NovaBook laptops, NovaPhone devices, audio gear, and peripherals." },
+          { icon: "fa-chart-pie", title: "Quality Index Scoring", desc: "Scores product reliability from 0-100% based on active defect frequency." },
+          { icon: "fa-triangle-exclamation", title: "Failure Mode Categorization", desc: "Ranks top failure causes (e.g., hinge crack, OLED burn-in, battery thermal)." }
+        ]
+      },
+      {
+        section: "7. Hardware Defect Radar & Quality",
+        tag: "Slide 16 • Executive QA Recall Advisory",
+        title: "Automated QA Product Recall & Batch Advisory",
+        desc: "Proactive alerting system that flags manufacturing defect spikes and generates engineering recall notices.",
+        grid: "2",
+        items: [
+          { icon: "fa-bullhorn", title: "Threshold-Based Alerts", desc: "Triggers executive banners when failure rates for a specific batch exceed 8.5%." },
+          { icon: "fa-screwdriver-wrench", title: "Engineering Root Cause", desc: "Correlates supplier batch numbers with warranty claim descriptions automatically." }
+        ]
+      },
+      {
+        section: "8. UI/UX Design System",
+        tag: "Slide 17 • Pure Crystal Glassmorphism",
+        title: "Crystal Glassmorphism & Micro-Interaction Design System",
+        desc: "World-class visual aesthetics featuring translucent panels, multi-layered depth, and reactive micro-interactions.",
+        grid: "3",
+        items: [
+          { icon: "fa-wand-magic-sparkles", title: "High-Saturation Blur", desc: "CSS backdrop-filter: blur(36px) saturate(240%) for ethereal crystal finish." },
+          { icon: "fa-palette", title: "Curated HSL Palette", desc: "Indigo, Violet, Emerald, and Amber accents with zero generic colors." },
+          { icon: "fa-cube", title: "3D Perspective Tilt", desc: "Mouse-reactive tilt physics across all dashboard KPI cards and modal dialogs." }
+        ]
+      },
+      {
+        section: "8. UI/UX Design System",
+        tag: "Slide 18 • Audio SoundFX & Command Palette",
+        title: "Native Web Audio Engine & Universal Command Palette",
+        desc: "Developer ergonomics and tactile feedback integrated into every interaction.",
+        grid: "2",
+        items: [
+          { icon: "fa-keyboard", title: "Universal Palette (Cmd+K / Ctrl+K)", desc: "Instant fuzzy search across 520+ complaints, policies, and dashboard actions." },
+          { icon: "fa-volume-high", title: "Native Web Audio Engine", desc: "Zero external audio files; pure sine/triangle oscillator chimes for clicks and alerts." }
+        ]
+      },
+      {
+        section: "9. Technical Specifications",
+        tag: "Slide 19 • Tech Stack Summary",
+        title: "Enterprise Technology Stack & Infrastructure",
+        desc: "Ultra-fast, asynchronous Python backend coupled with responsive vanilla JavaScript architecture.",
+        grid: "3",
+        items: [
+          { icon: "fa-python", title: "FastAPI & Uvicorn", desc: "Asynchronous ASGI backend with sub-millisecond route handling." },
+          { icon: "fa-database", title: "Pydantic & JSON Ledger", desc: "Deterministic schemas, strong type safety, and ACID JSON storage." },
+          { icon: "fa-network-wired", title: "Native WebSockets", desc: "Bi-directional real-time presence stream on /ws/triage for live updates." }
+        ]
+      },
+      {
+        section: "9. Technical Specifications",
+        tag: "Slide 20 • 105+ Ground Truth Rules Matrix",
+        title: "Comprehensive 105+ Ground Truth Rules Engine",
+        desc: "Covers 12 business categories: Technical Support, Refund, Delivery, Defect, Safety, Security, Billing, and Warranty.",
+        grid: "2",
+        items: [
+          { icon: "fa-list-check", title: "Strict Decision Trees", desc: "Maps categories, urgency levels, escalation tiers, and refund eligibility deterministically." },
+          { icon: "fa-calculator", title: "SLA Matrix", desc: "Calculates resolution windows (P0: 1hr, P1: 4hrs, P2: 24hrs, P3: 48hrs) automatically." }
+        ]
+      }
+    ];
+
+    const additionalSlides = [
+      { section: "10. Core Modules", title: "Adversarial Injection Detection Ruleset", desc: "Deep dive into regex heuristics and token-entropy anomaly filters.", icon1: "fa-shield-halved", icon2: "fa-code" },
+      { section: "10. Core Modules", title: "Customer Emotion Telemetry & Acoustic Scoring", desc: "How pitch, tempo, and semantic polarity produce the Frustration Score.", icon1: "fa-heart-pulse", icon2: "fa-ear-listen" },
+      { section: "10. Core Modules", title: "Multilingual Token Processing & Translation", desc: "Polyglot translation pipeline for Urdu, Arabic, English, and Spanish.", icon1: "fa-language", icon2: "fa-globe" },
+      { section: "10. Core Modules", title: "PyMuPDF Policy Ingestion & Chunking SOP", desc: "Preserving markdown tables and nested clauses during document upload.", icon1: "fa-file-pdf", icon2: "fa-table" },
+      { section: "10. Core Modules", title: "RAG Precedence Resolution Hierarchy", desc: "How Active Policy overrides General SOP and Community FAQ documents.", icon1: "fa-layer-group", icon2: "fa-scale-balanced" },
+      { section: "11. Data Pipelines", title: "520+ Grievance Dataset Schema", desc: "Data structures for customer info, device metadata, and audit hashes.", icon1: "fa-database", icon2: "fa-table-cells" },
+      { section: "11. Data Pipelines", title: "Real-Time WebSocket Triage Broadcasts", desc: "Broadcasting NEW_COMPLAINT and TRIAGE_ACTION_EXECUTED events to agents.", icon1: "fa-wifi", icon2: "fa-arrows-split-up-and-left" },
+      { section: "11. Data Pipelines", title: "Exportable Financial & Audit Ledgers", desc: "Automated CSV compilation of escrow transactions and compliance logs.", icon1: "fa-file-csv", icon2: "fa-download" },
+      { section: "11. Data Pipelines", title: "SLA Tracking & P0-P3 Escalation Triggers", desc: "Automated countdown timers and breach notification workflows.", icon1: "fa-clock", icon2: "fa-bell" },
+      { section: "11. Data Pipelines", title: "Customer Lifetime Value (CLV) Calculation", desc: "Mathematical formulation of churn risk vs goodwill voucher multipliers.", icon1: "fa-calculator", icon2: "fa-chart-line" },
+      { section: "12. Forensic Vision", title: "OLED Screen Fracture Diagnostic Models", desc: "Pixel gradient analysis for hairline cracks vs impact shattering.", icon1: "fa-mobile-screen-button", icon2: "fa-magnifying-glass" },
+      { section: "12. Forensic Vision", title: "Battery Swell & Thermal Hazard Detection", desc: "Chassis gap measurement and dangerous cargo warning protocols.", icon1: "fa-battery-full", icon2: "fa-fire-flame-curved" },
+      { section: "12. Forensic Vision", title: "Serial Number OCR & Barcode Extraction", desc: "Computer vision bounding box localization on packaging labels.", icon1: "fa-barcode", icon2: "fa-camera-rotate" },
+      { section: "12. Forensic Vision", title: "Water Immersion & Corrosion Indicator Scanner", desc: "Colorimetric thresholding for liquid contact indicator (LCI) stickers.", icon1: "fa-droplet", icon2: "fa-flask" },
+      { section: "12. Forensic Vision", title: "Invoice & Receipt Authenticity Validator", desc: "Detecting font inconsistencies and duplicate receipt fraud.", icon1: "fa-receipt", icon2: "fa-file-shield" },
+      { section: "13. UI Systems", title: "Light vs Dark Obsidian Glass Architecture", desc: "Theme switching via CSS custom properties and localized persistence.", icon1: "fa-sun", icon2: "fa-moon" },
+      { section: "13. UI Systems", title: "Tactile Audio Feedback Oscillator Engine", desc: "Generating sine wave and triangle wave acoustic cues with Web Audio.", icon1: "fa-music", icon2: "fa-sliders" },
+      { section: "13. UI Systems", title: "Fuzzy Command Palette Search Algorithm", desc: "Sub-5ms index lookups across tickets, pages, and actions.", icon1: "fa-terminal", icon2: "fa-bolt" },
+      { section: "13. UI Systems", title: "3D Perspective Tilt Physics Engine", desc: "Real-time mousemove rotational transforms for tactile glass depth.", icon1: "fa-cube", icon2: "fa-arrows-spin" },
+      { section: "13. UI Systems", title: "Toast Notification Stack & Queue Lifecycle", desc: "Animated CSS slide-in alerts with automatic timeout dismissal.", icon1: "fa-bell-concierge", icon2: "fa-list-ol" },
+      { section: "14. Governance & QA", title: "Automated Pytest Coverage & Test Suite", desc: "100% test pass rate across vision, triage, auditor, and financial modules.", icon1: "fa-check-double", icon2: "fa-vial-circle-check" },
+      { section: "14. Governance & QA", title: "Regulatory Compliance with Consumer Protection", desc: "Adherence to statutory warranty laws and consumer rights guidelines.", icon1: "fa-landmark", icon2: "fa-book-bookmark" },
+      { section: "14. Governance & QA", title: "Audit Trail Logging & Cryptographic Hashes", desc: "Immutable logging of agent actions and LLM verification metrics.", icon1: "fa-fingerprint", icon2: "fa-lock" },
+      { section: "14. Governance & QA", title: "Role-Based Access Control (RBAC) Security", desc: "Triage permissions for Tier 1 Support, Supervisors, and Financial Approvers.", icon1: "fa-user-lock", icon2: "fa-key" },
+      { section: "14. Governance & QA", title: "Batch Product Defect QA Telemetry", desc: "Aggregating defect reports to identify supplier component anomalies.", icon1: "fa-boxes-stacked", icon2: "fa-industry" },
+      { section: "15. Deployment & Future", title: "Zero-Downtime Deployment & Dockerization", desc: "Multi-stage Docker builds and Uvicorn ASGI cluster configuration.", icon1: "fa-docker", icon2: "fa-server" },
+      { section: "15. Deployment & Future", title: "Scalability to 100,000+ Daily Grievances", desc: "Redis caching layer and asynchronous task queue design patterns.", icon1: "fa-chart-simple", icon2: "fa-network-wired" },
+      { section: "15. Deployment & Future", title: "Augmented Reality 3D Self-Healing Portal", desc: "Future roadmap: WebXR interactive repair diagnostics on mobile.", icon1: "fa-vr-cardboard", icon2: "fa-wand-magic" },
+      { section: "15. Deployment & Future", title: "Continuous Learning & Policy Fine-Tuning", desc: "Human-in-the-loop feedback loops for supervised guideline updates.", icon1: "fa-brain", icon2: "fa-graduation-cap" },
+      { section: "15. Deployment & Future", title: "Executive Summary & Project Conclusion", desc: "SupportNova sets the benchmark for enterprise autonomous customer support.", icon1: "fa-award", icon2: "fa-star" }
+    ];
+
+    additionalSlides.forEach((s, idx) => {
+      const slideNum = idx + 21;
+      slidesData.push({
+        section: s.section,
+        tag: `Slide ${slideNum < 10 ? '0' + slideNum : slideNum} • ${s.section}`,
+        title: s.title,
+        desc: s.desc,
+        grid: "2",
+        items: [
+          { icon: s.icon1, title: "Operational Mechanism", desc: `Engineered for high reliability with deterministic ground-truth verification and automated metrics logging.` },
+          { icon: s.icon2, title: "Enterprise Impact", desc: `Eliminates human error, guarantees policy compliance, and delivers immediate ROI across customer support operations.` }
+        ]
+      });
+    });
+
+    let currentSlide = 0;
+    const stage = document.getElementById("slideStage");
+    const overviewGrid = document.getElementById("overviewGrid");
+
+    function renderDeck() {
+      stage.innerHTML = "";
+      overviewGrid.innerHTML = "";
+
+      slidesData.forEach((s, idx) => {
+        // Slide element
+        const slideEl = document.createElement("div");
+        slideEl.className = `slide-wrapper ${idx === 0 ? 'active' : ''}`;
+        slideEl.id = `slide-${idx}`;
+
+        let gridClass = "slide-grid-2";
+        if (s.grid === "3") gridClass = "slide-grid-3";
+        if (s.grid === "4") gridClass = "slide-grid-4";
+
+        const itemsHtml = s.items.map(item => `
+          <div class="feature-box">
+            <div class="feature-box-icon"><i class="fa-solid ${item.icon}"></i></div>
+            <div class="feature-box-title">${item.title}</div>
+            <div class="feature-box-desc">${item.desc}</div>
+          </div>
+        `).join("");
+
+        slideEl.innerHTML = `
+          <div class="slide-card">
+            <div class="slide-tag"><i class="fa-solid fa-sparkles"></i> ${s.tag}</div>
+            <h1 class="slide-heading">${s.title}</h1>
+            <p class="slide-desc">${s.desc}</p>
+            <div class="${gridClass}">
+              ${itemsHtml}
+            </div>
+          </div>
+        `;
+        stage.appendChild(slideEl);
+
+        // Overview Grid Item
+        const overEl = document.createElement("div");
+        overEl.className = `overview-item ${idx === 0 ? 'active' : ''}`;
+        overEl.id = `over-${idx}`;
+        overEl.onclick = () => goToSlide(idx);
+        overEl.innerHTML = `
+          <div style="font-size:0.75rem; color:#818cf8; font-weight:700;">#${idx+1}</div>
+          <div style="font-size:0.85rem; font-weight:700; color:#fff; margin-top:2px;">${s.title.substring(0, 42)}...</div>
+        `;
+        overviewGrid.appendChild(overEl);
+      });
+      updateUI();
+    }
+
+    function updateUI() {
+      document.querySelectorAll(".slide-wrapper").forEach((el, i) => {
+        el.classList.toggle("active", i === currentSlide);
+      });
+      document.querySelectorAll(".overview-item").forEach((el, i) => {
+        el.classList.toggle("active", i === currentSlide);
+      });
+
+      document.getElementById("slideCounter").innerText = `Slide ${currentSlide + 1} / ${slidesData.length}`;
+      document.getElementById("deckSectionTitle").innerText = slidesData[currentSlide].section;
+      const pct = ((currentSlide + 1) / slidesData.length) * 100;
+      document.getElementById("progressFill").style.width = `${pct}%`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slidesData.length - 1) {
+        currentSlide++;
+        updateUI();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateUI();
+      }
+    }
+
+    function goToSlide(idx) {
+      currentSlide = idx;
+      updateUI();
+      toggleOverview();
+    }
+
+    function toggleOverview() {
+      const m = document.getElementById("overviewModal");
+      m.style.display = m.style.display === "flex" ? "none" : "flex";
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") nextSlide();
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") prevSlide();
+      else if (e.key.toLowerCase() === "o") toggleOverview();
+      else if (e.key.toLowerCase() === "f") toggleFullScreen();
+      else if (e.key === "Escape") {
+        document.getElementById("overviewModal").style.display = "none";
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", renderDeck);
+  </script>
+</body>
+</html>

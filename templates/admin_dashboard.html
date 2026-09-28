@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Operations - Rayyan Ahmed Khan | SupportNova{% endblock %}
+
+{% block content %}
+<div class="customer-hero-card" id="heroCustomerCard" style="border-left: 5px solid var(--cream, #eef0d0);">
+  <div class="hero-customer-profile">
+    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80" alt="Rayyan Ahmed Khan" class="hero-avatar" id="heroAvatar" style="border-color: var(--cream, #eef0d0);">
+    <div class="hero-info">
+      <h2>Rayyan Ahmed Khan <span class="badge badge-primary" style="font-size: 0.78rem; margin-left: 8px; background: var(--cream, #eef0d0); color: #101010;">CEO &amp; Operations Director</span></h2>
+      <div class="hero-meta-grid">
+        <div class="hero-meta-item">
+          <i class="fa-solid fa-shield-halved" style="color: var(--cream, #eef0d0);"></i>
+          <span>Super Admin Operations &amp; RBAC Oversight</span>
+        </div>
+        <div class="hero-meta-item">
+          <i class="fa-regular fa-envelope"></i>
+          <span>admin@supportnova.io</span>
+        </div>
+        <div class="hero-meta-item">
+          <i class="fa-solid fa-server" style="color: #10b981;"></i>
+          <span>Dual-Pipeline Audit &amp; Department Escalations</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-account-summary">
+    <div class="label">System Oversight Status</div>
+    <div class="value" style="color: var(--cream, #eef0d0);">LIVE</div>
+    <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
+      Active Cases: <strong id="heroComplaintId" style="color: #60a5fa;">CMP-00001</strong> | Priority: <span class="badge badge-warning" id="heroPriorityBadge">P1 - High</span>
+    </div>
+  </div>
+</div>
+
+<!-- Metrics Cards Row (Matching Mockup) -->
+<div class="metrics-grid">
+  <!-- Card 1 -->
+  <div class="summary-card">
+    <div>
+      <div class="summary-card-title">Complaint & Claim Outstanding</div>
+      <div class="summary-card-value">$ 20,000</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Unbilled / Pending Audit: $ 1,000</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 75%;"></div>
+    </div>
+    <a href="javascript:void(0)" class="card-link-more" onclick="filterComplaints('Refund Request')">View Financial Claims &rarr;</a>
+  </div>
+
+  <!-- Card 2 -->
+  <div class="summary-card">
+    <div>
+      <div class="summary-card-title">Dual-Pipeline Verification Rate</div>
+      <div class="summary-card-value" style="color: #10b981;">98.4%</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Ground-Truth Rule Consistency: 100%</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 98%; background: #10b981;"></div>
+    </div>
+    <a href="/analytics" class="card-link-more">View Rule Audit Details &rarr;</a>
+  </div>
+
+  <!-- Card 3 -->
+  <div class="summary-card">
+    <div>
+      <div class="summary-card-title">Active SLA Performance</div>
+      <div class="summary-card-value" style="color: #3b82f6;">94.2% On Track</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Avg First Response Time: 14 mins</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 94%; background: #3b82f6;"></div>
+    </div>
+    <a href="/analytics" class="card-link-more">SLA Risk Breakdown &rarr;</a>
+  </div>
+</div>
+
+<!-- Pill Navigation Filters (Matching Mockup) -->
+<div class="tab-pills-row">
+  <button class="pill-tab active" onclick="filterByTab('All')">All Complaints (520+)</button>
+  <button class="pill-tab" onclick="filterByTab('Critical')">🚨 P0 Critical / Safety</button>
+  <button class="pill-tab" onclick="filterByTab('Refund')">💵 Refund & Compensation</button>
+  <button class="pill-tab" onclick="filterByTab('Adversarial')">🛡️ Prompt Injection / Traps</button>
+  <button class="pill-tab" onclick="filterByTab('ManualReview')">⚠️–ï¸ Manual Review Queue</button>
+  <button class="pill-tab" onclick="filterByTab('Resolved')">✅ Resolved & Closed</button>
+</div>
+
+<!-- Complaints Data Table -->
+<div class="table-container">
+  <table class="data-table" id="complaintsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Complaint Title</th>
+        <th>Category</th>
+        <th>Department</th>
+        <th>Urgency</th>
+        <th>Priority</th>
+        <th>Dual-Pipeline Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="complaintsTableBody">
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem;"></i><br>
+          Loading 520+ Complaints & Dual-Pipeline Intelligence...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Dual Pipeline Inspection Drawer / Modal -->
+<div id="triageModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(12px);">
+  <div class="modal-dialog-anim triage-modal-dialog" style="width: 94%; max-width: 1200px; max-height: 92vh; border-radius: 24px; overflow-y: auto; padding: 34px; position: relative;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 18px; margin-bottom: 22px;">
+      <div>
+        <h2 style="font-size: 1.5rem; color: var(--text-heading); font-weight: 900; font-family: 'Outfit', sans-serif;" id="modalComplaintTitle">Complaint Triage & Dual-Pipeline Verification</h2>
+        <div style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-top: 4px;" id="modalComplaintSubtitle">ID: CMP-00001 | Customer: John Smith</div>
+      </div>
+      <button onclick="closeTriageModal()" class="icon-glass-btn" style="font-size: 1.3rem;">&times;</button>
+    </div>
+
+    <div class="emotion-gauge-card" id="modalEmotionCard">
+      <div style="display: flex; align-items: center; gap: 14px; min-width: 220px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(225, 29, 72, 0.15); color: #e11d48; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;" id="modalEmotionIcon">
+          <i class="fa-solid fa-fire-flame-curved"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.74rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">Customer Emotion Telemetry</div>
+          <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-heading);" id="modalEmotionState">Frustrated & Dissatisfied</div>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1; margin: 0 10px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-body);">
+          <span>Frustration Index</span>
+          <span id="modalFrustrationScore" style="color: #e11d48; font-weight: 800;">78% / 100</span>
+        </div>
+        <div class="emotion-heat-bar" style="background: rgba(148, 163, 184, 0.25);">
+          <div class="emotion-heat-fill" id="modalFrustrationBar" style="width: 78%; background: linear-gradient(90deg, #10b981, #f59e0b, #e11d48);"></div>
+        </div>
+      </div>
+
+      <div style="min-width: 200px; text-align: right;">
+        <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Detected Anger Triggers</div>
+        <div id="modalTriggerChips" style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+          <span class="trigger-chip" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">swelling</span>
+          <span class="trigger-chip" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">cracked</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="triage-subcard" style="padding: 20px; margin-bottom: 22px;">
+      <div style="font-weight: 800; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px;">Customer Submitted Grievance (Untrusted Input)</div>
+      <p id="modalRawDescription" style="font-size: 0.94rem; color: var(--text-heading); font-weight: 500; white-space: pre-wrap; line-height: 1.6; margin: 0;"></p>
+      <div id="modalAdversarialBanner" style="display: none; margin-top: 12px; background: rgba(244, 63, 94, 0.15); border-left: 4px solid #f43f5e; padding: 12px 16px; font-size: 0.88rem; color: #f43f5e; font-weight: 700; border-radius: 8px;"></div>
+    </div>
+
+    <div id="verificationScoreBanner" class="triage-subcard" style="display: flex; gap: 16px; padding: 16px 24px; margin-bottom: 24px; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 0.88rem; color: var(--text-heading); font-weight: 800;">Dual-Pipeline Status:</span>
+        <span id="modalVerificationStatus" class="badge badge-success" style="font-size: 0.88rem;">Verified</span>
+      </div>
+      <div style="display: flex; gap: 32px; font-size: 0.88rem; color: var(--text-heading); font-weight: 700;">
+        <div>Policy Coverage: <strong id="modalCoverageScore" style="color: var(--primary); font-weight: 800;">100%</strong></div>
+        <div>Source Traceability: <strong id="modalTraceabilityScore" style="color: var(--primary); font-weight: 800;">100%</strong></div>
+        <div>Rule Consistency: <strong id="modalConsistencyScore" style="color: var(--primary); font-weight: 800;">100%</strong></div>
+      </div>
+    </div>
+
+    <div class="dual-pipeline-container">
+      <div class="pipeline-card genai" style="border-top: 4px solid var(--cream, #eef0d0);">
+        <div class="pipeline-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; margin-bottom: 14px;">
+          <div style="font-weight: 800; color: var(--cream, #eef0d0); display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+            <i class="fa-solid fa-brain"></i> Pipeline 1: GenAI Intelligence
+          </div>
+          <span class="badge badge-primary">Gemini 1.5 Flash</span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; font-size: 0.85rem; color: var(--text-heading);">
+          <div><strong style="color: var(--text-muted);">Category:</strong> <span id="genaiCategory" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Subcategory:</strong> <span id="genaiSubcategory" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Department:</strong> <span id="genaiDept" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Urgency / Priority:</strong> <span id="genaiUrgency" style="color: var(--text-heading); font-weight: 600;">-</span> (<span id="genaiPriority" style="color: var(--text-heading); font-weight: 700;">-</span>)</div>
+          <div><strong style="color: var(--text-muted);">Referenced Policy:</strong> <span id="genaiPolicy" style="font-family: monospace; font-weight: 700; color: var(--cream, #eef0d0);">-</span></div>
+          <div><strong style="color: var(--text-muted);">Escalation Required:</strong> <span id="genaiEscalation" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">AI Suggested Resolution Steps</div>
+          <ul id="genaiStepsList" style="padding-left: 20px; font-size: 0.85rem; margin-top: 6px; color: var(--text-body); line-height: 1.5; font-weight: 500;"></ul>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Draft Customer Response</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted);">Tone:</span>
+              <select id="responseToneSelect" class="triage-control-select" onchange="changeResponseTone(this.value)" style="font-size: 0.78rem; padding: 4px 10px; font-weight: 600;">
+                <option value="Professional">Professional (Default)</option>
+                <option value="Empathetic">Empathetic & Caring</option>
+                <option value="Concise">Concise & Action-Oriented</option>
+                <option value="Formal">Formal & Legal Standard</option>
+              </select>
+            </div>
+          </div>
+          <textarea id="genaiCustomerResponse" class="triage-textarea" style="width: 100%; height: 110px; font-size: 0.85rem; padding: 10px; font-family: inherit; font-weight: 500; resize: vertical; line-height: 1.5;"></textarea>
+        </div>
+
+        <div class="triage-subcard" style="margin-top: 14px; padding: 12px;">
+          <div style="font-size: 0.78rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span><i class="fa-solid fa-circle-question"></i> AI Clarification Questions (Missing Info Detection)</span>
+            <button class="pill-tab" style="padding: 2px 10px; font-size: 0.72rem; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary);" onclick="insertClarificationQuestions()">Insert to Response</button>
+          </div>
+          <div id="clarificationQuestionsBox" style="font-size: 0.82rem; color: var(--text-body); line-height: 1.4; font-weight: 500;">
+            No missing details detected. All mandatory complaint entities are present.
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-card groundtruth" style="border-top: 4px solid #10b981;">
+        <div class="pipeline-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; margin-bottom: 14px;">
+          <div style="font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+            <i class="fa-solid fa-shield-halved"></i> Pipeline 2: Ground-Truth Engine
+          </div>
+          <span class="badge badge-success">Deterministic Rules</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; font-size: 0.85rem; color: var(--text-heading);">
+          <div><strong style="color: var(--text-muted);">Rule ID Matched:</strong> <span id="gtRuleId" style="font-family: monospace; color: #10b981; font-weight: 700;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Expected Department:</strong> <span id="gtDept" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Mandatory Escalation:</strong> <span id="gtEscalation" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Escalation Tier:</strong> <span id="gtTier" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Active Policy ID:</strong> <span id="gtPolicy" style="font-family: monospace; color: var(--primary); font-weight: 700;">-</span></div>
+          <div><strong style="color: var(--text-muted);">Refund Eligibility:</strong> <span id="gtRefund" style="color: var(--text-heading); font-weight: 600;">-</span></div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Mandatory Actions Required</div>
+          <ul id="gtMandatoryStepsList" style="padding-left: 20px; font-size: 0.85rem; margin-top: 6px; color: var(--text-body); line-height: 1.5; font-weight: 500;"></ul>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #e11d48; text-transform: uppercase; letter-spacing: 0.5px;">Prohibited Actions Check</div>
+          <div id="gtProhibitedActions" style="background: rgba(225, 29, 72, 0.12); border: 1px solid rgba(225, 29, 72, 0.3); border-radius: 10px; padding: 10px; font-size: 0.85rem; color: #e11d48; margin-top: 6px; font-weight: 600;">None violated</div>
+        </div>
+
+        <div class="triage-subcard" style="padding: 12px;">
+          <div style="font-size: 0.78rem; font-weight: 800; color: var(--primary); margin-bottom: 6px;">
+            <i class="fa-solid fa-list-check"></i> Internal Agent Operational Checklist
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--text-body); font-weight: 600;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="chkVerifyAccount" checked> <span>Verify customer account credentials & transaction ID</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="chkCheckHardware" checked> <span>Cross-check hardware serial & warranty entitlement</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="chkReviewEvidence"> <span>Inspect multimodal defect forensic evidence</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="chkPolicyPrecedence"> <span>Confirm active policy precedence (v2.0 > v1.0)</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="triage-subcard" style="margin-top: 18px; padding: 16px;">
+      <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-heading); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> One-Click Follow-Up Communication Generator (SRS Step 40)
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('request_info')">Request Missing Evidence</button>
+        <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('resolution_confirm')">Resolution Confirmation</button>
+        <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('refund_update')">Refund Status Update</button>
+        <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('replacement_eta')">Replacement Dispatch ETA</button>
+        <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('case_closure')">Closure & Satisfaction Survey</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="reviewerNoteInput" class="triage-control-input" placeholder="Add reviewer audit note..." style="padding: 9px 14px; font-size: 0.85rem; width: 260px; font-weight: 500;">
+        
+        <select id="reassignDeptSelect" class="triage-control-select" style="padding: 9px 12px; font-size: 0.82rem; font-weight: 700;">
+          <option value="">-- Reassign Dept --</option>
+          {% for dept in departments %}
+          <option value="{{ dept }}">{{ dept }}</option>
+          {% endfor %}
+        </select>
+        <button class="pill-tab" style="padding: 8px 14px; font-size: 0.80rem; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary);" onclick="reassignSelectedDepartment()">Reassign</button>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <select id="escalateTierSelect" class="triage-control-select" style="padding: 9px 12px; font-size: 0.82rem; font-weight: 700; color: #e11d48; border-color: rgba(225, 29, 72, 0.4) !important;">
+          <option value="Tier 1 - Supervisor Review">Supervisor Review</option>
+          <option value="Tier 2 - Department Manager">Department Manager</option>
+          <option value="Tier 3 - Specialist Engineering">Specialist Engineering</option>
+          <option value="Tier 4 - Compliance & Legal">Compliance & Legal</option>
+          <option value="Tier 5 - Executive Management">Critical Executive Escalation</option>
+        </select>
+        <button class="pill-tab" style="background: #f43f5e; color: white; border-color: transparent;" onclick="executeTriageAction('escalate')">🚨 Escalate</button>
+        <button class="pill-tab" style="background: #10b981; color: white; border-color: transparent;" onclick="executeTriageAction('override_refund')">💵 Authorize Refund</button>
+        <button class="pill-tab" style="background: var(--cream); color: white; border-color: transparent;" onclick="executeTriageAction('approve')">✅ Approve & Send</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

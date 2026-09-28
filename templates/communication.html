@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+
+{% block title %}Live WhatsApp Chat Hub & Communication Centre | SupportNova{% endblock %}
+
+{% block content %}
+
+<style>
+  .wa-hub-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr 310px;
+    gap: 16px;
+    min-height: calc(100vh - 200px);
+  }
+  .wa-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .wa-panel-head {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--glass-border);
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: var(--text-heading);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+  }
+  .wa-client-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--glass-border-subtle);
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+  }
+  .wa-client-item:hover { background: rgba(37,211,102,0.07); border-left-color: rgba(37,211,102,0.4); }
+  .wa-client-item.selected { background: rgba(238, 240, 208, 0.12); border-left-color: #25d366; }
+  .wa-client-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 900; font-size: 0.85rem;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(238, 240, 208, 0.4);
+  }
+  .wa-client-name { font-weight: 700; font-size: 0.82rem; color: var(--text-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wa-client-preview { font-size: 0.70rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wa-unread { background: #25d366; color: #fff; border-radius: 9999px; font-size: 0.62rem; font-weight: 900; padding: 2px 7px; }
+  #waChatMsgs {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    scrollbar-width: thin; scrollbar-color: rgba(238, 240, 208, 0.3) transparent;
+  }
+  #waChatMsgs::-webkit-scrollbar { width: 4px; }
+  #waChatMsgs::-webkit-scrollbar-thumb { background: rgba(238, 240, 208, 0.3); border-radius: 4px; }
+  .wa-msg-out {
+    align-self: flex-end;
+    background: var(--cream);
+    color: #fff; border-radius: 16px 16px 3px 16px;
+    padding: 10px 14px; max-width: 78%; font-size: 0.86rem;
+    line-height: 1.5; word-break: break-word;
+    box-shadow: 0 4px 14px rgba(238, 240, 208, 0.3);
+    animation: waMsgIn 0.28s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  .wa-msg-in {
+    align-self: flex-start;
+    background: rgba(255,255,255,0.85);
+    color: #0f172a; border-radius: 3px 16px 16px 16px;
+    padding: 10px 14px; max-width: 78%; font-size: 0.86rem;
+    line-height: 1.5; word-break: break-word;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+    animation: waMsgIn 0.28s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  html[data-theme="dark"] .wa-msg-in { background: rgba(30,41,59,0.88); color: #f1f5f9; }
+  .wa-meta { font-size: 0.63rem; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+  .wa-meta.out { color: rgba(255,255,255,0.58); justify-content: flex-end; }
+  .wa-meta.in  { color: #94a3b8; }
+  .wa-ticks { color: #60a5fa; }
+  .wa-sys-lbl { align-self: center; font-size: 0.67rem; color: #94a3b8; background: rgba(255,255,255,0.16); border-radius: 9999px; padding: 3px 12px; }
+  html[data-theme="dark"] .wa-sys-lbl { background: rgba(30,41,59,0.4); }
+  @keyframes waMsgIn { 0% { opacity: 0; transform: scale(0.9) translateY(8px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+  .wa-typing-row { display: none; align-self: flex-start; align-items: center; gap: 8px; }
+  .wa-typing-row.on { display: flex; }
+  .wa-typing-bub { background: rgba(255,255,255,0.82); border-radius: 3px 14px 14px 14px; padding: 8px 14px; display: flex; align-items: center; gap: 5px; }
+  html[data-theme="dark"] .wa-typing-bub { background: rgba(30,41,59,0.8); }
+  .wa-tdot { width: 6px; height: 6px; border-radius: 50%; background: #25d366; animation: waTypeDot 1.2s ease-in-out infinite; }
+  .wa-tdot:nth-child(2) { animation-delay: 0.2s; }
+  .wa-tdot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes waTypeDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-5px); opacity: 1; } }
+  .wa-reply-bar { padding: 12px 14px; border-top: 1px solid var(--glass-border); display: flex; gap: 8px; align-items: flex-end; background: rgba(255,255,255,0.06); flex-shrink: 0; }
+  #adminReplyInput {
+    flex: 1; background: rgba(255,255,255,0.18); border: 1px solid rgba(37,211,102,0.35);
+    border-radius: 20px; padding: 10px 16px; color: var(--text-heading);
+    font-size: 0.86rem; font-family: inherit; resize: none; outline: none;
+    line-height: 1.45; max-height: 90px; overflow-y: auto; scrollbar-width: none; transition: all 0.25s ease;
+  }
+  #adminReplyInput:focus { border-color: #25d366; box-shadow: 0 0 0 3px rgba(37,211,102,0.18); background: rgba(255,255,255,0.28); }
+  #adminReplyInput::placeholder { color: #94a3b8; }
+  #adminReplySendBtn { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#25d366,#128c7e); border: none; color: #fff; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37,211,102,0.4); transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+  #adminReplySendBtn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(37,211,102,0.6); }
+  .wa-chat-header { padding: 12px 16px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(238, 240, 208, 0.1), rgba(18,140,126,0.06)); flex-shrink: 0; }
+  .wa-online-dot { width: 8px; height: 8px; border-radius: 50%; background: #25d366; box-shadow: 0 0 8px #25d366; display: inline-block; animation: waDotPulse 2s infinite; }
+  @keyframes waDotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .wa-empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 40px; text-align: center; }
+  .wa-qchip { background: rgba(238, 240, 208, 0.1); border: 1px solid rgba(238, 240, 208, 0.25); color: var(--cream, #eef0d0); border-radius: 9999px; padding: 5px 12px; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s ease; white-space: nowrap; }
+  .wa-qchip:hover { background: rgba(37,211,102,0.2); transform: translateY(-1px); }
+</style>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:900;color:var(--text-heading);display:flex;align-items:center;gap:10px;font-family:'Outfit',sans-serif;">
+      <i class="fa-brands fa-whatsapp" style="color:#25d366;filter:drop-shadow(0 0 8px rgba(37,211,102,0.5));"></i>
+      Live WhatsApp Chat Hub
+    </h1>
+    <p style="color:var(--text-muted);font-size:0.8rem;margin-top:3px;">Real-time client chats from chatbot Direct Support tab — all staff can view and reply</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div style="background:rgba(238, 240, 208, 0.1);border:1px solid rgba(238, 240, 208, 0.3);border-radius:9999px;padding:6px 16px;font-size:0.78rem;font-weight:800;color:var(--cream, #eef0d0);display:flex;align-items:center;gap:6px;">
+      <span class="wa-online-dot"></span><span id="liveChatsCount">Loading...</span>
+    </div>
+    <button class="pill-tab" onclick="loadLiveChats()" style="font-size:0.8rem;"><i class="fa-solid fa-rotate" style="margin-right:5px;"></i> Refresh</button>
+  </div>
+</div>
+
+<div class="wa-hub-grid">
+
+  <div class="wa-panel">
+    <div class="wa-panel-head">
+      <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> Client Chat Queue
+      <span id="queueBadge" style="margin-left:auto;background:#25d366;color:#fff;border-radius:9999px;font-size:0.66rem;padding:2px 8px;">0</span>
+    </div>
+    <div style="padding:10px;border-bottom:1px solid var(--glass-border);">
+      <input type="text" id="clientSearchInput" placeholder="Search client..." onkeyup="filterClients()"
+        style="width:100%;padding:8px 12px;border:1px solid var(--glass-border);border-radius:9999px;font-size:0.8rem;background:rgba(255,255,255,0.1);color:var(--text-heading);outline:none;font-family:inherit;box-sizing:border-box;">
+    </div>
+    <div id="clientList" style="flex:1;overflow-y:auto;scrollbar-width:thin;">
+      <div class="wa-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;color:#25d366;"></i><span>Loading chats...</span></div>
+    </div>
+  </div>
+
+  <div class="wa-panel" id="chatPanel">
+    <div id="chatEmptyState" class="wa-empty-state">
+      <i class="fa-brands fa-whatsapp" style="font-size:3rem;color:#25d366;opacity:0.35;"></i>
+      <div style="font-weight:700;font-size:1rem;color:var(--text-heading);">Select a conversation</div>
+      <div style="font-size:0.8rem;max-width:260px;">Click any client from the left panel to view and reply to their WhatsApp chat in real time.</div>
+    </div>
+
+    <div id="chatActiveView" style="display:none;flex-direction:column;height:100%;">
+      <div class="wa-chat-header">
+        <img id="chatClientAvatar" src="" alt="Client" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #25d366;box-shadow:0 0 10px rgba(37,211,102,0.4);">
+        <div style="flex:1;min-width:0;">
+          <div id="chatClientName" style="font-weight:800;font-size:0.92rem;color:var(--text-heading);"></div>
+          <div style="font-size:0.70rem;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:2px;">
+            <span class="wa-online-dot"></span> Online via SupportNova Chatbot
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <span id="chatClientIdBadge" style="background:rgba(238,240,208,0.12);border:1px solid rgba(238,240,208,0.3);color:var(--cream, #eef0d0);border-radius:6px;font-size:0.65rem;font-weight:800;padding:3px 8px;"></span>
+          <button onclick="startVoiceCallFromHub()" title="Start Voice Call" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:800;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,211,102,0.4);"><i class="fa-solid fa-phone"></i> Call Client</button> <button onclick="refreshCurrentChat()" title="Refresh" style="background:rgba(238,240,208,0.1);border:1px solid rgba(238,240,208,0.25);color:var(--cream, #eef0d0);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="waChatMsgs">
+        <div class="wa-typing-row" id="customerTyping">
+          <div class="wa-typing-bub"><div class="wa-tdot"></div><div class="wa-tdot"></div><div class="wa-tdot"></div></div>
+          <span style="font-size:0.70rem;color:var(--text-muted);">Customer typing...</span>
+        </div>
+      </div>
+
+      <div style="padding:8px 14px;background:rgba(255,255,255,0.05);border-top:1px solid var(--glass-border);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;">
+        <button class="wa-qchip" onclick="insertQuickReply('Thank you for contacting SupportNova! I am reviewing your case right now.')">?? Greeting</button>
+        <button class="wa-qchip" onclick="insertQuickReply('Your case has been escalated to priority. Expected resolution within 24 hours.')">? Escalate</button>
+        <button class="wa-qchip" onclick="insertQuickReply('Could you please share your order number and product model?')">?? Request Info</button>
+        <button class="wa-qchip" onclick="insertQuickReply('Your refund request has been approved and will process within 3-5 business days.')">? Refund OK</button>
+        <button class="wa-qchip" onclick="insertQuickReply('We sincerely apologize. A replacement unit is being dispatched urgently.')">?? Replacement</button>
+      </div>
+
+      <div class="wa-reply-bar">
+        <input type="file" id="adminFileInput" style="display: none;" onchange="uploadAdminFile(this)">
+        <button type="button" onclick="document.getElementById('adminFileInput').click()" title="Attach Image or Document" style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.12); border: 1px solid var(--glass-border); color: var(--text-heading); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-paperclip"></i>
+        </button>
+        <textarea id="adminReplyInput" rows="1" placeholder="Type reply to client or attach photo/document... (Enter to send)"
+          onkeydown="handleReplyKey(event)"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,90)+'px';"></textarea>
+        <button id="adminReplySendBtn" onclick="sendAdminReply()" title="Send Reply">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wa-panel">
+    <div class="wa-panel-head"><i class="fa-solid fa-chart-bar" style="color:var(--cream, #eef0d0);"></i> Analytics &amp; Tools</div>
+    <div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;">
+
+      <div style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.22);border-radius:var(--radius-md);padding:14px;">
+        <div style="font-size:0.73rem;font-weight:800;color:var(--cream, #eef0d0);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Live Session Stats</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="text-align:center;background:rgba(255,255,255,0.1);border-radius:8px;padding:10px;">
+            <div style="font-size:1.5rem;font-weight:900;color:#25d366;" id="statActiveClients">0</div>
+            <div style="font-size:0.65rem;color:var(--text-muted);">Active Clients</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,0.1);border-radius:8px;padding:10px;">
+            <div style="font-size:1.5rem;font-weight:900;color:var(--cream, #eef0d0);" id="statTotalMsgs">0</div>
+            <div style="font-size:0.65rem;color:var(--text-muted);">Total Messages</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(238,240,208,0.05);border:1px solid rgba(238,240,208,0.16);border-radius:var(--radius-md);padding:14px;">
+        <div style="font-size:0.73rem;font-weight:800;color:var(--cream, #eef0d0);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Monitoring Staff</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&auto=format&fit=crop&q=80" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--cream, #eef0d0);">
+            <div><div style="font-size:0.78rem;font-weight:800;color:var(--text-heading);">Rayyan Ahmed Khan</div><div style="font-size:0.63rem;color:var(--cream, #eef0d0);">Super Admin</div></div>
+            <span style="margin-left:auto;width:8px;height:8px;background:#25d366;border-radius:50%;box-shadow:0 0 6px #25d366;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--accent, #f59e0b);">
+            <div><div style="font-size:0.78rem;font-weight:800;color:var(--text-heading);">Marcus Chen</div><div style="font-size:0.63rem;color:var(--accent, #f59e0b);">Lead Triage</div></div>
+            <span style="margin-left:auto;width:8px;height:8px;background:#25d366;border-radius:50%;box-shadow:0 0 6px #25d366;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&auto=format&fit=crop&q=80" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #10b981;">
+            <div><div style="font-size:0.78rem;font-weight:800;color:var(--text-heading);">Sarah Jenkins</div><div style="font-size:0.63rem;color:#10b981;">Warranty Officer</div></div>
+            <span style="margin-left:auto;width:8px;height:8px;background:#25d366;border-radius:50%;box-shadow:0 0 6px #25d366;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-md);padding:14px;">
+        <div style="font-size:0.73rem;font-weight:800;color:#d97706;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button onclick="broadcastAllClients()" style="width:100%;background:rgba(238,240,208,0.12);border:1px solid rgba(238,240,208,0.25);color:var(--cream, #eef0d0);border-radius:8px;padding:8px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s ease;">
+            <i class="fa-solid fa-bullhorn" style="margin-right:5px;"></i> Broadcast to All Clients
+          </button>
+          <a href="/admin" style="width:100%;background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);color:var(--text-muted);border-radius:8px;padding:8px;font-size:0.76rem;font-weight:700;text-align:center;text-decoration:none;display:block;font-family:inherit;">
+            <i class="fa-solid fa-arrow-left" style="margin-right:5px;"></i> Back to Admin Dashboard
+          </a>
+        </div>
+      </div>
+
+      <div style="background:rgba(14,165,233,0.07);border:1px solid rgba(14,165,233,0.18);border-radius:var(--radius-md);padding:14px;">
+        <div style="font-size:0.73rem;font-weight:800;color:#0284c7;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Selected Chat Context</div>
+        <div id="linkedCtxBox" style="font-size:0.78rem;color:var(--text-muted);line-height:1.7;">Select a chat to see context.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selectedClientId = null;
+  let allConversations = {};
+  let pollTimer = null;
+  let lastRenderedMsgCount = {};
+
+  function tsNow() {
+    return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function loadLiveChats() {
+    try {
+      const r = await fetch('/api/chat/live/conversations');
+      if (!r.ok) return;
+      const d = await r.json();
+      allConversations = d.conversations || {};
+      renderClientList(allConversations);
+      const totalMsgs = Object.values(allConversations).reduce((s, msgs) => s + msgs.length, 0);
+      const cnt = Object.keys(allConversations).length;
+      document.getElementById('liveChatsCount').textContent = `${cnt} Active Chat${cnt !== 1 ? 's' : ''}`;
+      document.getElementById('queueBadge').textContent = cnt;
+      document.getElementById('statActiveClients').textContent = cnt;
+      document.getElementById('statTotalMsgs').textContent = totalMsgs;
+    } catch (e) {}
+  }
+
+  function renderClientList(conversations) {
+    const list = document.getElementById('clientList');
+    const keys = Object.keys(conversations);
+    if (!keys.length) {
+      list.innerHTML = `<div class="wa-empty-state"><i class="fa-brands fa-whatsapp" style="font-size:2rem;color:#25d366;opacity:0.35;"></i><div>No active chats yet</div><div style="font-size:0.72rem;max-width:200px;">Chats appear here when customers use the Direct Support tab in the chatbot.</div></div>`;
+      return;
+    }
+    list.innerHTML = '';
+    keys.forEach(cid => {
+      const msgs = conversations[cid] || [];
+      const last = msgs[msgs.length - 1] || {};
+      const customerMsgs = msgs.filter(m => m.sender === 'customer');
+      const initials = cid.replace('USR-','').substring(0,2).toUpperCase();
+      const preview = (last.message || last.content || '—').substring(0, 40);
+      const el = document.createElement('div');
+      el.className = `wa-client-item${selectedClientId === cid ? ' selected' : ''}`;
+      el.id = `cli_${cid}`;
+      el.onclick = () => openClientChat(cid, msgs);
+      el.innerHTML = `
+        <div class="wa-client-avatar">${initials}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="wa-client-name">${cid}</div>
+          <div class="wa-client-preview">${escH(preview)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+          <div style="font-size:0.6rem;color:var(--text-muted);">${last.timestamp || ''}</div>
+          ${customerMsgs.length ? `<span class="wa-unread">${customerMsgs.length}</span>` : ''}
+        </div>`;
+      list.appendChild(el);
+    });
+  }
+
+  function filterClients() {
+    const q = document.getElementById('clientSearchInput').value.toLowerCase();
+    document.querySelectorAll('.wa-client-item').forEach(el => {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+  }
+
+  function openClientChat(cid, msgs) {
+    selectedClientId = cid;
+    document.querySelectorAll('.wa-client-item').forEach(el => el.classList.remove('selected'));
+    const item = document.getElementById(`cli_${cid}`);
+    if (item) item.classList.add('selected');
+    document.getElementById('chatEmptyState').style.display = 'none';
+    const active = document.getElementById('chatActiveView');
+    active.style.display = 'flex';
+    document.getElementById('chatClientName').textContent = cid;
+    document.getElementById('chatClientIdBadge').textContent = cid.substring(0, 16);
+    document.getElementById('chatClientAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(cid)}&background=4f46e5&color=fff&size=80`;
+    renderChatMessages(msgs);
+    document.getElementById('linkedCtxBox').innerHTML = `
+      <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Client ID:</span><strong style="color:var(--text-heading);font-size:0.75rem;">${cid}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Messages:</span><strong style="color:#25d366;">${msgs.length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>From:</span><strong style="color:var(--cream, #eef0d0);">WhatsApp Chatbot</strong></div>`;
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(refreshCurrentChat, 4000);
+  }
+
+  function renderChatMessages(msgs) {
+    const box = document.getElementById('waChatMsgs');
+    const typingEl = document.getElementById('customerTyping');
+    box.innerHTML = '';
+    box.appendChild(typingEl);
+    const sys = document.createElement('div');
+    sys.className = 'wa-sys-lbl';
+    sys.textContent = 'Secure channel — all messages saved to database';
+    box.insertBefore(sys, typingEl);
+    msgs.forEach(m => appendBubble(m, false));
+    box.scrollTop = box.scrollHeight;
+    lastRenderedMsgCount[selectedClientId] = msgs.length;
+  }
+
+  function appendBubble(m, scroll) {
+    const box = document.getElementById('waChatMsgs');
+    const typingEl = document.getElementById('customerTyping');
+    const text = m.message || m.content || '';
+    const isCust = m.sender === 'customer';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;';
+    if (isCust) {
+      wrap.innerHTML = `<div class="wa-msg-in">${escH(text)}</div><div class="wa-meta in"><i class="fa-solid fa-user" style="font-size:0.56rem;"></i> ${m.sender_name || 'Customer'} &bull; ${m.timestamp || tsNow()}</div>`;
+    } else {
+      wrap.innerHTML = `<div class="wa-msg-out">${escH(text)}</div><div class="wa-meta out">${m.timestamp || tsNow()} <span class="wa-ticks"><i class="fa-solid fa-check-double" style="color:#53bdeb;font-size:0.75rem;"></i></span></div>`;
+    }
+    box.insertBefore(wrap, typingEl);
+    if (scroll) box.scrollTop = box.scrollHeight;
+  }
+
+  async function refreshCurrentChat() {
+    if (!selectedClientId) return;
+    try {
+      const r = await fetch(`/api/chat/live/messages?client_id=${encodeURIComponent(selectedClientId)}`);
+      const d = await r.json();
+      const msgs = d.messages || [];
+      if (msgs.length > (lastRenderedMsgCount[selectedClientId] || 0)) {
+        allConversations[selectedClientId] = msgs;
+        renderChatMessages(msgs);
+        renderClientList(allConversations);
+      }
+    } catch (e) {}
+  }
+
+  async function sendAdminReply() {
+    const inp = document.getElementById('adminReplyInput');
+    const text = inp.value.trim();
+    if (!text || !selectedClientId) return;
+    inp.value = '';
+    inp.style.height = 'auto';
+    try {
+      const r = await fetch('/api/chat/live/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, client_id: selectedClientId, sender: 'agent', sender_name: 'Support Team' })
+      });
+      const d = await r.json();
+      if (d.success && d.message) {
+        appendBubble(d.message, true);
+        allConversations[selectedClientId] = [...(allConversations[selectedClientId] || []), d.message];
+        lastRenderedMsgCount[selectedClientId] = (allConversations[selectedClientId] || []).length;
+      }
+    } catch (e) {}
+  }
+
+  function handleReplyKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAdminReply(); }
+  }
+
+  function insertQuickReply(text) {
+    const inp = document.getElementById('adminReplyInput');
+    inp.value = text;
+    inp.focus();
+    inp.style.height = 'auto';
+    inp.style.height = Math.min(inp.scrollHeight, 90) + 'px';
+  }
+
+  async function broadcastAllClients() {
+    const msg = window.prompt('Broadcast message to all active clients:');
+    if (!msg || !msg.trim()) return;
+    const keys = Object.keys(allConversations);
+    let sent = 0;
+    for (const cid of keys) {
+      try {
+        await fetch('/api/chat/live/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg.trim(), client_id: cid, sender: 'agent', sender_name: 'SupportNova Team' })
+        });
+        sent++;
+      } catch (e) {}
+    }
+    const t = document.createElement('div');
+    t.className = 'toast toast-success';
+    t.innerHTML = `<i class="fa-solid fa-check-circle"></i> Broadcast sent to ${sent} client${sent !== 1 ? 's' : ''}`;
+    const c = document.getElementById('toastContainer');
+    if (c) { c.appendChild(t); setTimeout(() => t.remove(), 3500); }
+  }
+
+  async function uploadAdminFile(input) {
+    if (!input.files || !input.files[0] || !selectedClientId) return;
+    const file = input.files[0];
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch('/api/chat/upload-file', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) {
+        let msgText = '';
+        if (data.is_image) {
+          msgText = `![image](${data.file_url})`;
+        } else {
+          msgText = `[file](${data.file_url}|${data.filename})`;
+        }
+        await fetch('/api/chat/live/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msgText, client_id: selectedClientId, sender: 'agent', sender_name: 'Support Team' })
+        });
+        refreshCurrentChat();
+      }
+    } catch (e) {}
+    input.value = '';
+  }
+
+  function escH(t) {
+    if (t.startsWith('![image](')) {
+      const url = t.substring(9, t.length - 1);
+      return `<img src="${url}" style="max-width:240px;max-height:240px;border-radius:12px;margin-top:4px;display:block;box-shadow:0 4px 12px rgba(0,0,0,0.15);">`;
+    }
+    if (t.startsWith('[file](')) {
+      const parts = t.substring(7, t.length - 1).split('|');
+      const url = parts[0];
+      const name = parts[1] || 'Document';
+      return `<a href="${url}" target="_blank" style="color:#fff;text-decoration:underline;display:inline-flex;align-items:center;gap:6px;font-weight:700;"><i class="fa-solid fa-file-arrow-down"></i> ${name}</a>`;
+    }
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(t));
+    return d.innerHTML;
+  }
+
+  function startVoiceCallFromHub() {
+    if (!selectedClientId) return;
+    fetch('/api/call/initiate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ client_id: selectedClientId, client_name: 'Client ' + selectedClientId })
+    }).then(r=>r.json()).then(d=>{
+      if(d.status==='ringing'){
+        if(typeof showToast==='function') showToast('📞 Internet Voice Call initiated to ' + selectedClientId, 'info');
+      } else if(d.status==='unavailable') {
+        if(typeof showToast==='function') showToast('⚠️ ' + d.message, 'warning');
+      }
+    });
+  }
+  loadLiveChats();
+  setInterval(loadLiveChats, 5500);
+</script>
+
+{% endblock %}
+
+
+

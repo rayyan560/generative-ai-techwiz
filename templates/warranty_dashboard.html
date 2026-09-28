@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Warranty, Escrow & Refund Claims - SupportNova{% endblock %}
+
+{% block content %}
+<div class="customer-hero-card" id="warrantyHeroCard" style="border-left: 5px solid #10b981;">
+  <div class="hero-customer-profile">
+    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80" alt="Sarah Jenkins" class="hero-avatar" id="warrantyAvatar" style="border-color: #10b981;">
+    <div class="hero-info">
+      <h2>Sarah Jenkins <span class="badge badge-success" style="font-size: 0.78rem; margin-left: 8px;">Warranty & Refund Officer</span></h2>
+      <div class="hero-meta-grid">
+        <div class="hero-meta-item">
+          <i class="fa-solid fa-scale-balanced" style="color: #10b981;"></i>
+          <span>Grievance Escrow & Warranty Treasury</span>
+        </div>
+        <div class="hero-meta-item">
+          <i class="fa-regular fa-envelope"></i>
+          <span>warranty@supportnova.io</span>
+        </div>
+        <div class="hero-meta-item">
+          <i class="fa-solid fa-shield-halved" style="color: #3b82f6;"></i>
+          <span>50 Hardware Warranty Master Rules (Active)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-account-summary">
+    <div class="label">Escrow Liquidity Pool</div>
+    <div class="value" style="color: #10b981;">$ 20,000.00</div>
+    <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
+      Audited Payouts: <strong style="color: var(--cream, #eef0d0);">$ 3,450.00</strong> | Fraud Blocked: <strong style="color: #e11d48;">$ 1,200.00</strong>
+    </div>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="summary-card" style="border-top: 3px solid #10b981;">
+    <div>
+      <div class="summary-card-title">Authorized Warranty Claims</div>
+      <div class="summary-card-value" style="color: #10b981;">94.8%</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Ground-Truth Rule Strict Match</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 95%; background: #10b981;"></div>
+    </div>
+    <a href="/rules" class="card-link-more">Inspect 105+ Matrix Rules &rarr;</a>
+  </div>
+
+  <div class="summary-card" style="border-top: 3px solid var(--accent, #f59e0b);">
+    <div>
+      <div class="summary-card-title">Pending Claims Review</div>
+      <div class="summary-card-value" style="color: #d97706;">7 Requests</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Awaiting Officer Authorization</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 45%; background: var(--accent, #f59e0b);"></div>
+    </div>
+    <a href="/refunds" class="card-link-more">Manage Ledger & Escrow Pool &rarr;</a>
+  </div>
+
+  <div class="summary-card cream-highlight-card" style="border-top: 3px solid var(--cream, #eef0d0);">
+    <div>
+      <div class="summary-card-title">Customer CLV Preservation</div>
+      <div class="summary-card-value" style="color: var(--cream, #eef0d0);">$ 145,200</div>
+      <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Retained Value via Resolution Protocols</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 88%; background: var(--cream, #eef0d0);"></div>
+    </div>
+    <a href="/analytics" class="card-link-more">View Retention Analytics &rarr;</a>
+  </div>
+</div>
+
+<div class="tab-pills-row">
+  <button class="pill-tab active" onclick="filterByTab('Refund')">Warranty Payout Claims</button>
+  <button class="pill-tab" onclick="filterByTab('Critical')">High-Value / P0 Escalations</button>
+  <button class="pill-tab" onclick="filterByTab('ManualReview')">Audit Flagged</button>
+  <button class="pill-tab" onclick="filterByTab('Resolved')">Approved Disbursements</button>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Ticket Ref</th>
+        <th>Customer & Tier</th>
+        <th>Product Model</th>
+        <th>Claim Title</th>
+        <th>Warranty Coverage</th>
+        <th>Requested Payout</th>
+        <th>Python Validation</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="complaintsTableBody">
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted);">
+          <i class="fa-solid fa-spinner fa-spin"></i> Loading Warranty Ledger Stream...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

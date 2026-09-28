@@ -1,0 +1,99 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Analytics & Dual-Pipeline Verification Reports - SupportNova{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; flex-wrap: wrap; gap: 14px;">
+  <div>
+    <h1 style="font-size: 1.6rem; color: var(--text-heading); font-weight: 900; display: flex; align-items: center; gap: 10px;">
+      <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
+      Complaint Intelligence & Executive Defect Analytics
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time SLA Tracking, 50-Product Defect Radar, and RAG Verification Index</p>
+  </div>
+  <div style="display: flex; gap: 12px;">
+    <a href="/api/reports/export/csv" class="pill-tab active" style="text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+      <i class="fa-solid fa-file-csv"></i> Export Full CSV Report
+    </a>
+  </div>
+</div>
+
+<!-- 🚨 Automated AI Product Quality Recall Advisory Banner -->
+<div id="aiRecallAdvisoryBanner" style="display: none; background: linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(244, 63, 94, 0.15) 100%); border: 1px solid rgba(225, 29, 72, 0.4); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 26px; backdrop-filter: blur(16px);">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #e11d48; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <div style="font-weight: 800; font-size: 1.05rem; color: #be123c;" id="recallAdvisoryTitle">Executive QA Advisory: Defect Spike Detected</div>
+        <div style="font-size: 0.86rem; color: var(--text-heading); margin-top: 2px;" id="recallAdvisoryDesc">Model NovaBook Pro 16 shows elevated battery swelling reports. Recommended: Engineering batch recall.</div>
+      </div>
+    </div>
+    <span class="badge badge-danger" style="padding: 8px 18px; font-size: 0.85rem;">Action Recommended</span>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="metrics-grid">
+  <div class="summary-card">
+    <div class="summary-card-title">Total Processed Dataset</div>
+    <div class="summary-card-value" id="kpiTotal">525</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">50+ Products & 12 Grievance Domains</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-card-title">Dual-Pipeline Verification Score</div>
+    <div class="summary-card-value" id="kpiCompliance" style="color: #10b981;">98.4%</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Zero ungrounded hallucinations passed</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-card-title">Customer Frustration Index</div>
+    <div class="summary-card-value" id="kpiFrustration" style="color: #e11d48;">44.2% Avg</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Real-Time Acoustic & Tone Telemetry</div>
+  </div>
+</div>
+
+<!-- 50 Products Defect Radar & Geo-Spatial Quality Table -->
+<div class="table-container" style="margin-top: 24px;">
+  <div style="padding: 18px 24px; border-bottom: 1px solid var(--glass-border-subtle); display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h3 style="font-size: 1.1rem; color: var(--text-heading); font-weight: 800;">50-Product Hardware Defect Radar & QA Failure Mode Ranking</h3>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time failure frequency monitoring across all official NovaTech hardware lines</div>
+    </div>
+    <span class="badge badge-primary">50 Monitored Models</span>
+  </div>
+  <table class="data-table" id="defectRadarTable">
+    <thead>
+      <tr>
+        <th>Product ID</th>
+        <th>Product Model</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Failure Count</th>
+        <th>Primary Failure Mode</th>
+        <th>Quality Index</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="defectRadarTableBody">
+      <!-- Populated via JS -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Glass Charts Grid -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+  <div class="glass-card" style="padding: 24px;">
+    <h3 style="font-size: 1.05rem; color: var(--text-heading); font-weight: 800; margin-bottom: 16px;">Complaints by Category</h3>
+    <canvas id="categoryChart" height="220"></canvas>
+  </div>
+
+  <div class="glass-card" style="padding: 24px;">
+    <h3 style="font-size: 1.05rem; color: var(--text-heading); font-weight: 800; margin-bottom: 16px;">Urgency & Risk Distribution</h3>
+    <canvas id="urgencyChart" height="220"></canvas>
+  </div>
+</div>
+{% endblock %}
+

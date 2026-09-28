@@ -1,0 +1,26 @@
+[
+  {
+    "msg_id": "MSG-001",
+    "client_id": "USR-CUSTOMER",
+    "sender": "agent",
+    "sender_name": "Marcus Chen",
+    "sender_role": "Lead Triage Specialist",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80",
+    "message": "Welcome to SupportNova Direct WhatsApp Care! I am Marcus Chen, your assigned technical triage specialist.",
+    "timestamp": "10:14 AM",
+    "status": "read",
+    "_id": "live_chats_1_1790468279"
+  },
+  {
+    "msg_id": "MSG-002",
+    "client_id": "USR-CUSTOMER",
+    "sender": "agent",
+    "sender_name": "Marcus Chen",
+    "sender_role": "Lead Triage Specialist",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80",
+    "message": "Feel free to share your ticket reference ID or describe any urgent hardware grievance. Rayyan Ahmed (Operations Director) and our warranty desk are also monitoring this chat channel.",
+    "timestamp": "10:15 AM",
+    "status": "read",
+    "_id": "live_chats_2_1790468279"
+  }
+]

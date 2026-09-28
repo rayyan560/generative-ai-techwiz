@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Agent Triage Desk & Hardware Forensics - SupportNova{% endblock %}
+
+{% block content %}
+<div class="customer-hero-card" id="agentHeroCard" style="border-left: 5px solid var(--cream, #eef0d0);">
+  <div class="hero-customer-profile">
+    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80" alt="Marcus Chen" class="hero-avatar" id="agentAvatar" style="border-color: var(--cream, #eef0d0);">
+    <div class="hero-info">
+      <h2>Marcus Chen <span class="badge badge-primary" style="font-size: 0.78rem; margin-left: 8px;">Lead Triage Specialist</span></h2>
+      <div class="hero-meta-grid">
+        <div class="hero-meta-item">
+          <i class="fa-solid fa-microchip" style="color: var(--cream, #eef0d0);"></i>
+          <span>Hardware Forensic & Triage Station #4</span>
+        </div>
+        <div class="hero-meta-item">
+          <i class="fa-regular fa-envelope"></i>
+          <span>agent@supportnova.io</span>
+        </div>
+        <div class="hero-meta-item">
+          <i class="fa-solid fa-signal" style="color: #10b981;"></i>
+          <span>Active Dual-Pipeline Live Stream</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-account-summary">
+    <div class="label">Today's Triage Throughput</div>
+    <div class="value" style="color: var(--cream, #eef0d0);" id="agentThroughputCount">-- Cases</div>
+    <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
+      Avg Inspection Time: <strong style="color: #10b981;" id="agentAvgTime">3.2 mins</strong> | Accuracy: <strong style="color: var(--cream, #eef0d0);" id="agentAccuracy">99.4%</strong>
+    </div>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="summary-card" style="border-top: 3px solid var(--accent, #f59e0b);">
+    <div>
+      <div class="summary-card-title">Priority Triage Queue</div>
+      <div class="summary-card-value" style="color: var(--accent, #f59e0b);" id="agentQueuePending">-- Pending</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">P0 Critical Safety Alerts: <strong style="color: #e11d48;" id="agentCriticalCount">0</strong></div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 65%; background: var(--accent, #f59e0b);"></div>
+    </div>
+    <a href="javascript:void(0)" class="card-link-more" onclick="filterByTab('Critical')">Review Critical Incidents &rarr;</a>
+  </div>
+
+  <div class="summary-card" style="border-top: 3px solid #10b981;">
+    <div>
+      <div class="summary-card-title">Multimodal Vision Scans</div>
+      <div class="summary-card-value" style="color: #10b981;" id="agentVisionAccuracy">99.2%</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Gemini 1.5 Vision Damage Verification Rate</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 99%; background: #10b981;"></div>
+    </div>
+    <a href="/rules" class="card-link-more">View Vision Criteria Rules &rarr;</a>
+  </div>
+
+  <div class="summary-card" style="border-top: 3px solid var(--cream, #eef0d0);">
+    <div>
+      <div class="summary-card-title">Live WhatsApp Chats Active</div>
+      <div class="summary-card-value" style="color: var(--cream, #eef0d0);" id="agentActiveChatsCount">Active</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Direct Client Inquiries in Real-Time</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width: 80%; background: var(--cream, #eef0d0);"></div>
+    </div>
+    <a href="/communication" class="card-link-more">Open Live WhatsApp Desk &rarr;</a>
+  </div>
+</div>
+
+<div class="tab-pills-row">
+  <button class="pill-tab active" onclick="filterByTab('All')">All Queue Incidents</button>
+  <button class="pill-tab" onclick="filterByTab('Critical')">P0/Critical Hardware Alerts</button>
+  <button class="pill-tab" onclick="filterByTab('ManualReview')">Needs Agent Verification</button>
+  <button class="pill-tab" onclick="filterByTab('Refund')">Warranty Payout Claims</button>
+  <button class="pill-tab" onclick="filterByTab('Adversarial')">Adversarial / Injection Flags</button>
+  <button class="pill-tab" onclick="filterByTab('Resolved')">Resolved Today</button>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Incident Reference</th>
+        <th>Customer & Tier</th>
+        <th>Reported Hardware / Product</th>
+        <th>Triage Title</th>
+        <th>AI Predicted Category</th>
+        <th>Urgency & SLA</th>
+        <th>Emotion Score</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="complaintsTableBody">
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted);">
+          <i class="fa-solid fa-spinner fa-spin"></i> Loading Agent Triage Stream...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="triageModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(14px);">
+  <div class="modal-dialog-anim triage-modal-dialog" style="width: 92%; max-width: 1060px; max-height: 90vh; overflow-y: auto; border-radius: var(--radius-xl); padding: 36px; position: relative;">
+    <button onclick="closeTriageModal()" class="icon-glass-btn" style="position: absolute; right: 28px; top: 28px; font-size: 1.25rem;">&times;</button>
+    <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--cream); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+        <i class="fa-solid fa-microchip"></i>
+      </div>
+      <div>
+        <h2 id="modalComplaintTitle" style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">Incident Details</h2>
+        <div id="modalComplaintSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Reference: CMP-00001</div>
+      </div>
+    </div>
+
+    <div class="triage-subcard" style="padding: 18px 24px; margin-bottom: 24px;">
+      <div style="font-size: 0.80rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">Customer Reported Narrative:</div>
+      <p id="modalRawDescription" style="font-size: 0.95rem; color: var(--text-heading); line-height: 1.6; font-weight: 500;"></p>
+    </div>
+
+    <div class="emotion-gauge-card" id="modalEmotionCard">
+      <div style="min-width: 220px;">
+        <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;">Customer Emotion State</div>
+        <div id="modalEmotionState" style="font-weight: 900; font-size: 1.15rem; color: var(--text-heading); margin-top: 2px;">Frustrated & Upset</div>
+      </div>
+      <div class="emotion-heat-bar" style="background: rgba(148, 163, 184, 0.25); height: 12px; border-radius: 99px; flex-grow: 1;">
+        <div class="emotion-heat-fill" id="modalEmotionBar" style="width: 78%; background: linear-gradient(90deg, #10b981, #f59e0b, #e11d48); height: 100%; border-radius: 99px;"></div>
+      </div>
+      <div style="text-align: right; min-width: 140px;">
+        <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 800;">Frustration Heat</div>
+        <div id="modalFrustrationScore" style="font-weight: 900; font-size: 1.3rem; color: #e11d48; font-family: monospace;">78%</div>
+      </div>
+    </div>
+
+    <div class="dual-pipeline-container" style="margin-bottom: 28px;">
+      <div class="pipeline-card genai" style="border-top: 4px solid var(--cream, #eef0d0);">
+        <div class="pipeline-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; margin-bottom: 14px;">
+          <div style="font-weight: 900; color: var(--cream, #eef0d0); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Pipeline A: Multimodal GenAI
+          </div>
+          <span class="badge badge-primary">Gemini 1.5</span>
+        </div>
+        <div id="modalGenAiFields" style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem; color: var(--text-heading);"></div>
+      </div>
+
+      <div class="pipeline-card groundtruth" style="border-top: 4px solid #10b981;">
+        <div class="pipeline-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; margin-bottom: 14px;">
+          <div style="font-weight: 900; color: #10b981; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-shield-halved"></i> Pipeline B: Ground-Truth Policy
+          </div>
+          <span class="badge badge-success">Python 3.11</span>
+        </div>
+        <div id="modalGroundTruthFields" style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem; color: var(--text-heading);"></div>
+      </div>
+    </div>
+
+    <div class="triage-subcard" style="padding: 22px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div style="font-weight: 800; font-size: 0.92rem; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-microphone-lines" style="color: var(--cream, #eef0d0);"></i> AI Response Tone Studio & Follow-up Generator
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="pill-tab active" onclick="changeResponseTone('Empathetic')" style="padding: 4px 12px; font-size: 0.75rem;">Empathetic</button>
+          <button class="pill-tab" onclick="changeResponseTone('Professional')" style="padding: 4px 12px; font-size: 0.75rem;">Professional</button>
+          <button class="pill-tab" onclick="changeResponseTone('Concise')" style="padding: 4px 12px; font-size: 0.75rem;">Concise</button>
+          <button class="pill-tab" onclick="changeResponseTone('Formal')" style="padding: 4px 12px; font-size: 0.75rem;">Formal</button>
+        </div>
+      </div>
+      <textarea id="modalCustomerResponseDraft" rows="4" class="triage-textarea" style="width: 100%; font-weight: 600; font-size: 0.92rem; line-height: 1.6; padding: 12px;"></textarea>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button class="pill-tab" onclick="closeTriageModal()" style="padding: 10px 22px;">Close Triage</button>
+      <button class="submit-btn" onclick="saveAgentResolution()" style="padding: 10px 26px;">
+        <i class="fa-solid fa-check-double"></i> Authorize & Dispatch Resolution
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

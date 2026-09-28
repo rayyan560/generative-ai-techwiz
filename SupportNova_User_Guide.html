@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SupportNova – 30‑Slide User Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary:#6366f1;--primary-dark:#4f46e5;--secondary:#8b5cf6;--accent:#d946ef;--emerald:#10b981;--amber:#f59e0b;--rose:#f43f5e;--cyan:#06b6d4;--bg-gradient:linear-gradient(135deg,#0f172a 0%,#1e1b4b 35%,#180828 70%,#030712 100%);--glass-bg:rgba(255,255,255,0.06);--glass-bg-card:rgba(255,255,255,0.08);--glass-border:rgba(255,255,255,0.15);--glass-border-subtle:rgba(255,255,255,0.08);--text-heading:#fff;--text-body:#e2e8f0;--text-muted:#94a3b8;--radius:20px;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Outfit',sans-serif;}
+    body{background:var(--bg-gradient);color:var(--text-body);min-height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+    .deck-header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(15,23,42,0.65);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border-subtle);}
+    .deck-logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.15rem;color:#fff;letter-spacing:-0.5px;}
+    .deck-logo i{color:#818cf8;font-size:1.4rem;}
+    .deck-title-center{font-size:0.9rem;font-weight:600;color:var(--text-muted);}    
+    .deck-controls{display:flex;gap:12px;}
+    .btn-nav{background:var(--glass-bg);border:1px solid var(--glass-border);color:#fff;padding:7px 16px;border-radius:12px;cursor:pointer;font-size:0.85rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s ease;}
+    .btn-nav:hover{background:rgba(99,102,241,0.3);border-color:#818cf8;transform:translateY(-1px);}    
+    .deck-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .slide-wrapper{width:100%;max-width:1300px;height:calc(100vh-160px);max-height:840px;display:none;opacity:0;transform:scale(0.96);transition:all 0.4s cubic-bezier(0.16,1,0.3,1);}
+    .slide-wrapper.active{display:flex;opacity:1;transform:scale(1);}
+    .slide-card{width:100%;height:100%;background:var(--glass-bg-card);backdrop-filter:blur(36px) saturate(190%);border:1px solid var(--glass-border);border-radius:var(--radius);padding:44px 56px;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.2);overflow-y:auto;position:relative;}
+    .slide-tag{display:inline-flex;align-items:center;gap:8px;padding:4px 14px;border-radius:999px;background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;font-size:0.78rem;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px;width:fit-content;}
+    .slide-heading{font-size:2.2rem;font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;background:linear-gradient(135deg,#ffffff 0%,#cbd5e1 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .slide-desc{font-size:1.05rem;color:var(--text-muted);line-height:1.6;margin-bottom:28px;max-width:950px;}
+    .slide-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;flex:1;}
+    .slide-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;flex:1;}
+    .feature-box{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border-subtle);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column;justify-content:flex-start;transition:transform 0.2s ease,border-color 0.2s ease;}
+    .feature-box:hover{border-color:rgba(99,102,241,0.5);transform:translateY(-2px);background:rgba(255,255,255,0.06);}
+    .feature-box-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;margin-bottom:14px;}
+    .feature-box-title{font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:8px;}
+    .feature-box-desc{font-size:0.9rem;color:var(--text-muted);line-height:1.5;}
+    .deck-footer{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(15,23,42,0.7);backdrop-filter:blur(20px);border-top:1px solid var(--glass-border-subtle);}
+    .progress-track{flex:1;max-width:500px;height:6px;background:rgba(255,255,255,0.1);border-radius:999px;overflow:hidden;margin:0 24px;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6,#d946ef);width:2%;transition:width 0.3s ease;}
+    .slide-counter{font-family:'JetBrains Mono',monospace;font-size:0.88rem;font-weight:700;color:#fff;min-width:100px;}
+    .overview-modal{position:fixed;inset:0;background:rgba(10,15,30,0.85);backdrop-filter:blur(24px);z-index:200;display:none;flex-direction:column;padding:40px;}
+    .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;overflow-y:auto;flex:1;margin-top:20px;}
+    .overview-item{background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:12px;padding:14px;cursor:pointer;transition:all 0.2s ease;}
+    .overview-item:hover{background:rgba(99,102,241,0.25);border-color:#818cf8;transform:scale(1.02);}    
+  </style>
+</head>
+<body>
+  <header class="deck-header">
+    <div class="deck-logo"><i class="fa-solid fa-layer-group"></i><span>SupportNova <span style="color:#818cf8;">User Guide</span></span></div>
+    <div class="deck-title-center" id="deckSectionTitle">Introduction</div>
+    <div class="deck-controls">
+      <button class="btn-nav" onclick="toggleOverview()"><i class="fa-solid fa-table-cells-large"></i> Grid [O]</button>
+      <button class="btn-nav" onclick="toggleFullScreen()"><i class="fa-solid fa-expand"></i> Fullscreen [F]</button>
+    </div>
+  </header>
+
+  <main class="deck-stage" id="slideStage"></main>
+
+  <footer class="deck-footer">
+    <div style="display:flex;gap:8px;">
+      <button class="btn-nav" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Prev</button>
+      <button class="btn-nav" onclick="nextSlide()">Next <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="slide-counter" id="slideCounter">Slide 1 / 30</div>
+  </footer>
+
+  <div class="overview-modal" id="overviewModal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 style="font-size:1.4rem;color:#fff;font-weight:800;">30‑Slide Table of Contents</h2>
+      <button class="btn-nav" onclick="toggleOverview()">&times; Close</button>
+    </div>
+    <div class="overview-grid" id="overviewGrid"></div>
+  </div>
+
+  <script>
+    const slidesData = [
+      // 1‑5: Getting Started
+      {section:"1. Getting Started",tag:"Slide 01 • Welcome",title:"Welcome to SupportNova",desc:"An intuitive, glass‑morphic UI that empowers customers and agents alike.",grid:"2",items:[{icon:"fa-user",title:"User Personas",desc:"Support agents, supervisors, and end‑customers."},{icon:"fa-mobile-screen",title:"Device Support",desc:"Responsive across desktop, tablet and mobile."}]},
+      {section:"1. Getting Started",tag:"Slide 02 • Quick Sign‑In",title:"Seamless Authentication",desc:"One‑click sign‑in with SSO or email magic link.",grid:"2",items:[{icon:"fa-key",title:"SSO Integration",desc:"Azure AD, Google Workspace."},{icon:"fa-envelope",title:"Magic Link",desc:"Password‑less email login."}]},
+      {section:"1. Getting Started",tag:"Slide 03 • Dashboard Overview",title:"Crystal Dashboard",desc:"Glassy cards showing tickets, sentiment, and SLA status.",grid:"2",items:[{icon:"fa-tachometer-alt",title:"Live Metrics",desc:"Real‑time KPI tiles."},{icon:"fa-chart-line",title:"Trend Charts",desc:"Historical performance."}]},
+      {section:"1. Getting Started",tag:"Slide 04 • Navigation",title:"Intuitive Navigation",desc:"Command palette (⌘K) and side‑menu for fast access.",grid:"2",items:[{icon:"fa-search",title:"Palette",desc:"Fuzzy search across tickets, policies, actions."},{icon:"fa-bars",title:"Side‑Menu",desc:"Responsive collapsible menu."}]},
+      {section:"1. Getting Started",tag:"Slide 05 • Accessibility",title:"Inclusive Design",desc:"Keyboard shortcuts, high‑contrast mode, screen‑reader support.",grid:"2",items:[{icon:"fa-keyboard",title:"Keyboard First",desc:"All actions operable via keyboard."},{icon:"fa-eye",title:"High Contrast",desc:"Toggleable theme for visual clarity."}]},
+      // 6‑10: Core Interactions
+      {section:"2. Core Interactions",tag:"Slide 06 • Ticket Creation",title:"Create a New Ticket",desc:"Step‑by‑step guided form with micro‑animations.",grid:"2",items:[{icon:"fa-plus-circle",title:"Guided Form",desc:"Smart defaults and inline validation."},{icon:"fa-microphone",title:"Voice Capture",desc:"Dictate issue via microphone."}]},
+      {section:"2. Core Interactions",tag:"Slide 07 • Ticket View",title:"Ticket Detail View",desc:"Glass panel with timeline, attachments, and AI suggestions.",grid:"2",items:[{icon:"fa-clock",title:"Timeline",desc:"Chronological event log."},{icon:"fa-lightbulb",title:"AI Suggestions",desc:"Suggested resolutions & next steps."}]},
+      {section:"2. Core Interactions",tag:"Slide 08 • Real‑Time Chat",title:"Live Agent Chat",desc:"WebSocket powered chat with typing indicators.",grid:"2",items:[{icon:"fa-comment-dots",title:"Typing Indicator",desc:"Shows when agent is typing."},{icon:"fa-wifi",title:"Live Sync",desc:"Instant message propagation."}]},
+      {section:"2. Core Interactions",tag:"Slide 09 • Emotion Heatmap",title:"Customer Sentiment Heatmap",desc:"Visual gauge of frustration & joy during the call.",grid:"2",items:[{icon:"fa-fire",title:"Frustration Index",desc:"0‑100% realtime gauge."},{icon:"fa-smile",title:"Joy Indicator",desc:"Positive sentiment spikes."}]},
+      {section:"2. Core Interactions",tag:"Slide 10 • Escalation Flow",title:"Automatic Escalation",desc:"When frustration >75%, route to Tier‑2 supervisor.",grid:"2",items:[{icon:"fa-level-up-alt",title:"Threshold Trigger",desc:"Dynamic escalation."},{icon:"fa-user-tie",title:"Supervisor Handoff",desc:"Live video handoff."}]},
+      // 11‑15: AI Features
+      {section:"3. AI Features",tag:"Slide 11 • Vision Scanner",title:"Multimodal Vision Scanner",desc:"Upload photos of hardware – AI detects defects.",grid:"2",items:[{icon:"fa-camera",title:"Defect Detection",desc:"OLED cracks, battery swelling."},{icon:"fa-barcode",title:"OCR & Serial",desc:"Extract model numbers."}]},
+      {section:"3. AI Features",tag:"Slide 12 • Voice AI",title:"Real‑Time Voice Analytics",desc:"Transcribe calls, detect stress, language.",grid:"2",items:[{icon:"fa-microphone",title:"Live Transcription",desc:"Speech‑to‑text."},{icon:"fa-heart-pulse",title:"Stress Detection",desc:"Pitch & tempo analysis."}]},
+      {section:"3. AI Features",tag:"Slide 13 • Smart Escrow",title:"Financial Escrow Automation",desc:"AI decides optimal cash vs voucher settlement.",grid:"2",items:[{icon:"fa-money-bill-transfer",title:"Cash vs Voucher",desc:"Optimizes CLV."},{icon:"fa-file-invoice-dollar",title:"Audit Trail",desc:"Exportable CSV logs."}]},
+      {section:"3. AI Features",tag:"Slide 14 • Policy Auditor",title:"Policy Drift Auditor",desc:"Continuously scans SOPs for conflicts.",grid:"2",items:[{icon:"fa-magnifying-glass-chart",title:"Conflict Radar",desc:"Highlights contradictions."},{icon:"fa-scale-balanced",title:"Resolution Engine",desc:"Applies hierarchy rules."}]},
+      {section:"3. AI Features",tag:"Slide 15 • Defect Radar",title:"Executive Defect Radar",desc:"Aggregates hardware failure metrics across product lines.",grid:"2",items:[{icon:"fa-laptop",title:"Product Lines",desc:"NovaBook, NovaPhone, etc."},{icon:"fa-chart-pie",title:"Quality Index",desc:"0‑100% reliability score."}]},
+      // 16‑20: Administration
+      {section:"4. Administration",tag:"Slide 16 • Role Management",title:"RBAC & Permissions",desc:"Define agent, supervisor, finance roles.",grid:"2",items:[{icon:"fa-user-lock",title:"Roles",desc:"Granular access control."},{icon:"fa-key",title:"Policy Assignments",desc:"Map SOPs to roles."}]},
+      {section:"4. Administration",tag:"Slide 17 • Theme Switching",title:"Light / Dark Glassmorphism",desc:"Toggle theme – preserves glass effect.",grid:"2",items:[{icon:"fa-sun",title:"Light Mode",desc:"Bright glass panels."},{icon:"fa-moon",title:"Dark Mode",desc:"Deep‑sea glass."}]},
+      {section:"4. Administration",tag:"Slide 18 • Notification Settings",title:"Toast & Audio Alerts",desc:"Customize chimes and toast lifetimes.",grid:"2",items:[{icon:"fa-bell-concierge",title:"Toasts",desc:"Slide‑in alerts."},{icon:"fa-volume-high",title:"Audio Cues",desc:"Sine/triangle wave sounds."}]},
+      {section:"4. Administration",tag:"Slide 19 • Data Export",title:"Export Reports",desc:"CSV, JSON, PDF for compliance audits.",grid:"2",items:[{icon:"fa-file-csv",title:"CSV Export",desc:"Tickets, finances, policies."},{icon:"fa-file-pdf",title:"PDF Summary",desc:"Executive decks."}]},
+      {section:"4. Administration",tag:"Slide 20 • System Health",title:"Health Dashboard",desc:"Monitor WebSocket latency, API errors, DB health.",grid:"2",items:[{icon:"fa-heart-pulse",title:"Live Metrics",desc:"Real‑time stats."},{icon:"fa-gear",title:"Diagnostics",desc:"One‑click health check."}]},
+      // 21‑25: Advanced Usage
+      {section:"5. Advanced Usage",tag:"Slide 21 • Command Palette",title:"Universal Command Palette",desc:"Ctrl+K / ⌘K to search actions, tickets, policies.",grid:"2",items:[{icon:"fa-terminal",title:"Fuzzy Search",desc:"Sub‑5ms results."},{icon:"fa-magic",title:"Action Execution",desc:"Run shortcuts instantly."}]},
+      {section:"5. Advanced Usage",tag:"Slide 22 • Macro Recording",title:"Record Automation Macros",desc:"Record UI actions and replay for repetitive tasks.",grid:"2",items:[{icon:"fa-record-vinyl",title:"Recorder",desc:"Capture clicks & inputs."},{icon:"fa-play",title:"Replay",desc:"Automate routine workflows."}]},
+      {section:"5. Advanced Usage",tag:"Slide 23 • API Integration",title:"Open API Endpoints",desc:"Integrate external CRMs, ERP, or analytics.",grid:"2",items:[{icon:"fa-code",title:"RESTful API",desc:"FastAPI endpoints."},{icon:"fa-plug",title:"Webhooks",desc:"Realtime event streaming."}]},
+      {section:"5. Advanced Usage",tag:"Slide 24 • Custom Themes",title:"Brand‑specific Skinning",desc:"Override CSS variables for corporate branding.",grid:"2",items:[{icon:"fa-paint-brush",title:"CSS Variables",desc:"Primary, secondary colors."},{icon:"fa-sliders",title:"Live Preview",desc:"Instant theme editor."}]},
+      {section:"5. Advanced Usage",tag:"Slide 25 • Beta Features",title:"Enable Experimental Modules",desc:"Turn on vision 2.0, multilingual models, etc.",grid:"2",items:[{icon:"fa-flask",title:"Feature Flags",desc:"Controlled rollout."},{icon:"fa-rocket",title:"Beta Testing",desc:"Feedback loop."}]},
+      // 26‑30: Closing & Resources
+      {section:"6. Closing",tag:"Slide 26 • Support Resources",title:"Help Center & Docs",desc:"Link to knowledge base, tutorials, community.",grid:"2",items:[{icon:"fa-book",title:"Documentation",desc:"Full API & UI guide."},{icon:"fa-headset",title:"Support",desc:"Live chat & email."}]},
+      {section:"6. Closing",tag:"Slide 27 • Training Modules",title:"On‑boarding Videos",desc:"Step‑by‑step video tutorials for agents.",grid:"2",items:[{icon:"fa-video",title:"Video Library",desc:"Covering all core flows."},{icon:"fa-chalkboard-teacher",title:"Live Sessions",desc:"Monthly webinars."}]},
+      {section:"6. Closing",tag:"Slide 28 • Community",title:"User Community",desc:"Forums, feedback board, feature requests.",grid:"2",items:[{icon:"fa-users",title:"Forums",desc:"Peer discussions."},{icon:"fa-lightbulb",title:"Ideas",desc:"Submit enhancements."}]},
+      {section:"6. Closing",tag:"Slide 29 • Roadmap",title:"Future Features",desc:"AR diagnostics, deeper analytics, multilingual expansion.",grid:"2",items:[{icon:"fa-road",title:"Planned",desc:"Quarterly releases."},{icon:"fa-rocket",title:"Innovation",desc:"Stay ahead."}]},
+      {section:"6. Closing",tag:"Slide 30 • Thank You",title:"Thank You for Choosing SupportNova",desc:"Empowering support with AI & transparency.",grid:"2",items:[{icon:"fa-heart",title:"Your Success",desc:"Our mission."},{icon:"fa-star",title:"Stay Connected",desc:"Follow us for updates."}]}
+    ];
+    let currentSlide=0;
+    const stage=document.getElementById('slideStage');
+    const overviewGrid=document.getElementById('overviewGrid');
+    function renderDeck(){
+      stage.innerHTML='';overviewGrid.innerHTML='';
+      slidesData.forEach((s,idx)=>{
+        const slide=document.createElement('div');
+        slide.className=`slide-wrapper ${idx===0?'active':''}`;slide.id=`slide-${idx}`;
+        const gridClass=s.grid==='3'?'slide-grid-3':'slide-grid-2';
+        const itemsHtml=s.items.map(item=>`<div class="feature-box"><div class="feature-box-icon"><i class="fa-solid ${item.icon}"></i></div><div class="feature-box-title">${item.title}</div><div class="feature-box-desc">${item.desc}</div></div>`).join('');
+        slide.innerHTML=`<div class="slide-card"><div class="slide-tag"><i class="fa-solid fa-sparkles"></i> ${s.tag}</div><h1 class="slide-heading">${s.title}</h1><p class="slide-desc">${s.desc}</p><div class="${gridClass}">${itemsHtml}</div></div>`;
+        stage.appendChild(slide);
+        const over=document.createElement('div');
+        over.className=`overview-item ${idx===0?'active':''}`;over.id=`over-${idx}`;over.onclick=()=>goToSlide(idx);
+        over.innerHTML=`<div style="font-size:0.75rem;color:#818cf8;font-weight:700;">#${idx+1}</div><div style="font-size:0.85rem;font-weight:700;color:#fff;margin-top:2px;">${s.title.substring(0,42)}...</div>`;
+        overviewGrid.appendChild(over);
+      });
+      updateUI();
+    }
+    function updateUI(){
+      document.querySelectorAll('.slide-wrapper').forEach((el,i)=>el.classList.toggle('active',i===currentSlide));
+      document.querySelectorAll('.overview-item').forEach((el,i)=>el.classList.toggle('active',i===currentSlide));
+      document.getElementById('slideCounter').innerText=`Slide ${currentSlide+1} / ${slidesData.length}`;
+      document.getElementById('deckSectionTitle').innerText=slidesData[currentSlide].section;
+      const pct=((currentSlide+1)/slidesData.length)*100;document.getElementById('progressFill').style.width=`${pct}%`;
+    }
+    function nextSlide(){if(currentSlide<slidesData.length-1){currentSlide++;updateUI();}}
+    function prevSlide(){if(currentSlide>0){currentSlide--;updateUI();}}
+    function goToSlide(idx){currentSlide=idx;updateUI();toggleOverview();}
+    function toggleOverview(){const m=document.getElementById('overviewModal');m.style.display=m.style.display==='flex'?'none':'flex';}
+    function toggleFullScreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen();}else{document.exitFullscreen && document.exitFullscreen();}}
+    window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')nextSlide();else if(e.key==='ArrowLeft'||e.key==='PageUp')prevSlide();else if(e.key.toLowerCase()==='o')toggleOverview();else if(e.key.toLowerCase()==='f')toggleFullScreen();else if(e.key==='Escape'){document.getElementById('overviewModal').style.display='none';}});
+    document.addEventListener('DOMContentLoaded',renderDeck);
+  </script>
+</body>
+</html>

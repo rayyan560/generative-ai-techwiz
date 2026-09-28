@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication &amp; Access Portal - SupportNova Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=8.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function () {
+      let saved = localStorage.getItem("supportnova_theme") || localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-sans);
+      padding: 0;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: var(--page-ground);
+      color: var(--text-body);
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .login-nav {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(18px) saturate(115%);
+      -webkit-backdrop-filter: blur(18px) saturate(115%);
+      border-bottom: 1px solid rgba(214, 217, 170, 0.75);
+      padding: 14px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 2px 14px rgba(16, 16, 16, 0.03);
+    }
+
+    .login-main-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px 60px 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .auth-container {
+      position: relative;
+      z-index: 2;
+      background: #ffffff;
+      border: 1px solid rgba(214, 217, 170, 0.85);
+      box-shadow: 0 16px 40px -10px rgba(16, 16, 16, 0.08), inset 0 1px 1px #ffffff;
+      border-radius: 1.4em;
+      width: 100%;
+      max-width: 460px;
+      min-height: 560px;
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      transition: background 0.18s ease;
+    }
+
+    [data-theme="dark"] .auth-container {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 16px 45px -10px rgba(0, 0, 0, 0.65);
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .brand-logo-mark {
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      background: #0b0b0b;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo-mark .logo-letter {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1;
+    }
+
+    .auth-title {
+      text-align: center;
+      font-size: 1.85rem;
+      font-weight: 400;
+      font-family: var(--font-serif);
+      letter-spacing: -0.015em;
+      color: var(--text-heading);
+      margin-bottom: 4px;
+    }
+
+    .auth-sub {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      margin-top: 4px;
+      margin-bottom: 22px;
+      min-height: 1.4em;
+      font-weight: 500;
+    }
+
+    .auth-tab-row {
+      display: flex;
+      background: rgba(238, 240, 208, 0.35);
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid rgba(214, 217, 170, 0.65);
+      margin-bottom: 22px;
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      font-size: 0.86rem;
+      color: #525866;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+    }
+
+    .auth-tab-btn:hover {
+      color: #101010;
+    }
+
+    .auth-tab-btn.active {
+      background: var(--cream);
+      color: var(--ink);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(16, 16, 16, 0.08);
+    }
+
+    .google-btn {
+      width: 100%;
+      background: #ffffff !important;
+      border: 1px solid rgba(214, 217, 170, 0.85) !important;
+      color: #101010 !important;
+      box-shadow: 0 2px 8px rgba(16, 16, 16, 0.04) !important;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.90rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.18s ease, background 0.18s ease;
+      margin-bottom: 18px;
+    }
+
+    .google-btn:hover {
+      background: rgba(238, 240, 208, 0.35) !important;
+      transform: translateY(-2px);
+    }
+
+    .google-btn:active {
+      transform: translateY(1px);
+    }
+
+    .divider-row {
+      display: flex;
+      align-items: center;
+      margin: 16px 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .divider-row::before,
+    .divider-row::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .divider-row span {
+      padding: 0 14px;
+    }
+
+    .auth-form-panel {
+      width: 100%;
+      box-sizing: border-box;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #standardLoginForm,
+    #registerForm {
+      width: 100%;
+      box-sizing: border-box;
+    }
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ─── Form Controls ──────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.8) !important;
+      border: 1px solid rgba(238, 240, 208, 0.25) !important;
+      border-radius: 12px;
+      font-size: 0.94rem;
+      font-family: inherit;
+      color: #090d16 !important;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+      font-weight: 600;
+    }
+
+    [data-theme="dark"] .form-control {
+      background: rgba(15, 23, 42, 0.7) !important;
+      border-color: rgba(238, 240, 208, 0.35) !important;
+      color: #f8fafc !important;
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary) !important;
+      background: rgba(255, 255, 255, 0.95) !important;
+      box-shadow: 0 0 0 3px rgba(238, 240, 208, 0.22) !important;
+    }
+
+    [data-theme="dark"] .form-control:focus {
+      background: rgba(15, 23, 42, 0.95) !important;
+      box-shadow: 0 0 0 3px rgba(238, 240, 208, 0.35) !important;
+    }
+
+    /* ─── Submit Button ──────────────────────────────────────── */
+    .submit-auth-btn {
+      width: 100%;
+      background: var(--cream);
+      background-size: 200% 200%;
+      animation: gradientShift 6s ease infinite;
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.98rem;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.25s;
+      box-shadow: 0 8px 25px rgba(238, 240, 208, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .submit-auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(238, 240, 208, 0.6);
+    }
+
+    .submit-auth-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ─── Demo Credentials Box ───────────────────────────────── */
+    .demo-credentials-box {
+      margin-top: 20px;
+      background: rgba(238, 240, 208, 0.06);
+      border: 1.5px dashed rgba(238, 240, 208, 0.32);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      color: var(--text-body);
+    }
+
+    [data-theme="dark"] .demo-credentials-box {
+      background: rgba(30, 41, 59, 0.5);
+      border-color: rgba(238, 240, 208, 0.4);
+    }
+
+    .demo-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .demo-pill {
+      background: rgba(238, 240, 208, 0.12);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid rgba(238, 240, 208, 0.25);
+      font-size: 0.80rem;
+    }
+
+    [data-theme="dark"] .demo-pill {
+      background: rgba(238, 240, 208, 0.25);
+      color: #c7d2fe;
+      border-color: rgba(238, 240, 208, 0.45);
+    }
+
+    .demo-pill:hover {
+      background: var(--cream);
+      color: white;
+      transform: scale(1.04);
+      border-color: transparent;
+    }
+
+    /* ─── Status Banners ─────────────────────────────────────── */
+    .error-banner {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #e11d48;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 0.86rem;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    [data-theme="dark"] .error-banner {
+      color: #fda4af;
+    }
+
+    .success-banner {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #059669;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 0.86rem;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    [data-theme="dark"] .success-banner {
+      color: #6ee7b7;
+    }
+
+    .auth-form-panel {
+      animation: panelFade 0.25s ease;
+    }
+
+    @keyframes panelFade {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ─── Back Link ──────────────────────────────────────────── */
+    .auth-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--primary);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .auth-back-link:hover {
+      color: var(--cream, #eef0d0);
+      transform: translateX(-3px);
+    }
+
+    @media (max-width: 640px) {
+      .login-nav {
+        padding: 12px 18px;
+      }
+
+      .auth-container {
+        padding: 30px 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- TemplateMo 3D Glassmorphism Background & Floating Luxury Orbs -->
+  <div class="background"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Ambient background elements -->
+  <div class="login-ambient-blob-1"></div>
+  <div class="login-ambient-blob-2"></div>
+  <div class="global-brand-watermark" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOP NAVIGATION BAR
+  ════════════════════════════════════════════════════════════ -->
+  <nav class="login-nav">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <div
+          style="width: 38px; height: 38px; border-radius: 12px; background: var(--cream); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(238, 240, 208, 0.4);">
+          N</div>
+        <div>
+          <div style="font-weight: 900; font-size: 1.12rem; color: var(--text-heading); letter-spacing: -0.4px;">
+            NovaTech <span style="color: var(--primary);">Resolution Center</span></div>
+          <div
+            style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+            Powered by SupportNova Intelligence</div>
+        </div>
+      </a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <!-- Language Selector -->
+      <div class="cyber-badge">
+        <i class="fa-solid fa-language" style="color: var(--primary);"></i>
+        <select id="loginLangSelect"
+          style="background: transparent; border: none; font-size: 0.82rem; font-weight: 700; color: var(--text-heading); outline: none; cursor: pointer;">
+          <option value="en">English (US)</option>
+          <option value="ur">Urdu (اردو)</option>
+          <option value="ar">Arabic (العربية)</option>
+          <option value="es">Spanish (Español)</option>
+        </select>
+      </div>
+
+      <!-- Theme Switcher Toggle -->
+      <button class="icon-glass-btn" onclick="toggleLoginTheme()" title="Toggle Crystal Dark / Light Glass Mode"
+        id="loginThemeToggleBtn">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+
+      <!-- Return to Public Portal -->
+      <a href="/" class="pill-tab"
+        style="text-decoration: none; padding: 8px 18px; font-size: 0.84rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-house"></i> Public Portal
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN AUTH CONTAINER
+  ════════════════════════════════════════════════════════════ -->
+  <div class="login-main-wrapper">
+    <div class="auth-container">
+
+      <!-- Logo Mark -->
+      <div class="brand-logo-wrap">
+        <div class="brand-logo-mark">
+          <span class="logo-letter">SN</span>
+        </div>
+      </div>
+
+      <h2 class="auth-title">SupportNova Intelligence</h2>
+      <div class="auth-sub" id="authSubTitle">Sign in to Access Dual-Pipeline &amp; Customer Portal</div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tab-row">
+        <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+        </button>
+        <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">
+          <i class="fa-solid fa-user-plus"></i> Create Account
+        </button>
+      </div>
+
+      <!-- Status / Error Messages -->
+      <div id="statusMessageContainer">
+        {% if error %}
+        <div class="error-banner">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>{{ error }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <button type="button" class="google-btn" onclick="triggerGoogleSignIn()">
+        <i class="fa-solid fa-bolt" style="color: var(--cream, #eef0d0); font-size: 1.05rem;"></i>
+        <span>Quick Demo / Guest Access</span>
+      </button>
+
+      <div class="divider-row"><span>Or with Username &amp; Password</span></div>
+
+      <!-- ────────────────────────────────
+           PANEL 1 — SIGN IN FORM
+      ──────────────────────────────── -->
+      <div id="loginFormContainer" class="auth-form-panel">
+        <form id="standardLoginForm" method="POST" action="/login" onsubmit="handleFormLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Username or Email Address</label>
+            <input type="text" name="username" id="loginIdentifier" class="form-control" required
+              placeholder="e.g. admin or yourname@gmail.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" id="loginPassword" class="form-control" required
+              placeholder="••••••••">
+          </div>
+
+          <button type="submit" class="submit-auth-btn" id="loginSubmitBtn">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Portal
+          </button>
+        </form>
+
+        {% if demo_mode %}
+        <div class="demo-credentials-box">
+          <div
+            style="font-weight: 800; color: var(--text-heading); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-key" style="color: var(--primary);"></i> Quick Demo Credentials (Click to Autofill):
+          </div>
+          <div class="demo-row">
+            <span>Admin Superuser:</span>
+            <span class="demo-pill" onclick="fillCreds('admin','admin123')">admin / admin123</span>
+          </div>
+          <div class="demo-row">
+            <span>Support Specialist:</span>
+            <span class="demo-pill" onclick="fillCreds('agent','agent123')">agent / agent123</span>
+          </div>
+          <div class="demo-row">
+            <span>One-Click Guest:</span>
+            <span class="demo-pill" onclick="quickGmailDemo('customer@supportnova.io','John Smith')">Guest
+              Customer</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- ────────────────────────────────
+           PANEL 2 — REGISTER FORM
+      ──────────────────────────────── -->
+      <div id="registerFormContainer" class="auth-form-panel" style="display:none;">
+        <form id="registerForm" onsubmit="handleFormRegister(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" name="display_name" id="regDisplayName" class="form-control" required
+              placeholder="e.g. John Smith">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Gmail / Email Address *</label>
+            <input type="email" name="email" id="regEmail" class="form-control" required
+              placeholder="e.g. johnsmith@gmail.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Choose a Username *</label>
+            <input type="text" name="username" id="regUsername" class="form-control" required
+              placeholder="e.g. johnsmith">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Create Secure Password *</label>
+            <input type="password" name="password" id="regPassword" class="form-control" required
+              placeholder="Minimum 6 characters">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Contact Phone (Optional)</label>
+            <input type="text" name="phone" id="regPhone" class="form-control" placeholder="e.g. +1 98567 45956">
+          </div>
+
+          <button type="submit" class="submit-auth-btn" id="registerSubmitBtn">
+            <i class="fa-solid fa-user-check"></i> Complete Registration &amp; Sign In
+          </button>
+        </form>
+      </div>
+
+      <!-- Back link -->
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="/" class="auth-back-link">
+          <i class="fa-solid fa-arrow-left"></i> Return to Public Customer Portal
+        </a>
+      </div>
+
+    </div><!-- /.auth-container -->
+  </div><!-- /.login-main-wrapper -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       GUEST / GOOGLE AUTH MODAL
+  ════════════════════════════════════════════════════════════ -->
+  <div id="googleAuthModal" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.65); z-index:1000;
+              align-items:center; justify-content:center; backdrop-filter:blur(20px);">
+    <div class="modal-dialog-anim sn-modal-dialog-card"
+      style="width:92%; max-width:440px; border-radius:24px; padding:36px; text-align:center; position:relative;">
+      <div style="width:58px;height:58px;border-radius:18px;background:var(--cream);
+                  display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto;
+                  box-shadow:0 8px 24px rgba(238, 240, 208, 0.45);">
+        <i class="fa-solid fa-bolt" style="color:#fff; font-size:1.55rem;"></i>
+      </div>
+      <h3 style="font-size:1.35rem;font-weight:900;color:var(--text-heading);font-family:'Outfit',sans-serif;">Quick
+        Demo / Guest Access</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;margin-bottom:20px;">Enter your email to
+        instantly explore the SupportNova platform</p>
+
+      <div class="form-group" style="text-align:left;margin-bottom:12px;">
+        <label class="form-label">Email Address *</label>
+        <input type="email" id="googleEmailInput" class="form-control" placeholder="e.g. guest@supportnova.io" required>
+      </div>
+      <div class="form-group" style="text-align:left;margin-bottom:20px;">
+        <label class="form-label">Full Name *</label>
+        <input type="text" id="googleNameInput" class="form-control" placeholder="e.g. John Smith" required>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button type="button" onclick="closeGoogleModal()" class="pill-tab"
+          style="flex:1;padding:12px;font-weight:700;justify-content:center;">Cancel</button>
+        <button type="button" onclick="submitDirectGoogleAuth()" class="submit-auth-btn" style="flex:1.5;margin-top:0;">
+          <i class="fa-solid fa-arrow-right"></i> Enter Portal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Theme Switcher ────────────────────────────────────────
+    function initLoginTheme() {
+      const saved = localStorage.getItem("supportnova_theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+      updateLoginThemeIcon(saved);
+    }
+
+    function toggleLoginTheme() {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      const next = current === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("supportnova_theme", next);
+      updateLoginThemeIcon(next);
+    }
+
+    function updateLoginThemeIcon(theme) {
+      const btn = document.getElementById("loginThemeToggleBtn");
+      if (btn) {
+        btn.innerHTML = theme === "dark" ? '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>' : '<i class="fa-solid fa-moon"></i>';
+      }
+    }
+
+    // ── Tab Switching ─────────────────────────────────────────
+    function switchAuthTab(tab) {
+      const loginBtn = document.getElementById("tabLoginBtn");
+      const regBtn = document.getElementById("tabRegisterBtn");
+      const loginContainer = document.getElementById("loginFormContainer");
+      const regContainer = document.getElementById("registerFormContainer");
+      const subTitle = document.getElementById("authSubTitle");
+
+      if (tab === "login") {
+        loginBtn.classList.add("active");
+        regBtn.classList.remove("active");
+        loginContainer.style.display = "block";
+        regContainer.style.display = "none";
+        loginContainer.classList.remove("auth-form-panel");
+        void loginContainer.offsetWidth;
+        loginContainer.classList.add("auth-form-panel");
+        subTitle.innerText = "Sign in to Access Dual-Pipeline & Customer Portal";
+      } else {
+        regBtn.classList.add("active");
+        loginBtn.classList.remove("active");
+        loginContainer.style.display = "none";
+        regContainer.style.display = "block";
+        regContainer.classList.remove("auth-form-panel");
+        void regContainer.offsetWidth;
+        regContainer.classList.add("auth-form-panel");
+        subTitle.innerText = "Create a New Customer or Administrator Account";
+      }
+    }
+
+    function fillCreds(u, p) {
+      switchAuthTab("login");
+      document.getElementById("loginIdentifier").value = u;
+      document.getElementById("loginPassword").value = p;
+    }
+
+    function triggerGoogleSignIn() { openGoogleModal(); }
+    function openGoogleModal() { document.getElementById("googleAuthModal").style.display = "flex"; }
+    function closeGoogleModal() { document.getElementById("googleAuthModal").style.display = "none"; }
+
+    function showStatus(msg, isSuccess = false) {
+      document.getElementById("statusMessageContainer").innerHTML = `
+        <div class="${isSuccess ? 'success-banner' : 'error-banner'}">
+          <i class="fa-solid ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i>
+          <span>${msg}</span>
+        </div>`;
+    }
+
+    // ── Google / Guest Auth ────────────────────────────────────
+    async function submitDirectGoogleAuth() {
+      const email = document.getElementById("googleEmailInput").value.trim();
+      const name = document.getElementById("googleNameInput").value.trim();
+      if (!email) { alert("Please enter a valid email address."); return; }
+      closeGoogleModal();
+      await executeGoogleAuthPayload({ email, name });
+    }
+
+    function quickGmailDemo(email, name) { executeGoogleAuthPayload({ email, name }); }
+
+    function handleGoogleCredentialResponse(response) {
+      if (response && response.credential) executeGoogleAuthPayload({ credential: response.credential });
+    }
+
+    function getRedirectUrlForRole(role) {
+      if (role === "admin" || role === "agent") return "/admin";
+      if (role === "warranty_manager") return "/warranty";
+      return "/";
+    }
+
+    async function executeGoogleAuthPayload(payload) {
+      showStatus("Authenticating... please wait.", true);
+      try {
+        const res = await fetch("/api/auth/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showStatus("Login successful! Redirecting...", true);
+          const target = getRedirectUrlForRole(data.user?.role);
+          setTimeout(() => { window.location.href = target; }, 500);
+        } else {
+          showStatus(data.detail || "Authentication failed.");
+        }
+      } catch (err) { showStatus("Network error: " + err); }
+    }
+
+    // ── Standard Login ─────────────────────────────────────────
+    async function handleFormLogin(e) {
+      e.preventDefault();
+      const identifier = document.getElementById("loginIdentifier").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      const btn = document.getElementById("loginSubmitBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+      try {
+        const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ identifier, password }) });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showStatus("Login successful! Redirecting...", true);
+          const target = getRedirectUrlForRole(data.user?.role);
+          setTimeout(() => { window.location.href = target; }, 500);
+        } else {
+          showStatus(data.detail || "Invalid credentials.");
+        }
+      } catch (err) { showStatus("Server error: " + err); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Portal';
+      }
+    }
+
+    // ── Register ───────────────────────────────────────────────
+    async function handleFormRegister(e) {
+      e.preventDefault();
+      const display_name = document.getElementById("regDisplayName").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const username = document.getElementById("regUsername").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const phone = document.getElementById("regPhone").value.trim();
+      const btn = document.getElementById("registerSubmitBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating Account...';
+      try {
+        const res = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ display_name, email, username, password, phone }) });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showStatus("Account created! Welcome to SupportNova.", true);
+          const target = getRedirectUrlForRole(data.user?.role);
+          setTimeout(() => { window.location.href = target; }, 600);
+        } else {
+          showStatus(data.detail || "Registration failed.");
+        }
+      } catch (err) { showStatus("Server error: " + err); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-user-check"></i> Complete Registration &amp; Sign In';
+      }
+    }
+
+    // ── On Load: check ?mode=register, init theme & setup 3D Tilt ────────
+    document.addEventListener("DOMContentLoaded", () => {
+      initLoginTheme();
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "register") switchAuthTab("register");
+
+      const card = document.querySelector(".auth-container");
+      if (card) {
+        document.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+          const cardCenterX = rect.left + rect.width / 2;
+          const cardCenterY = rect.top + rect.height / 2;
+          const deltaX = (e.clientX - cardCenterX) / (window.innerWidth / 2);
+          const deltaY = (e.clientY - cardCenterY) / (window.innerHeight / 2);
+
+          const rotX = -deltaY * 3.5;
+          const rotY = deltaX * 3.5;
+          card.style.transform = `perspective(1200px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg)`;
+        });
+
+        document.addEventListener("mouseleave", () => {
+          card.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg)";
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

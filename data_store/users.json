@@ -1,0 +1,44 @@
+[
+  {
+    "user_id": "USR-ADMIN-001",
+    "username": "admin",
+    "email": "admin@supportnova.io",
+    "password": "admin123",
+    "role": "admin",
+    "display_name": "Executive Director",
+    "designation": "Grievance Operations Director & CEO",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80",
+    "auth_provider": "local",
+    "phone": "+1 800 555 0100",
+    "created_at": "2026-01-01 00:00:00",
+    "_id": "users_1_1790456711"
+  },
+  {
+    "user_id": "USR-AGENT-002",
+    "username": "agent",
+    "email": "agent@supportnova.io",
+    "password": "agent123",
+    "role": "agent",
+    "display_name": "Marcus Chen",
+    "designation": "Lead Triage & Hardware Forensic Specialist",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80",
+    "auth_provider": "local",
+    "phone": "+1 800 555 0142",
+    "created_at": "2026-01-02 00:00:00",
+    "_id": "users_2_1790456711"
+  },
+  {
+    "user_id": "USR-WARRANTY-003",
+    "username": "warranty_manager",
+    "email": "warranty@supportnova.io",
+    "password": "warranty123",
+    "role": "warranty_manager",
+    "display_name": "Sarah Jenkins",
+    "designation": "Senior Warranty, Escrow & Refund Manager",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80",
+    "auth_provider": "local",
+    "phone": "+1 800 555 0199",
+    "created_at": "2026-01-03 00:00:00",
+    "_id": "users_3_1790456711"
+  }
+]

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Resolution Rule Matrix (100+) - SupportNova{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; flex-wrap: wrap; gap: 14px;">
+  <div>
+    <h1 style="font-size: 1.6rem; color: var(--text-heading); font-weight: 800; display: flex; align-items: center; gap: 10px; font-family: 'Outfit', sans-serif;">
+      <i class="fa-solid fa-scale-balanced" style="color: var(--primary);"></i>
+      Complaint Resolution Rule Matrix
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.875rem;">105+ Structured Ground-Truth Rules &amp; 34+ Mandatory Escalation Conditions</p>
+  </div>
+  <div style="display: flex; gap: 12px;">
+    <input type="text" id="ruleSearchInput" onkeyup="filterRuleTable()" placeholder="Search Rule ID, Category, Action..." class="form-control" style="padding: 10px 20px; border-radius: 9999px; font-size: 0.85rem; width: 320px; background: var(--glass-input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--text-heading) !important;">
+  </div>
+</div>
+
+<!-- Rule Matrix Table -->
+<div class="table-container">
+  <div style="padding: 18px 24px; background: var(--glass-bg-subtle); border-bottom: 1px solid var(--glass-border); font-weight: 800; color: var(--text-heading); display: flex; justify-content: space-between; align-items: center;">
+    <span>Ground-Truth Resolution Rules Matrix (Enforced by Deterministic Engine)</span>
+    <span id="rulesCountBadge" class="badge badge-primary" style="font-size: 0.8rem; padding: 6px 14px;">105 Rules Active</span>
+  </div>
+  <table class="data-table" id="rulesTable">
+    <thead>
+      <tr>
+        <th>Rule ID</th>
+        <th>Category</th>
+        <th>Subcategory</th>
+        <th>Assigned Dept</th>
+        <th>Priority</th>
+        <th>Policy ID</th>
+        <th>Mandatory Escalation</th>
+        <th>Refund Eligible</th>
+        <th>Compensation Max</th>
+      </tr>
+    </thead>
+    <tbody id="rulesTableBody">
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 32px; color: var(--text-muted);">
+          <i class="fa-solid fa-spinner fa-spin"></i> Loading 105+ Resolution Rules...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
