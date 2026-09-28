@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request, HTTPException, Form, UploadFile, File, Depends
+from fastapi import APIRouter, Request, HTTPException, Form, UploadFile, File, Depends, BackgroundTasks
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from typing import Optional, List, Dict, Any
 import datetime
@@ -23,9 +24,63 @@ router = APIRouter(prefix="/api", tags=["Warranty & Customer Portal"])
 async def get_products():
     return {"products": ProductCatalog.get_all_products(), "total": len(ProductCatalog.get_all_products())}
 
+
+async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_data):
+    def blocking_pipeline():
+        try:
+            genai_out = genai_pipeline.generate_intelligence(complaint_dict)
+            ground_truth = python_validation_pipeline.validate_complaint(complaint_dict)
+            comp_result = ComparisonEngine.compare_and_verify(genai_out, ground_truth, complaint_dict)
+
+            complaint_dict["genai_analysis"] = genai_out.model_dump()
+            complaint_dict["ground_truth"] = ground_truth.model_dump()
+            complaint_dict["comparison"] = comp_result.model_dump()
+            complaint_dict["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
+            complaint_dict["category"] = ground_truth.expected_category
+            complaint_dict["subcategory"] = ground_truth.expected_subcategory
+            complaint_dict["department"] = ground_truth.expected_department
+            complaint_dict["urgency"] = ground_truth.expected_urgency
+            complaint_dict["priority"] = ground_truth.expected_priority
+        except Exception as e:
+            logger.error(f"Error executing dual pipeline on complaint {new_id}: {e}")
+            complaint_dict["status"] = "New"
+
+        complaints_col = get_complaints_col()
+        complaints_col.insert_one(complaint_dict)
+        
+        audit_col = get_audit_logs_col()
+        audit_col.insert_one({
+            "log_id": f"AUD-{total_count+1:05d}",
+            "complaint_id": new_id,
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "actor": "AI_Dual_Pipeline",
+            "action": "Analyzed & Verified",
+            "details": {"status": complaint_dict.get("status"), "verification": complaint_dict.get("comparison", {}).get("verification_status")}
+        })
+        return complaint_dict
+
+    updated_dict = await run_in_threadpool(blocking_pipeline)
+
+    try:
+        await ws_manager.broadcast({
+            "type": "NEW_COMPLAINT",
+            "complaint_id": new_id,
+            "customer_name": updated_dict["customer_name"],
+            "complaint_title": updated_dict["complaint_title"],
+            "category": updated_dict.get("category", "General"),
+            "urgency": updated_dict.get("urgency", "Medium"),
+            "priority": updated_dict.get("priority", "P2"),
+            "status": updated_dict.get("status", "New"),
+            "sentiment": sentiment_data,
+            "timestamp": updated_dict["created_at"]
+        })
+    except Exception as e:
+        logger.error(f"Error broadcasting WebSocket event: {e}")
+
 @router.post("/complaints/submit")
 async def submit_complaint(
     request: Request,
+    background_tasks: BackgroundTasks,
     customer_name: str = Form(...),
     customer_email: str = Form(...),
     customer_phone: Optional[str] = Form(None),
@@ -91,51 +146,7 @@ async def submit_complaint(
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
-    try:
-        genai_out = genai_pipeline.generate_intelligence(complaint_dict)
-        ground_truth = python_validation_pipeline.validate_complaint(complaint_dict)
-        comp_result = ComparisonEngine.compare_and_verify(genai_out, ground_truth, complaint_dict)
-
-        complaint_dict["genai_analysis"] = genai_out.model_dump()
-        complaint_dict["ground_truth"] = ground_truth.model_dump()
-        complaint_dict["comparison"] = comp_result.model_dump()
-        complaint_dict["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
-        complaint_dict["category"] = ground_truth.expected_category
-        complaint_dict["subcategory"] = ground_truth.expected_subcategory
-        complaint_dict["department"] = ground_truth.expected_department
-        complaint_dict["urgency"] = ground_truth.expected_urgency
-        complaint_dict["priority"] = ground_truth.expected_priority
-    except Exception as e:
-        logger.error(f"Error executing dual pipeline on complaint {new_id}: {e}")
-        complaint_dict["status"] = "New"
-
-    complaints_col.insert_one(complaint_dict)
-    
-    audit_col = get_audit_logs_col()
-    audit_col.insert_one({
-        "log_id": f"AUD-{total_count+1:05d}",
-        "complaint_id": new_id,
-        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "actor": "AI_Dual_Pipeline",
-        "action": "Analyzed & Verified",
-        "details": {"status": complaint_dict.get("status"), "verification": complaint_dict.get("comparison", {}).get("verification_status")}
-    })
-
-    try:
-        await ws_manager.broadcast({
-            "type": "NEW_COMPLAINT",
-            "complaint_id": new_id,
-            "customer_name": complaint_dict["customer_name"],
-            "complaint_title": complaint_dict["complaint_title"],
-            "category": complaint_dict.get("category", "General"),
-            "urgency": complaint_dict.get("urgency", "Medium"),
-            "priority": complaint_dict.get("priority", "P2"),
-            "status": complaint_dict.get("status", "New"),
-            "sentiment": sentiment_data,
-            "timestamp": complaint_dict["created_at"]
-        })
-    except Exception as e:
-        logger.error(f"Error broadcasting WebSocket event: {e}")
+    background_tasks.add_task(_process_complaint_bg, complaint_dict, new_id, total_count, sentiment_data)
 
     return {
         "success": True,
@@ -144,6 +155,7 @@ async def submit_complaint(
         "status": "Under Review",
         "submitted_at": complaint_dict["created_at"]
     }
+
 
 @router.get("/complaints/my-complaints")
 async def get_my_complaints(request: Request):
