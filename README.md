@@ -68,8 +68,8 @@ SupportNova is an AI-powered enterprise complaint triage and ground-truth valida
 ### 2. Environment Setup
 ```bash
 # Clone the repository
-git clone https://github.com/rayyan001/supportnova-techwiz7.git
-cd "techwiz 07 final"
+git clone https://github.com/rayyan560/generative-ai-techwiz.git
+cd generative-ai-techwiz
 
 # Create virtual environment
 python -m venv .venv
@@ -84,6 +84,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+For local-only demo accounts, copy `.env.example` to `.env` and set `DEMO_MODE=true`. Never enable demo mode on a public deployment. For hosted use, configure `MONGODB_URI`, `SESSION_SECRET_KEY`, `ADMIN_EMAIL`, and a strong `ADMIN_PASSWORD` in the host's private variables. Configure `GEMINI_API_KEYS` and Google OAuth credentials only when those integrations are enabled. Hosted startup refuses to use the local JSON store when MongoDB is missing or unreachable.
+
 ### 3. Generate Knowledge Base Documents & 500+ Dataset
 ```bash
 # Generate 20+ policy documents in PDF and DOCX
@@ -95,6 +97,7 @@ python sample_complaints/generate_dataset.py
 
 ### 4. Run Test Suite
 ```bash
+pip install -r requirements-dev.txt
 pytest -v
 ```
 
@@ -123,4 +126,4 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Structured Resolution Rules | >= 100 | **105 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **34 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **7 / 7 Passing (100%)** | ✅ Pass |
+| Automated Test Suite | All Passing | **Not yet verified in this environment** | ⏳ Run the current test suite before submission |

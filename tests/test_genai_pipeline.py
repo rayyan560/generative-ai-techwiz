@@ -1,8 +1,7 @@
 import pytest
-from src.genai_pipeline.pipeline import genai_pipeline
-from src.schemas.models import GenAIIntelligenceOutput
+from src.genai_pipeline.pipeline import GenAIPipeline, GenAIUnavailableError
 
-def test_genai_pipeline_structure():
+def test_genai_unavailable_requires_manual_review():
     sample_complaint = {
         "complaint_id": "CMP-TEST-001",
         "customer_name": "Sarah Connor",
@@ -13,10 +12,7 @@ def test_genai_pipeline_structure():
         "product_or_service": "NovaBook Pro 16"
     }
     
-    result = genai_pipeline.generate_intelligence(sample_complaint)
-    assert isinstance(result, GenAIIntelligenceOutput)
-    assert result.complaint_id == "CMP-TEST-001"
-    assert result.category in ["Product Defect", "Delivery & Shipping"]
-    assert result.recommended_department in ["Returns & Replacements", "Technical Support", "Logistics & Delivery"]
-    assert len(result.resolution_steps) > 0
-    assert result.customer_response is not None
+    pipeline = GenAIPipeline()
+    pipeline.api_keys = []
+    with pytest.raises(GenAIUnavailableError):
+        pipeline.generate_intelligence(sample_complaint)

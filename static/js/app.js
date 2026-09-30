@@ -8,7 +8,7 @@ let selectedComplaintId = null;
 let selectedCommComplaintId = null;
 let currentCommThreads = [];
 let currentRefundRecords = [];
-let isOnCall = true;
+let isOnCall = false;
 let soundEnabled = true;
 let wsConnection = null;
 
@@ -95,7 +95,13 @@ function toggleSound() {
 // 2. THEME SWITCHER (Crystal Light vs Obsidian Cyber Glass)
 // -------------------------------------------------------------
 function initTheme() {
-  const saved = localStorage.getItem("supportnova_theme") || "light";
+  let saved = "dark";
+  try {
+    const stored = localStorage.getItem("supportnova_theme") || localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark") saved = stored;
+  } catch (error) {
+    saved = "dark";
+  }
   document.documentElement.setAttribute("data-theme", saved);
   updateThemeIcon(saved);
 }
@@ -105,9 +111,37 @@ function toggleTheme() {
   const current = document.documentElement.getAttribute("data-theme") || "light";
   const next = current === "light" ? "dark" : "light";
   document.documentElement.setAttribute("data-theme", next);
-  localStorage.setItem("supportnova_theme", next);
+  try { localStorage.setItem("supportnova_theme", next); } catch (error) {}
   updateThemeIcon(next);
+  updateChartTheme();
   showToast(`Theme switched to ${next === 'dark' ? 'Obsidian Cyber Glass' : 'Crystal Light Glass'}`, "info");
+}
+
+function getChartPalette() {
+  return document.documentElement.getAttribute("data-theme") === "light"
+    ? ["#0f766e", "#1d4ed8", "#b45309", "#be123c", "#6d28d9", "#0369a1", "#047857", "#a16207", "#9d174d", "#4338ca", "#4d7c0f", "#475569"]
+    : ["#34d399", "#60a5fa", "#fbbf24", "#fb7185", "#a78bfa", "#38bdf8", "#4ade80", "#facc15", "#f472b6", "#818cf8", "#a3e635", "#94a3b8"];
+}
+
+function updateChartTheme() {
+  if (typeof Chart === "undefined" || !Chart.instances) return;
+  const light = document.documentElement.getAttribute("data-theme") === "light";
+  const textColor = light ? "#334155" : "#e2e8f0";
+  const gridColor = light ? "rgba(51, 65, 85, 0.14)" : "rgba(226, 232, 240, 0.14)";
+  Object.values(Chart.instances).forEach(chart => {
+    if (chart.options.plugins?.legend?.labels) chart.options.plugins.legend.labels.color = textColor;
+    Object.values(chart.options.scales || {}).forEach(scale => {
+      if (scale.ticks) scale.ticks.color = textColor;
+      if (scale.grid) scale.grid.color = gridColor;
+    });
+    chart.update("none");
+  });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+  })[char]);
 }
 
 function updateThemeIcon(theme) {
@@ -156,7 +190,7 @@ function handleCommandSearch(query) {
   if (!q) {
     container.innerHTML = `
       <div class="command-item" onclick="navigateCommand('/admin')">
-        <div style="display:flex; align-items:center; gap:10px;"><i class="fa-solid fa-table-cells-large" style="color:var(--cream, #eef0d0);"></i><span>All Complaints Queue (520+ Grievances)</span></div>
+        <div style="display:flex; align-items:center; gap:10px;"><i class="fa-solid fa-table-cells-large" style="color:var(--cream, #eef0d0);"></i><span>All Complaints Queue</span></div>
         <span style="font-size:0.78rem; color:var(--text-muted);">Jump &rarr;</span>
       </div>
       <div class="command-item" onclick="navigateCommand('/communication')">
@@ -270,23 +304,28 @@ function handleWebSocketEvent(msg) {
       tr.innerHTML = `
         <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${msg.complaint_id}</td>
         <td>
-          <div style="font-weight: 800; color: var(--text-heading);">${msg.customer_name}</div>
+          <div style="font-weight: 800; color: var(--text-heading);">${escapeHtml(msg.customer_name || "Customer")}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">Standard Tier</div>
         </td>
         <td style="max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text-heading);">
-          <span style="color:var(--cream, #eef0d0); font-weight:800;">[NEW] </span>${msg.complaint_title}
+          <span style="color:var(--cream, #eef0d0); font-weight:800;">[NEW] </span>${escapeHtml(msg.complaint_title || "Untitled complaint")}
         </td>
-        <td><span class="badge badge-secondary">${msg.category || 'General'}</span></td>
+        <td><span class="badge badge-secondary">${escapeHtml(msg.category || 'General')}</span></td>
         <td style="font-size: 0.825rem; font-weight: 600;">Customer Care</td>
-        <td><span class="badge ${msg.urgency === 'Critical' ? 'badge-danger' : 'badge-primary'}">${msg.urgency || 'Medium'}</span></td>
-        <td><strong style="color: var(--text-heading);">${msg.priority || 'P2'}</strong></td>
-        <td><span class="badge badge-success">Verified</span></td>
+        <td><span class="badge ${msg.urgency === 'Critical' ? 'badge-danger' : 'badge-primary'}">${escapeHtml(msg.urgency || 'Medium')}</span></td>
+        <td><strong style="color: var(--text-heading);">${escapeHtml(msg.priority || 'P2')}</strong></td>
+        <td><span class="badge badge-secondary">Awaiting analysis</span></td>
         <td>
-          <button class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem;" onclick="event.stopPropagation(); openTriageModal('${msg.complaint_id}')">
+          <button class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem;">
             Triage &rarr;
           </button>
         </td>
       `;
+      const triageButton = tr.querySelector("button");
+      if (triageButton) triageButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openTriageModal(msg.complaint_id);
+      });
       const tbody = document.getElementById("complaintsTableBody");
       tbody.insertBefore(tr, tbody.firstChild);
     }
@@ -313,12 +352,22 @@ function showToast(message, type = "info") {
   else if (type === "warning") { icon = "fa-triangle-exclamation"; iconColor = "#f59e0b"; barColor = "#f59e0b"; }
   else if (type === "danger" || type === "error") { icon = "fa-circle-exclamation"; iconColor = "#e11d48"; barColor = "#e11d48"; }
 
-  toast.innerHTML = `
-    <i class="fa-solid ${icon}" style="font-size: 1.25rem; color: ${iconColor};"></i>
-    <div style="flex-grow: 1; font-size: 0.88rem; font-weight: 700; color: var(--text-heading);">${message}</div>
-    <button onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; opacity:0.7;">&times;</button>
-    <div class="toast-progress-bar" style="background: ${barColor};"></div>
-  `;
+  const iconEl = document.createElement("i");
+  iconEl.className = `fa-solid ${icon}`;
+  iconEl.style.cssText = `font-size:1.25rem;color:${iconColor};`;
+  const messageEl = document.createElement("div");
+  messageEl.style.cssText = "flex-grow:1;font-size:0.88rem;font-weight:700;color:var(--text-heading);";
+  messageEl.textContent = message;
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.setAttribute("aria-label", "Dismiss notification");
+  closeButton.textContent = "×";
+  closeButton.style.cssText = "background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;opacity:0.7;";
+  closeButton.addEventListener("click", () => toast.remove());
+  const progress = document.createElement("div");
+  progress.className = "toast-progress-bar";
+  progress.style.background = barColor;
+  toast.append(iconEl, messageEl, closeButton, progress);
 
   container.appendChild(toast);
   setTimeout(() => {
@@ -378,6 +427,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("categoryChart")) {
     loadAnalyticsDashboard();
   }
+  if (document.getElementById("agentThroughputCount") || document.getElementById("agentQueuePending")) {
+    loadAgentStats();
+  }
 
   // Setup 3D tilt after content renders
   setTimeout(init3DCardTilt, 500);
@@ -394,6 +446,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+async function loadAgentStats() {
+  const fields = {
+    agentThroughputCount: "— cases",
+    agentAvgTime: "Not recorded",
+    agentAccuracy: "Not measured",
+    agentQueuePending: "— pending",
+    agentCriticalCount: "—"
+  };
+  try {
+    const response = await fetch("/api/agent/stats", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`Stats request failed (${response.status})`);
+    const data = await response.json();
+    fields.agentThroughputCount = `${data.resolved_cases ?? 0} cases`;
+    fields.agentAvgTime = data.avg_inspection_time || "Not recorded";
+    fields.agentAccuracy = Number.isFinite(data.accuracy_pct) ? `${data.accuracy_pct}%` : "Not measured";
+    fields.agentQueuePending = `${data.pending_reviews ?? 0} pending`;
+    fields.agentCriticalCount = String(data.critical_alerts ?? 0);
+  } catch (error) {
+    console.error("Unable to load agent dashboard metrics", error);
+  }
+  Object.entries(fields).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+}
 
 // Telephony Call Simulation
 function toggleCallSimulation() {
@@ -475,25 +553,25 @@ function renderComplaintsTable(list) {
       openTriageModal(c.complaint_id);
     };
 
-    const compStatus = c.comparison ? c.comparison.verification_status : "Verified";
-    const compClass = compStatus === "Verified" ? "badge-success" : (compStatus.includes("Warning") ? "badge-warning" : "badge-danger");
+    const compStatus = c.comparison?.verification_status || "Awaiting analysis";
+    const compClass = compStatus === "Verified" ? "badge-success" : (compStatus.includes("Warning") ? "badge-warning" : (compStatus === "Awaiting analysis" ? "badge-secondary" : "badge-danger"));
 
     tr.innerHTML = `
-      <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${c.complaint_id}</td>
+      <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${escapeHtml(c.complaint_id)}</td>
       <td>
-        <div style="font-weight: 800; color: var(--text-heading);">${c.customer_name}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${c.customer_type || 'Standard'} Tier</div>
+        <div style="font-weight: 800; color: var(--text-heading);">${escapeHtml(c.customer_name)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${escapeHtml(c.customer_type || 'Standard')} Tier</div>
       </td>
       <td style="max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text-heading);">
         ${c.is_adversarial ? '<span style="color:#e11d48; font-weight:800;">🛡️ [Adversarial] </span>' : ''}
         ${c.is_duplicate ? '<span style="color:#d97706; font-weight:800;">🔁 [Repeat] </span>' : ''}
-        ${c.complaint_title}
+        ${escapeHtml(c.complaint_title)}
       </td>
-      <td><span class="badge badge-secondary">${c.category || 'General'}</span></td>
-      <td style="font-size: 0.825rem; font-weight: 600;">${c.department || 'Customer Care'}</td>
-      <td><span class="badge ${c.urgency === 'Critical' ? 'badge-danger' : (c.urgency === 'High' ? 'badge-warning' : 'badge-primary')}">${c.urgency || 'Medium'}</span></td>
-      <td><strong style="color: var(--text-heading);">${c.priority || 'P2'}</strong></td>
-      <td><span class="badge ${compClass}">${compStatus}</span></td>
+      <td><span class="badge badge-secondary">${escapeHtml(c.genai_analysis?.category || 'Not analyzed')}</span></td>
+      <td style="font-size: 0.825rem; font-weight: 600;">${escapeHtml(c.department || 'Not assigned')}</td>
+      <td><span class="badge ${c.urgency === 'Critical' ? 'badge-danger' : (c.urgency === 'High' ? 'badge-warning' : 'badge-primary')}">${escapeHtml(c.urgency || 'Not assessed')}</span></td>
+      <td><strong style="color: var(--text-heading);">${escapeHtml(c.priority || 'Not assigned')}</strong></td>
+      <td><span class="badge ${compClass}">${escapeHtml(compStatus)}</span></td>
       <td>
         <button class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem;" onclick="event.stopPropagation(); openTriageModal('${c.complaint_id}')">
           Triage &rarr;
@@ -504,12 +582,11 @@ function renderComplaintsTable(list) {
   });
 }
 
-function filterByTab(tab) {
+function filterByTab(tab, clickEvent) {
   SoundFX.playClick();
   document.querySelectorAll(".tab-pills-row .pill-tab").forEach(btn => btn.classList.remove("active"));
-  if (event && event.target) {
-    event.target.classList.add("active");
-  }
+  const activeTab = clickEvent?.currentTarget || document.querySelector(`.tab-pills-row .pill-tab[onclick*="'${tab}'"]`);
+  if (activeTab) activeTab.classList.add("active");
 
   if (tab === "All") {
     renderComplaintsTable(currentComplaints);
@@ -543,9 +620,9 @@ async function openTriageModal(complaintId) {
 
     // 🧠 Customer Emotion & Frustration Heatmap Rendering
     const sent = data.sentiment_telemetry || {};
-    const frScore = sent.frustration_score || 55;
-    const emState = sent.emotion_state || "Frustrated & Dissatisfied";
-    const triggers = sent.key_emotional_triggers || ["general grievance"];
+    const frScore = Number.isFinite(Number(sent.frustration_score)) ? Math.max(0, Math.min(100, Number(sent.frustration_score))) : null;
+    const emState = sent.emotion_state || "Not analyzed";
+    const triggers = Array.isArray(sent.key_emotional_triggers) ? sent.key_emotional_triggers : [];
 
     const emCard = document.getElementById("modalEmotionCard");
     const emStateEl = document.getElementById("modalEmotionState");
@@ -554,70 +631,78 @@ async function openTriageModal(complaintId) {
     const trChipsEl = document.getElementById("modalTriggerChips");
 
     if (emStateEl) emStateEl.innerText = emState;
-    if (frScoreEl) frScoreEl.innerText = `${frScore}% / 100`;
+    if (frScoreEl) frScoreEl.innerText = frScore === null ? "Not measured" : `${frScore}% / 100`;
     if (frBarEl) {
-      frBarEl.style.width = `${frScore}%`;
-      frBarEl.style.background = frScore > 70 ? 'linear-gradient(90deg, #f59e0b, #e11d48)' : 'linear-gradient(90deg, #10b981, #f59e0b)';
+      frBarEl.style.width = frScore === null ? "0%" : `${frScore}%`;
+      if (frScore !== null) frBarEl.style.background = frScore > 70 ? 'linear-gradient(90deg, #f59e0b, #e11d48)' : 'linear-gradient(90deg, #10b981, #f59e0b)';
     }
     if (trChipsEl) {
-      trChipsEl.innerHTML = triggers.map(t => `<span class="trigger-chip"><i class="fa-solid fa-fire"></i> ${t}</span>`).join("");
+      trChipsEl.innerHTML = triggers.map(t => `<span class="trigger-chip"><i class="fa-solid fa-fire"></i> ${escapeHtml(t)}</span>`).join("") || '<span class="text-muted">No triggers recorded</span>';
     }
 
     // Adversarial Banner
     const advBanner = document.getElementById("modalAdversarialBanner");
-    if (data.genai_analysis && data.genai_analysis.adversarial_warning) {
+    if (advBanner && data.genai_analysis && data.genai_analysis.adversarial_warning) {
       advBanner.style.display = "block";
       advBanner.innerText = `🛡️ SECURITY WARNING: ${data.genai_analysis.adversarial_warning}`;
-    } else {
+    } else if (advBanner) {
       advBanner.style.display = "none";
     }
 
     // Comparison summary
     const comp = data.comparison || {};
     const vBadge = document.getElementById("modalVerificationStatus");
-    vBadge.innerText = comp.verification_status || "Verified";
-    vBadge.className = `badge ${comp.verification_status === 'Verified' ? 'badge-success' : (comp.verification_status.includes('Warning') ? 'badge-warning' : 'badge-danger')}`;
+    if (vBadge) {
+      vBadge.innerText = comp.verification_status || "Manual review required";
+      vBadge.className = `badge ${comp.verification_status === 'Verified' ? 'badge-success' : (comp.verification_status?.includes('Warning') ? 'badge-warning' : 'badge-danger')}`;
+    }
     
-    document.getElementById("modalCoverageScore").innerText = `${comp.mandatory_coverage_score || 100}%`;
-    document.getElementById("modalTraceabilityScore").innerText = `${comp.source_traceability_score || 100}%`;
-    document.getElementById("modalConsistencyScore").innerText = `${comp.consistency_score || 100}%`;
+    ["modalCoverageScore", "modalTraceabilityScore", "modalConsistencyScore"].forEach((id, index) => {
+      const el = document.getElementById(id);
+      const score = [comp.mandatory_coverage_score, comp.source_traceability_score, comp.consistency_score][index];
+      if (el) el.innerText = typeof score === "number" && Number.isFinite(score) ? `${score}%` : "Not measured";
+    });
 
     // Pipeline 1: GenAI
     const ai = data.genai_analysis || {};
-    document.getElementById("genaiCategory").innerText = ai.category || "-";
-    document.getElementById("genaiSubcategory").innerText = ai.subcategory || "-";
-    document.getElementById("genaiDept").innerText = ai.recommended_department || "-";
-    document.getElementById("genaiUrgency").innerText = ai.urgency || "-";
-    document.getElementById("genaiPriority").innerText = ai.priority || "-";
-    document.getElementById("genaiPolicy").innerText = ai.referenced_policy_id || "POL-CMP-01";
-    document.getElementById("genaiEscalation").innerText = ai.escalation_required ? `Yes (${ai.escalation_tier})` : "No";
+    const aiFields = document.getElementById("modalGenAiFields");
+    const gtFields = document.getElementById("modalGroundTruthFields");
+    ["genaiCategory", "genaiSubcategory", "genaiDept", "genaiUrgency", "genaiPriority", "genaiPolicy", "genaiEscalation"].forEach((id, i) => {
+      const el = document.getElementById(id);
+      const values = [ai.category, ai.subcategory, ai.recommended_department, ai.urgency, ai.priority, ai.referenced_policy_id, ai.escalation_required === undefined ? "Not analyzed" : (ai.escalation_required ? `Yes (${ai.escalation_tier || "tier not set"})` : "No")];
+      if (el) el.innerText = values[i] || "Not analyzed";
+    });
 
     const stepsUl = document.getElementById("genaiStepsList");
-    stepsUl.innerHTML = (ai.resolution_steps || []).map(s => `<li>${s}</li>`).join("");
-    document.getElementById("genaiCustomerResponse").value = ai.customer_response || "";
+    if (stepsUl) stepsUl.innerHTML = (ai.resolution_steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join("") || "<li>Unavailable — review this case manually.</li>";
+    const responseEl = document.getElementById("genaiCustomerResponse") || document.getElementById("modalCustomerResponseDraft");
+    if (responseEl) responseEl.value = ai.customer_response || "";
 
     // Pipeline 2: Ground Truth
     const gt = data.ground_truth || {};
-    document.getElementById("gtRuleId").innerText = gt.rule_id_matched || "RUL-GEN-001";
-    document.getElementById("gtDept").innerText = gt.expected_department || "-";
-    document.getElementById("gtEscalation").innerText = gt.mandatory_escalation ? "YES (MANDATORY)" : "No";
-    document.getElementById("gtTier").innerText = gt.escalation_tier || "Tier 1";
-    document.getElementById("gtPolicy").innerText = `${gt.applicable_policy_id || 'POL-GEN-01'} (${gt.policy_status || 'Active'})`;
-    document.getElementById("gtRefund").innerText = gt.refund_eligible ? "ELIGIBLE" : "NOT ELIGIBLE";
+    ["gtRuleId", "gtDept", "gtEscalation", "gtTier", "gtPolicy", "gtRefund"].forEach((id, i) => {
+      const el = document.getElementById(id);
+      const values = [gt.rule_id_matched, gt.expected_department, gt.mandatory_escalation === undefined ? "Not evaluated" : (gt.mandatory_escalation ? "YES (MANDATORY)" : "No"), gt.escalation_tier, gt.applicable_policy_id ? `${gt.applicable_policy_id} (${gt.policy_status || "status unavailable"})` : null, gt.refund_eligible === undefined ? "Not evaluated" : (gt.refund_eligible ? "ELIGIBLE" : "NOT ELIGIBLE")];
+      if (el) el.innerText = values[i] || "Not evaluated";
+    });
 
     const gtStepsUl = document.getElementById("gtMandatoryStepsList");
-    gtStepsUl.innerHTML = (gt.mandatory_resolution_steps || []).map(s => `<li>${s}</li>`).join("");
+    if (gtStepsUl) gtStepsUl.innerHTML = (gt.mandatory_resolution_steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join("") || "<li>No required steps recorded.</li>";
+    if (aiFields) aiFields.innerHTML = `<div>Category: ${escapeHtml(ai.category || "Not analyzed")}</div><div>Subcategory: ${escapeHtml(ai.subcategory || "Not analyzed")}</div><div>Department: ${escapeHtml(ai.recommended_department || "Not analyzed")}</div><div>Urgency: ${escapeHtml(ai.urgency || "Not analyzed")}</div><div>Priority: ${escapeHtml(ai.priority || "Not analyzed")}</div><div>Policy: ${escapeHtml(ai.referenced_policy_id || "Not analyzed")}</div><div>Resolution: ${escapeHtml((ai.resolution_steps || []).join("; ") || "Manual review required")}</div>`;
+    if (gtFields) gtFields.innerHTML = `<div>Rule: ${escapeHtml(gt.rule_id_matched || "Not evaluated")}</div><div>Department: ${escapeHtml(gt.expected_department || "Not evaluated")}</div><div>Escalation: ${gt.mandatory_escalation ? "Required" : "Not required / not evaluated"}</div><div>Tier: ${escapeHtml(gt.escalation_tier || "Not evaluated")}</div><div>Policy: ${escapeHtml(gt.applicable_policy_id || "Not evaluated")}</div><div>Refund: ${gt.refund_eligible === undefined ? "Not evaluated" : (gt.refund_eligible ? "Eligible" : "Not eligible")}</div>`;
 
     const probDiv = document.getElementById("gtProhibitedActions");
-    if (comp.unauthorized_promise_detected) {
-      probDiv.innerHTML = `<strong>VIOLATION:</strong> ${(comp.unsupported_claims_flagged || []).join("; ")}`;
-    } else {
+    if (probDiv && comp.unauthorized_promise_detected) {
+      probDiv.innerHTML = `<strong>VIOLATION:</strong> ${escapeHtml((comp.unsupported_claims_flagged || []).join("; "))}`;
+    } else if (probDiv && data.comparison) {
       probDiv.innerText = "Zero policy violations detected in GenAI response.";
+    } else if (probDiv) {
+      probDiv.innerText = "No GenAI comparison is available; review manually.";
     }
 
     const clarBox = document.getElementById("clarificationQuestionsBox");
     if (clarBox) {
-      if (!data.order_id || !data.product_or_service || data.complaint_description.length < 40) {
+      if (!data.order_id || !data.product_or_service || String(data.complaint_description || "").length < 40) {
         clarBox.innerHTML = `
           <ul style="padding-left: 18px; margin: 0;">
             ${!data.order_id ? '<li>Could you please provide your official NovaTech 10-digit Order ID or Invoice number?</li>' : ''}
@@ -645,37 +730,51 @@ function insertClarificationQuestions() {
 }
 
 function changeResponseTone(tone) {
-  const respEl = document.getElementById("genaiCustomerResponse");
+  const respEl = document.getElementById("genaiCustomerResponse") || document.getElementById("modalCustomerResponseDraft");
   if (!respEl) return;
-  const current = respEl.value;
-  if (tone === "Empathetic") {
-    respEl.value = `Dear Customer,\n\nWe are sincerely sorry to hear about your experience with our product. We completely understand how frustrating this disruption is to your daily workflow, and our dedicated engineering team is prioritizing your case immediately.\n\n${current.replace(/^Dear.*?\n\n/i, '')}`;
-  } else if (tone === "Concise") {
-    respEl.value = `Hello,\n\nYour complaint has been logged and assigned under reference. We have reviewed the applicable warranty policy and initiated immediate diagnostics.\n\nNext steps: Verification in progress within standard SLA.`;
-  } else if (tone === "Formal") {
-    respEl.value = `Official Communication - NovaTech Global Support Operations\n\nThis notice confirms receipt of your formal grievance. The matter has been recorded and submitted for policy compliance review pursuant to Standard Operating Procedure terms.`;
-  } else {
-    respEl.value = current;
-  }
+  const current = respEl.value.trim();
+  if (!current) { showToast("No response draft is available to reformat.", "warning"); return; }
+  const body = current.replace(/^(Dear|Hello|Hi).*?\n\n/i, "").replace(/\n\n(Sincerely|Regards|Best regards),?[\s\S]*$/i, "").trim();
+  const greeting = tone === "Formal" ? "Dear Customer," : (tone === "Concise" ? "Hello," : "Hello,");
+  const closing = tone === "Formal" ? "Respectfully,\nSupport Team" : "Kind regards,\nSupport Team";
+  respEl.value = `${greeting}\n\n${body}\n\n${closing}`;
   showToast(`Response draft updated to ${tone} tone`, "info");
 }
 
 function generateFollowUpTemplate(type) {
-  const respEl = document.getElementById("genaiCustomerResponse");
+  const respEl = document.getElementById("genaiCustomerResponse") || document.getElementById("modalCustomerResponseDraft");
   if (!respEl) return;
-  
+  const ref = selectedComplaintId ? ` ${selectedComplaintId}` : "";
   if (type === "request_info") {
-    respEl.value = `Dear Customer,\n\nThank you for reaching out to NovaTech Support. To ensure we apply the correct warranty coverage, please reply with a clear photograph or video showing the reported issue along with your original purchase receipt.\n\nBest regards,\nNovaTech Resolution Team`;
+    respEl.value = `Hello,\n\nTo continue reviewing your case${ref}, please share any missing order details and supporting information relevant to the issue. Please do not send full payment-card details.\n\nKind regards,\nSupport Team`;
   } else if (type === "resolution_confirm") {
-    respEl.value = `Dear Customer,\n\nWe are pleased to inform you that your case has been fully reviewed and approved for resolution under our active warranty terms. Your replacement hardware unit is scheduled for immediate shipment.\n\nTracking details will follow shortly.`;
+    respEl.value = `Hello,\n\nWe have updated the review record for your case${ref}. A support representative will confirm any next steps separately.\n\nKind regards,\nSupport Team`;
   } else if (type === "refund_update") {
-    respEl.value = `Dear Customer,\n\nYour refund authorization has been approved by our financial audit department. The credited amount will reflect in your original payment method within 3-5 business days.\n\nThank you for your patience.`;
+    respEl.value = `Hello,\n\nYour refund request${ref} is being reviewed. No payment has been initiated through this system. We will provide an update after the decision is confirmed.\n\nKind regards,\nSupport Team`;
   } else if (type === "replacement_eta") {
-    respEl.value = `Dear Customer,\n\nYour replacement order has been processed with priority expedited shipping. Estimated delivery: 2 business days via FedEx Priority.\n\nCarrier Tracking Ref: FDX-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    respEl.value = `Hello,\n\nYour replacement request${ref} is under review. We will share shipment details only after an order and carrier confirmation are available.\n\nKind regards,\nSupport Team`;
   } else if (type === "case_closure") {
-    respEl.value = `Dear Customer,\n\nYour ticket has been marked as Resolved. If you have any further questions or if the issue reoccurs, please let us know. We would appreciate your feedback on our service.\n\nThank you for choosing NovaTech.`;
+    respEl.value = `Hello,\n\nIf your case${ref} has been resolved, please confirm that the outcome works for you. If the issue remains, reply with any additional details so we can continue the review.\n\nKind regards,\nSupport Team`;
   }
   showToast("Follow-up template inserted", "success");
+}
+
+async function saveAgentResolution() {
+  const responseDraft = document.getElementById("modalCustomerResponseDraft")?.value || "";
+  const formData = new FormData();
+  formData.append("action", "approve");
+  formData.append("reviewer_notes", "Agent review recorded. Draft has not been sent to the customer.");
+  formData.append("response_draft", responseDraft);
+  try {
+    const res = await fetch(`/api/complaints/${selectedComplaintId}/triage`, { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Review could not be recorded.");
+    showToast("Review recorded; the draft was not sent.", "success");
+    closeTriageModal();
+    loadComplaints();
+  } catch (error) {
+    showToast(error.message, "danger");
+  }
 }
 
 async function reassignSelectedDepartment() {
@@ -853,7 +952,7 @@ async function openPolicyConflictModal() {
 
   const cont = document.getElementById("policyConflictsList");
   if (!cont) return;
-  cont.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:0.95rem;"><i class="fa-solid fa-spinner fa-spin"></i> Scanning cross-clause RAG contradictions against 105+ Ground-Truth rules...</div>`;
+  cont.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:0.95rem;"><i class="fa-solid fa-spinner fa-spin"></i> Scanning cross-clause policy contradictions...</div>`;
 
   try {
     const res = await fetch("/api/knowledge/conflicts");
@@ -861,7 +960,7 @@ async function openPolicyConflictModal() {
     const conflicts = data.conflicts || [];
 
     if (conflicts.length === 0) {
-      cont.innerHTML = `<div style="text-align:center; padding:30px; color:#10b981; font-weight:700;">Zero policy drift detected. All rules 100% compliant.</div>`;
+      cont.innerHTML = `<div style="text-align:center; padding:30px; color:#10b981; font-weight:700;">No conflicts were identified in the currently indexed policy text. This is not a guarantee that all policies are conflict-free.</div>`;
       return;
     }
 
@@ -947,21 +1046,21 @@ async function loadRulesList() {
     }
 
     rules.forEach(r => {
-      const polId = r.policy_id || r.applicable_policy_id || "POL-GEN-01";
+      const polId = r.policy_id || r.applicable_policy_id || "Not specified";
       const compMax = (r.max_compensation_usd !== undefined && r.max_compensation_usd !== null) 
         ? `$${r.max_compensation_usd}` 
-        : (r.compensation_max || "$150.00");
+        : (r.compensation_max ?? "Not specified");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #059669;">${r.rule_id || 'R-000'}</td>
-        <td><strong style="color: var(--text-heading);">${r.category || 'General'}</strong></td>
-        <td>${r.subcategory || 'Standard'}</td>
-        <td><span class="badge badge-primary">${r.department || 'Triage'}</span></td>
-        <td><span class="badge ${r.urgency === 'Critical' ? 'badge-danger' : 'badge-warning'}">${r.urgency || 'Medium'}</span></td>
-        <td><span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem; font-weight:700; color:var(--primary);">${polId}</span></td>
+        <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #059669;">${escapeHtml(r.rule_id || 'Unassigned')}</td>
+        <td><strong style="color: var(--text-heading);">${escapeHtml(r.category || 'Not specified')}</strong></td>
+        <td>${escapeHtml(r.subcategory || 'Not specified')}</td>
+        <td><span class="badge badge-primary">${escapeHtml(r.department || 'Not specified')}</span></td>
+        <td><span class="badge ${r.urgency === 'Critical' ? 'badge-danger' : 'badge-warning'}">${escapeHtml(r.urgency || 'Not specified')}</span></td>
+        <td><span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem; font-weight:700; color:var(--primary);">${escapeHtml(polId)}</span></td>
         <td>${r.mandatory_escalation ? '<span class="badge badge-danger">MANDATORY</span>' : '<span class="badge badge-secondary">No</span>'}</td>
         <td>${r.refund_eligible ? '<span class="badge badge-success">Eligible</span>' : '<span class="badge badge-secondary">No</span>'}</td>
-        <td style="font-family:'JetBrains Mono', monospace; font-weight:700; color:#10b981;">${compMax}</td>
+        <td style="font-family:'JetBrains Mono', monospace; font-weight:700; color:#10b981;">${escapeHtml(compMax)}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -1076,7 +1175,7 @@ async function sendCommunicationReply() {
 
   const formData = new FormData();
   formData.append("complaint_id", selectedCommComplaintId);
-  formData.append("message", msg);
+  formData.append("message_text", msg);
   formData.append("channel", "Email / Web Ticket");
 
   try {
@@ -1086,7 +1185,7 @@ async function sendCommunicationReply() {
       SoundFX.playSuccess();
       input.value = "";
       selectCommunicationThread(selectedCommComplaintId);
-      showToast("Official reply dispatched to customer", "success");
+      showToast("Reply saved to the case thread. Email delivery is not connected.", "success");
     }
   } catch (e) {
     showToast("Error sending reply: " + e, "danger");
@@ -1119,19 +1218,24 @@ function applyAiDraftToInput() {
 async function loadRefundsDashboard() {
   try {
     const res = await fetch("/api/refunds/summary");
+    if (!res.ok) throw new Error(`Refund records unavailable (${res.status})`);
     const data = await res.json();
     currentRefundRecords = data.records || [];
 
     const m = data.metrics || {};
-    document.getElementById("kpiTotalClaims").innerText = `$ ${m.total_claims_val.toLocaleString()}`;
-    document.getElementById("kpiEscrowHeld").innerText = `$ ${m.escrow_held_val.toLocaleString()}`;
-    document.getElementById("kpiApprovedPayouts").innerText = `$ ${m.approved_payout_val.toLocaleString()}`;
-    document.getElementById("kpiDisputedClaims").innerText = `$ ${m.disputed_val.toLocaleString()}`;
+    [["kpiTotalClaims", m.total_claims_val], ["kpiEscrowHeld", m.escrow_held_val], ["kpiApprovedPayouts", m.approved_payout_val], ["kpiDisputedClaims", m.disputed_val]].forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = Number.isFinite(Number(value)) ? `$ ${Number(value).toLocaleString()}` : "Not recorded";
+    });
 
     renderRefundsTable(currentRefundRecords);
     init3DCardTilt();
   } catch (e) {
     console.error("Error loading refunds:", e);
+    ["kpiTotalClaims", "kpiEscrowHeld", "kpiApprovedPayouts", "kpiDisputedClaims"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = "Unavailable";
+    });
   }
 }
 
@@ -1148,18 +1252,18 @@ function renderRefundsTable(records) {
   records.forEach(r => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${r.complaint_id}</td>
+      <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${escapeHtml(r.complaint_id)}</td>
       <td>
-        <div style="font-weight: 800; color: var(--text-heading);">${r.customer_name}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">${r.order_reference}</div>
+        <div style="font-weight: 800; color: var(--text-heading);">${escapeHtml(r.customer_name)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.order_reference)}</div>
       </td>
-      <td><strong style="color: var(--text-heading); font-size: 1rem;">$ ${r.amount.toFixed(2)}</strong></td>
-      <td><span class="badge ${r.escrow_status.includes('Paid') ? 'badge-success' : (r.escrow_status.includes('Held') ? 'badge-primary' : 'badge-danger')}">${r.escrow_status}</span></td>
+      <td><strong style="color: var(--text-heading); font-size: 1rem;">${r.amount !== null && r.amount !== "" && Number.isFinite(Number(r.amount)) ? `$ ${Number(r.amount).toFixed(2)}` : "Not verified"}</strong></td>
+      <td><span class="badge ${r.escrow_status.includes('Paid') ? 'badge-success' : (r.escrow_status.includes('Held') ? 'badge-primary' : 'badge-secondary')}">${escapeHtml(r.escrow_status)}</span></td>
       <td><span class="badge ${r.refund_eligible ? 'badge-success' : 'badge-secondary'}">${r.refund_eligible ? 'Eligible' : 'Ineligible'}</span></td>
-      <td><span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;">${r.policy_matched}</span></td>
+      <td><span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;">${escapeHtml(r.policy_matched)}</span></td>
       <td>
-        <button class="pill-tab active" style="padding: 5px 14px; font-size: 0.78rem;" onclick="openRefundActionModal('${r.complaint_id}', ${r.amount})">
-          Settle &rarr;
+        <button class="pill-tab active" style="padding: 5px 14px; font-size: 0.78rem;" ${r.amount !== null && r.amount !== "" && Number.isFinite(Number(r.amount)) && r.refund_eligible ? `onclick="openRefundActionModal('${escapeHtml(r.complaint_id)}', ${Number(r.amount)})"` : "disabled title=\"Verified amount and eligibility are required\""}>
+          Review &rarr;
         </button>
       </td>
     `;
@@ -1167,12 +1271,11 @@ function renderRefundsTable(records) {
   });
 }
 
-function filterRefundTable(tab) {
+function filterRefundTable(tab, clickEvent) {
   SoundFX.playClick();
   document.querySelectorAll(".tab-pills-row .pill-tab").forEach(btn => btn.classList.remove("active"));
-  if (event && event.target) {
-    event.target.classList.add("active");
-  }
+  const activeTab = clickEvent?.currentTarget || document.querySelector(`.tab-pills-row .pill-tab[onclick*="'${tab}'"]`);
+  if (activeTab) activeTab.classList.add("active");
 
   if (tab === "All") {
     renderRefundsTable(currentRefundRecords);
@@ -1201,6 +1304,10 @@ function filterRefundSearch() {
 // 💰 AI Smart Escrow & CLV Optimizer
 async function openRefundActionModal(cid, amt) {
   SoundFX.playClick();
+  if (!Number.isFinite(Number(amt)) || Number(amt) <= 0) {
+    showToast("A verified transaction amount is required before recording a payout decision.", "warning");
+    return;
+  }
   const modal = document.getElementById("refundActionModal");
   if (!modal) return;
   document.getElementById("refundModalComplaintId").value = cid;
@@ -1216,16 +1323,13 @@ async function openRefundActionModal(cid, amt) {
     const data = await res.json();
 
     const churnBadge = document.getElementById("clvChurnBadge");
-    if (churnBadge) churnBadge.innerText = `Churn Risk: ${data.churn_risk_pct}%`;
-
+    if (churnBadge) churnBadge.innerText = "Not available";
     const optA = document.getElementById("optACashAmt");
-    if (optA) optA.innerText = `$ ${data.option_a_cash.toFixed(2)}`;
-
+    if (optA) optA.innerText = "Not verified";
     const optB = document.getElementById("optBVoucherAmt");
-    if (optB) optB.innerText = `$ ${data.option_b_voucher.toFixed(2)}`;
-
+    if (optB) optB.innerText = "Not available";
     const rec = document.getElementById("clvStrategyRec");
-    if (rec) rec.innerText = `AI Recommendation: ${data.recommendation}`;
+    if (rec) rec.innerText = data.reason || "A validated transaction and approved retention model are not connected.";
   } catch (e) {
     console.warn("CLV Optimizer fetch:", e);
   }
@@ -1259,7 +1363,9 @@ async function submitRefundExecution() {
       SoundFX.playSuccess();
       closeRefundActionModal();
       loadRefundsDashboard();
-      showToast(`Escrow transaction executed for ${cid}! Payout authorized.`, "success");
+      showToast(`Decision recorded for ${cid}; no payment was sent.`, "success");
+    } else {
+      showToast(data.detail || "Decision could not be recorded.", "danger");
     }
   } catch (e) {
     showToast("Error processing refund payout: " + e, "danger");
@@ -1275,23 +1381,24 @@ async function loadAnalyticsDashboard() {
     const data = await res.json();
 
     const kpiTot = document.getElementById("kpiTotal");
-    if (kpiTot) kpiTot.innerText = data.total_complaints || "525";
+    if (kpiTot) kpiTot.innerText = data.total_complaints ?? "—";
 
     // Category Doughnut Chart
     const catCtx = document.getElementById("categoryChart");
     if (catCtx) {
+      Chart.getChart(catCtx)?.destroy();
       new Chart(catCtx, {
         type: "doughnut",
         data: {
           labels: Object.keys(data.categories || {}),
           datasets: [{
             data: Object.values(data.categories || {}),
-            backgroundColor: ["var(--cream, #eef0d0)", "var(--cream, #eef0d0)", "var(--cream, #eef0d0)", "#10b981", "#f59e0b", "#f43f5e"]
+            backgroundColor: getChartPalette()
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { position: "bottom" } }
+          plugins: { legend: { position: "bottom", labels: { color: document.documentElement.dataset.theme === "light" ? "#334155" : "#e2e8f0" } } }
         }
       });
     }
@@ -1299,6 +1406,7 @@ async function loadAnalyticsDashboard() {
     // Urgency Bar Chart
     const urgCtx = document.getElementById("urgencyChart");
     if (urgCtx) {
+      Chart.getChart(urgCtx)?.destroy();
       new Chart(urgCtx, {
         type: "bar",
         data: {
@@ -1306,12 +1414,13 @@ async function loadAnalyticsDashboard() {
           datasets: [{
             label: "Volume",
             data: Object.values(data.urgencies || {}),
-            backgroundColor: ["#10b981", "#0ea5e9", "#f59e0b", "#f43f5e"]
+            backgroundColor: getChartPalette()
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } }
+          plugins: { legend: { display: false }, tooltip: { enabled: true } },
+          scales: { x: { ticks: { color: document.documentElement.dataset.theme === "light" ? "#334155" : "#e2e8f0" }, grid: { color: document.documentElement.dataset.theme === "light" ? "rgba(51,65,85,.14)" : "rgba(226,232,240,.14)" } }, y: { beginAtZero: true, ticks: { color: document.documentElement.dataset.theme === "light" ? "#334155" : "#e2e8f0" }, grid: { color: document.documentElement.dataset.theme === "light" ? "rgba(51,65,85,.14)" : "rgba(226,232,240,.14)" } } }
         }
       });
     }
@@ -1532,44 +1641,6 @@ async function updateUserRole(userId, newRole) {
     showToast("Error updating role: " + err, "danger");
   }
 }
-
-function toggleRoleSwitchMenu() {
-  const m = document.getElementById("roleSwitchMenu");
-  if (m) m.style.display = m.style.display === "none" ? "block" : "none";
-}
-
-async function quickSwitchStaffRole(role) {
-  let username = "admin";
-  let pwd = "admin123";
-  let target = "/admin";
-  if (role === "agent") {
-    username = "agent";
-    pwd = "agent123";
-    target = "/agent";
-  } else if (role === "warranty_manager") {
-    username = "warranty_manager";
-    pwd = "warranty123";
-    target = "/warranty";
-  }
-  
-  try {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier: username, password: pwd })
-    });
-    window.location.href = target;
-  } catch (e) {
-    window.location.href = target;
-  }
-}
-
-document.addEventListener("click", (e) => {
-  const menu = document.getElementById("roleSwitchMenu");
-  if (menu && menu.style.display === "block" && !e.target.closest("#roleSwitchMenu") && !e.target.closest("button[onclick='toggleRoleSwitchMenu()']")) {
-    menu.style.display = "none";
-  }
-});
 
 // -------------------------------------------------------------
 // 15. TOP 1% STAT COUNTER & SKELETON LOADER ANIMATIONS

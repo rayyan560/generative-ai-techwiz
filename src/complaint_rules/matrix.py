@@ -579,6 +579,7 @@ def build_full_rule_matrix() -> List[Dict[str, Any]]:
                 elif cat == "Account Security": policy_id = "POL-SEC-08"
                 elif cat == "Data Privacy": policy_id = "POL-PRV-09"
                 elif cat == "Staff Conduct": policy_id = "POL-CON-10"
+                elif cat == "Order Cancellation": policy_id = "POL-CAN-11"
 
                 rules.append({
                     "rule_id": rule_id,
@@ -605,11 +606,6 @@ def build_full_rule_matrix() -> List[Dict[str, Any]]:
                 })
                 existing_ids.add(rule_id)
                 rule_counter += 1
-                if len(rules) >= 115:
-                    break
-        if len(rules) >= 115:
-            break
-            
     return rules
 
 ALL_RULES = build_full_rule_matrix()

@@ -22,13 +22,19 @@ class AppSettings(BaseModel):
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
     BASE_URL: str = os.getenv("BASE_URL", "http://127.0.0.1:8000")
-    DEMO_MODE: bool = os.getenv("DEMO_MODE", "true").lower() in ("true", "1", "yes")
+    DEMO_MODE: bool = os.getenv(
+        "DEMO_MODE",
+        "false" if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER") else "true"
+    ).lower() in ("true", "1", "yes")
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "").strip().lower()
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
+    COOKIE_SECURE: bool = os.getenv(
+        "COOKIE_SECURE",
+        "true" if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER") else "false"
+    ).lower() in ("true", "1", "yes")
     
     # MongoDB Atlas Connection
-    MONGODB_URI: str = os.getenv(
-        "MONGODB_URI",
-        "mongodb+srv://rayyan001:rayyan001@cluster0.wcxmyzg.mongodb.net/?appName=Cluster0"
-    )
+    MONGODB_URI: str = os.getenv("MONGODB_URI", "").strip()
     DATABASE_NAME: str = "supportnova_db"
     
     GEMINI_API_KEYS: List[str] = [k.strip() for k in os.getenv("GEMINI_API_KEYS", os.getenv("GOOGLE_GENAI_API_KEY", "")).split(",") if k.strip()]

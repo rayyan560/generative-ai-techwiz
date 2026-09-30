@@ -3,28 +3,57 @@ from fastapi.responses import JSONResponse
 from typing import Optional, List, Dict, Any
 import datetime
 import logging
+from statistics import mean
 
 from config.database import get_complaints_col, get_audit_logs_col
-from src.genai_pipeline.pipeline import genai_pipeline
+from config.settings import settings
+from src.genai_pipeline.pipeline import GenAIUnavailableError, genai_pipeline
 from src.python_validation.pipeline import python_validation_pipeline
 from src.comparison_engine.engine import ComparisonEngine
 from src.analytics.sentiment import SentimentTelemetryEngine
 from routers.common import clean_doc, clean_docs, ws_manager
+from src.security.permissions import require_roles
 
 logger = logging.getLogger("SupportNova.AgentRouter")
 
-router = APIRouter(prefix="/api", tags=["Agent"])
+router = APIRouter(
+    prefix="/api",
+    tags=["Agent"],
+    dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))]
+)
 
-async def calculate_avg_inspection_time() -> str:
-    return "3.2 mins"
+def _parse_timestamp(value):
+    if not value:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
 
-async def calculate_accuracy_pct() -> float:
+
+async def calculate_avg_inspection_time() -> Optional[str]:
     col = get_complaints_col()
-    total = col.count_documents({})
-    if total == 0:
-        return 99.4
-    resolved = col.count_documents({"status": {"$in": ["Resolved", "Refund Approved"]}})
-    return round(min(99.8, max(94.0, (resolved / total) * 100 + 5.0)), 1)
+    durations = []
+    start_fields = ("review_started_at", "triage_started_at", "created_at")
+    end_fields = ("review_completed_at", "triage_completed_at", "resolved_at")
+    for record in col.find({}, limit=2000):
+        start = next((_parse_timestamp(record.get(field)) for field in start_fields if record.get(field)), None)
+        end = next((_parse_timestamp(record.get(field)) for field in end_fields if record.get(field)), None)
+        if start and end:
+            duration = (end - start).total_seconds() / 60
+            if 0 <= duration <= 24 * 60:
+                durations.append(duration)
+    return f"{mean(durations):.1f} mins" if durations else None
+
+async def calculate_accuracy_pct() -> Optional[float]:
+    col = get_complaints_col()
+    scores = []
+    for record in col.find({}, limit=2000):
+        comparison = record.get("comparison") or {}
+        score = comparison.get("consistency_score")
+        if isinstance(score, (int, float)) and 0 <= score <= 100:
+            scores.append(float(score))
+    return round(mean(scores), 1) if scores else None
 
 @router.get("/agent/stats")
 async def get_agent_stats():
@@ -34,10 +63,12 @@ async def get_agent_stats():
     pending_count = col.count_documents({"status": {"$in": ["Analyzed", "Manual Review Required", "Escalated"]}})
     avg_time = await calculate_avg_inspection_time()
     accuracy = await calculate_accuracy_pct()
+    critical_count = col.count_documents({"priority": "P0", "status": {"$nin": ["Resolved", "Refund Approved"]}})
     
     return {
-        "throughput_today": resolved_count,
+        "resolved_cases": resolved_count,
         "pending_reviews": pending_count,
+        "critical_alerts": critical_count,
         "avg_inspection_time": avg_time,
         "accuracy_pct": accuracy
     }
@@ -95,28 +126,34 @@ async def get_complaint_details(complaint_id: str):
         col.update_one({"complaint_id": complaint_id}, {"$set": {"sentiment_telemetry": doc["sentiment_telemetry"]}})
     
     if "genai_analysis" not in doc or "ground_truth" not in doc:
-        genai_out = genai_pipeline.generate_intelligence(doc)
         ground_truth = python_validation_pipeline.validate_complaint(doc)
-        comp_result = ComparisonEngine.compare_and_verify(genai_out, ground_truth, doc)
-        
-        doc["genai_analysis"] = genai_out.model_dump()
         doc["ground_truth"] = ground_truth.model_dump()
-        doc["comparison"] = comp_result.model_dump()
-        doc["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
         doc["category"] = ground_truth.expected_category
         doc["subcategory"] = ground_truth.expected_subcategory
         doc["department"] = ground_truth.expected_department
         doc["urgency"] = ground_truth.expected_urgency
         doc["priority"] = ground_truth.expected_priority
+        try:
+            genai_out = genai_pipeline.generate_intelligence(doc)
+        except GenAIUnavailableError as error:
+            doc["status"] = "Manual Review Required"
+            doc["analysis_error"] = str(error)
+        else:
+            comp_result = ComparisonEngine.compare_and_verify(genai_out, ground_truth, doc)
+            doc["genai_analysis"] = genai_out.model_dump()
+            doc["comparison"] = comp_result.model_dump()
+            doc["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
         col.update_one({"complaint_id": complaint_id}, {"$set": doc})
 
     return clean_doc(doc)
 
-@router.post("/complaints/{complaint_id}/triage")
+@router.post("/complaints/{complaint_id}/triage", dependencies=[Depends(require_roles("admin", "agent"))])
 async def triage_complaint(
+    request: Request,
     complaint_id: str,
     action: str = Form(...),
     reviewer_notes: Optional[str] = Form(""),
+    response_draft: Optional[str] = Form(None),
     new_department: Optional[str] = Form(None),
     new_category: Optional[str] = Form(None)
 ):
@@ -124,31 +161,47 @@ async def triage_complaint(
     doc = col.find_one({"complaint_id": complaint_id})
     if not doc:
         raise HTTPException(status_code=404, detail="Complaint not found.")
+    if action not in {"approve", "override_refund", "escalate", "reassign", "close", "regenerate"}:
+        raise HTTPException(status_code=400, detail="Unsupported review action.")
 
     update_payload = {"last_modified": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     
     if action == "approve":
-        update_payload["status"] = "Resolved"
-        update_payload["reviewer_decision"] = "Approved by Agent"
+        update_payload["status"] = "Agent Reviewed"
+        update_payload["reviewer_decision"] = "Review recorded; customer response has not been sent"
     elif action == "override_refund":
-        update_payload["status"] = "Refund Approved"
-        update_payload["reviewer_decision"] = "Refund Authorized by Reviewer"
+        gt = doc.get("ground_truth") or {}
+        if not gt.get("refund_eligible") or not doc.get("payment_verified") or doc.get("verified_transaction_amount") is None:
+            raise HTTPException(status_code=409, detail="Verified payment and policy eligibility are required before refund approval.")
+        update_payload["status"] = "Refund Approval Pending"
+        update_payload["escrow_status"] = "Approval Recorded — payment pending integration"
+        update_payload["reviewer_decision"] = "Refund approval recorded; external payment not executed"
     elif action == "escalate":
         update_payload["status"] = "Escalated"
         update_payload["reviewer_decision"] = "Escalated to Tier 3 Management"
     elif action == "reassign":
-        if new_department:
-            update_payload["department"] = new_department
+        if new_department not in settings.DEPARTMENTS:
+            raise HTTPException(status_code=400, detail="Choose a configured department.")
+        update_payload["department"] = new_department
         update_payload["status"] = "Reassigned"
     elif action == "close":
         update_payload["status"] = "Closed"
     elif action == "regenerate":
-        genai_out = genai_pipeline.generate_intelligence(doc)
         ground_truth = python_validation_pipeline.validate_complaint(doc)
-        comp_result = ComparisonEngine.compare_and_verify(genai_out, ground_truth, doc)
-        update_payload["genai_analysis"] = genai_out.model_dump()
         update_payload["ground_truth"] = ground_truth.model_dump()
-        update_payload["comparison"] = comp_result.model_dump()
+        try:
+            genai_out = genai_pipeline.generate_intelligence(doc)
+        except GenAIUnavailableError:
+            update_payload["status"] = "Manual Review Required"
+            update_payload["analysis_error"] = "GenAI is unavailable; Python ground truth was refreshed."
+        else:
+            comp_result = ComparisonEngine.compare_and_verify(genai_out, ground_truth, doc)
+            update_payload["genai_analysis"] = genai_out.model_dump()
+            update_payload["comparison"] = comp_result.model_dump()
+            update_payload["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
+
+    if response_draft is not None:
+        update_payload["customer_response_draft"] = response_draft[:5000]
 
     if reviewer_notes:
         update_payload["reviewer_notes"] = reviewer_notes
@@ -160,7 +213,7 @@ async def triage_complaint(
         "log_id": f"AUD-{datetime.datetime.now().timestamp()}",
         "complaint_id": complaint_id,
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "actor": "Support Agent",
+        "actor": AuthManager.get_current_user(request).get("username", "Support staff"),
         "action": action,
         "details": update_payload
     })

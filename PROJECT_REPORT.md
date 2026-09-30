@@ -2,7 +2,7 @@
 **Techwiz 7: The World Tech Championship**  
 **Theme:** ResponseX Intelligence | **Category:** Generative AI PowerPlay  
 **Organization:** NovaTech Global Commerce & Electronics  
-**Version:** 1.0 (Production Release)
+**Version:** 1.0 (Development Snapshot; not a production-readiness certification)
 
 ---
 
@@ -21,7 +21,7 @@ Traditional complaint handling suffers from severe bottlenecks:
 ## 2. Proposed Solution: Dual-Pipeline Architecture
 
 SupportNova solves this with an enterprise-grade **Dual-Pipeline Architecture**:
-- **Pipeline 1 (GenAI Complaint Intelligence Pipeline)**: Integrates with Google Gemini models using a multi-key rotation and automatic fallback mechanism. It performs semantic understanding, emotion and sentiment extraction, entity parsing (Order ID, Amount, Serial Numbers), draft customer response generation, and agent guidance.
+- **Pipeline 1 (GenAI Complaint Intelligence Pipeline)**: Integrates with configured Google Gemini API keys using bounded rotation. Provider outages do not generate synthetic GenAI findings; affected cases are routed to human review while deterministic Python ground truth remains available.
 - **Pipeline 2 (Python Ground-Truth Validation Pipeline)**: An independent, 100% deterministic Python validation engine. Pipeline 2 enforces an approved **105+ Complaint Resolution Rule Matrix**, **32+ Mandatory Escalation Conditions**, and **20+ Version-Controlled Policy Documents**.
 - **Comparison & Verification Engine**: Measures alignment between GenAI output and Ground Truth. It calculates a **Mandatory Policy Coverage Score %**, **Source Traceability Score %**, and flags unauthorized promises, policy contradictions, and prompt injections.
 - **Customer Privacy & Trust Preservation**: The customer portal presents an official, authoritative ticket submission and tracking experience with zero internal AI bot disclosure. The dual-pipeline acts exclusively as an internal intelligence and decision-support layer for support agents and supervisors.
@@ -74,7 +74,7 @@ SupportNova solves this with an enterprise-grade **Dual-Pipeline Architecture**:
 
 ## 4. Database Schema & Data Models
 
-SupportNova connects natively to **MongoDB Atlas** (`mongodb+srv://rayyan001...`) with automated, high-performance persistent fallback to ensure 100% uptime during network partitions.
+SupportNova can connect to MongoDB Atlas through the `MONGODB_URI` environment variable and otherwise uses the local JSON store. Neither behavior guarantees 100% uptime; deployment persistence depends on the host's storage configuration.
 
 ### Key Collections:
 1. `complaints`: Stores full complaint submissions, entity metadata, customer tier, GenAI intelligence output, Python Ground-Truth result, and comparison verdict.
@@ -107,10 +107,10 @@ SupportNova treats all customer-submitted text and file attachments as **untrust
 | Resolution Rules Matrix | >= 100 | **105 Ground-Truth Rules** | ✅ 100% Compliant |
 | Mandatory Escalations | >= 30 | **34 Conditions** | ✅ 100% Compliant |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ 100% Compliant |
-| Automated Test Suite | All Passing | **7 / 7 Passing (100%)** | ✅ 100% Compliant |
+| Automated Test Suite | All Passing | **Not yet verified in this environment** | ⏳ Run the current test suite before submission |
 
 ---
 
 ## 7. Conclusion
 
-SupportNova demonstrates how enterprise customer support platforms can safely leverage Generative AI. By enforcing strict, deterministic Python Ground-Truth validation alongside GenAI natural language processing, SupportNova delivers rapid complaint resolution while eliminating hallucinations, financial leakages, and security vulnerabilities.
+SupportNova demonstrates a design for combining generative analysis with deterministic review controls. This development snapshot does not certify zero hallucinations, zero vulnerabilities, production reliability, or live provider performance. The current frontend is server-rendered HTML and JavaScript; the React-component requirement in `docs/rules.md` remains unmet.

@@ -3,8 +3,6 @@ let ringtoneOsc1 = null;
 let ringtoneOsc2 = null;
 let currentCallId = null;
 let callTimerInterval = null;
-let activeRecordingTimer = null;
-let recordingSeconds = 0;
 
 function playRingtoneSound() {
   try {
@@ -37,30 +35,6 @@ function stopRingtoneSound() {
     if (ringtoneOsc2) { ringtoneOsc2.stop(); ringtoneOsc2.disconnect(); ringtoneOsc2 = null; }
     if (ringtoneAudioCtx) { ringtoneAudioCtx.close(); ringtoneAudioCtx = null; }
   } catch (e) {}
-}
-
-function startLiveRecordingBadge() {
-  const badge = document.querySelector('.live-rec-badge');
-  if (!badge) return;
-  badge.style.display = 'inline-flex';
-  recordingSeconds = 0;
-  if (activeRecordingTimer) clearInterval(activeRecordingTimer);
-  activeRecordingTimer = setInterval(() => {
-    recordingSeconds++;
-    const m = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
-    const s = String(recordingSeconds % 60).padStart(2, '0');
-    const span = badge.querySelector('span');
-    if (span) span.textContent = `Call Active ${m}:${s}`;
-  }, 1000);
-}
-
-function stopLiveRecordingBadge() {
-  const badge = document.querySelector('.live-rec-badge');
-  if (badge) badge.style.display = 'none';
-  if (activeRecordingTimer) {
-    clearInterval(activeRecordingTimer);
-    activeRecordingTimer = null;
-  }
 }
 
 async function toggleStaffPresence() {
@@ -138,18 +112,22 @@ function showIncomingCallModal(call) {
 
 async function acceptIncomingCall() {
   stopRingtoneSound();
-  startLiveRecordingBadge();
   try {
-    await fetch('/api/call/accept', {
+    const response = await fetch('/api/call/accept', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ call_id: currentCallId })
     });
-  } catch (e) {}
+    if (!response.ok) throw new Error('Call request could not be accepted.');
+  } catch (e) {
+    if (typeof showToast === 'function') showToast(e.message || 'Call request could not be accepted.', 'danger');
+    closeCallModal();
+    return;
+  }
 
   const statusEl = document.getElementById('snCallStatusText');
   const arrowsEl = document.getElementById('snCallArrows');
-  if (statusEl) statusEl.textContent = 'CONNECTED (00:00)';
+  if (statusEl) statusEl.textContent = 'REQUEST ACCEPTED — AUDIO NOT CONNECTED';
   if (arrowsEl) arrowsEl.style.display = 'none';
 
   let sec = 0;
@@ -158,20 +136,14 @@ async function acceptIncomingCall() {
     sec++;
     const m = String(Math.floor(sec / 60)).padStart(2, '0');
     const s = String(sec % 60).padStart(2, '0');
-    if (statusEl) statusEl.textContent = `CONNECTED (${m}:${s})`;
+    if (statusEl) statusEl.textContent = `AUDIO UNAVAILABLE (${m}:${s})`;
   }, 1000);
 
   const actionRow = document.getElementById('snCallActionRow');
   if (actionRow) {
     actionRow.innerHTML = `
-      <button class="sn-call-btn-circle sn-call-btn-opt" onclick="toggleMuteCall(this)" title="Mute Microphone">
-        <i class="fa-solid fa-microphone"></i>
-      </button>
       <button class="sn-call-btn-circle sn-call-btn-decline" onclick="endCurrentCall()" title="End Call">
-        <i class="fa-solid fa-phone-slash"></i>
-      </button>
-      <button class="sn-call-btn-circle sn-call-btn-opt" onclick="toggleSpeakerCall(this)" title="Speaker On">
-        <i class="fa-solid fa-volume-high"></i>
+        <i class="fa-solid fa-xmark"></i>
       </button>
     `;
   }
@@ -179,7 +151,6 @@ async function acceptIncomingCall() {
 
 async function declineIncomingCall() {
   stopRingtoneSound();
-  stopLiveRecordingBadge();
   try {
     await fetch('/api/call/decline', {
       method: 'POST',
@@ -192,7 +163,6 @@ async function declineIncomingCall() {
 
 async function endCurrentCall() {
   stopRingtoneSound();
-  stopLiveRecordingBadge();
   if (callTimerInterval) clearInterval(callTimerInterval);
   try {
     await fetch('/api/call/end', {
@@ -206,40 +176,15 @@ async function endCurrentCall() {
 
 function closeCallModal() {
   stopRingtoneSound();
-  stopLiveRecordingBadge();
   if (callTimerInterval) clearInterval(callTimerInterval);
   currentCallId = null;
   const modal = document.getElementById('snVoiceCallBackdrop');
   if (modal) modal.style.display = 'none';
 }
 
-function toggleMuteCall(btn) {
-  const i = btn.querySelector('i');
-  if (!i) return;
-  if (i.classList.contains('fa-microphone')) {
-    i.className = 'fa-solid fa-microphone-slash';
-    btn.style.background = 'rgba(244, 63, 94, 0.4)';
-  } else {
-    i.className = 'fa-solid fa-microphone';
-    btn.style.background = 'rgba(255, 255, 255, 0.12)';
-  }
-}
-
-function toggleSpeakerCall(btn) {
-  const i = btn.querySelector('i');
-  if (!i) return;
-  if (i.classList.contains('fa-volume-high')) {
-    i.className = 'fa-solid fa-volume-xmark';
-    btn.style.background = 'rgba(244, 63, 94, 0.4)';
-  } else {
-    i.className = 'fa-solid fa-volume-high';
-    btn.style.background = 'rgba(255, 255, 255, 0.12)';
-  }
-}
-
 function quickCallMessage() {
   if (typeof showToast === 'function') {
-    showToast("Quick reply dispatched to customer chat.", "info");
+    showToast("Quick replies are not connected to the customer chat.", "warning");
   }
   declineIncomingCall();
 }

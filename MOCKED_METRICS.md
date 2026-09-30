@@ -1,12 +1,8 @@
-# Mocked / Placeholder Metrics
+# Dashboard Measurement Gaps
 
-> **Purpose**: This file tracks every KPI or metric that is currently hardcoded
-> (i.e., not fetched from the backend). Each entry lists the element's `id`,
-> the current placeholder value, and the API endpoint that should replace it
-> once the backend route is implemented.
+> Historical inventory, updated for the current implementation. Dashboard values are either live, explicitly unavailable, or still require integration. Earlier entries below included fabricated sample metrics and must not be reused as current evidence.
 >
-> All mocked elements carry the HTML attribute `data-mock="true"` so they can
-> be audited quickly with: `grep -r 'data-mock' templates/`
+> No `data-mock` audit attribute is currently used.
 
 ---
 
@@ -14,52 +10,34 @@
 
 | Element ID | Placeholder Value | Real Source | Notes |
 |---|---|---|---|
-| `agentThroughputCount` | `42 Cases` | `GET /api/agent/stats` → `throughput_today` | Count of cases processed by this agent today |
-| `agentAvgTime` | `4.2 mins` | `GET /api/agent/stats` → `avg_inspection_time` | Rolling 24-hour average triage time |
-| `agentAccuracy` | `99.4%` | `GET /api/agent/stats` → `accuracy_pct` | Percentage of AI verdicts confirmed by agent |
-| `agentQueuePending` | `18 Pending` | `GET /api/complaints?status=pending` → `total` | Live queue depth |
-| `agentCriticalCount` | `3` | `GET /api/complaints?priority=P0&status=open` → `total` | Count of unresolved P0 critical alerts |
-| `agentVisionAccuracy` | `99.2%` | Gemini audit log aggregation | Requires a new `/api/gemini/vision-accuracy` endpoint; depends on logging infra |
-| `agentActiveChatsCount` | `5 Online` | `GET /api/chat/active-count` → `active` | Number of currently open WhatsApp sessions |
+| `agentThroughputCount` | Live resolved-case count | `GET /api/agent/stats` → `resolved_cases` | Total resolved records, not a per-agent daily throughput metric |
+| `agentAvgTime` | `Not recorded` until timestamp pairs exist | `GET /api/agent/stats` → `avg_inspection_time` | Uses recorded start/end timestamps only |
+| `agentAccuracy` | `Not measured` until comparisons exist | `GET /api/agent/stats` → `accuracy_pct` | Currently averages stored comparison consistency, not a validated agent-accuracy study |
+| `agentQueuePending` | Live review count | `GET /api/agent/stats` → `pending_reviews` | Counts Analyzed, Manual Review Required, and Escalated statuses |
+| `agentCriticalCount` | Live open P0 count | `GET /api/agent/stats` → `critical_alerts` | P0 records excluding resolved states |
+| `agentVisionAccuracy` | `Not measured` | None | Vision analysis provider is not integrated; photo upload is disabled in the portal |
+| `agentActiveChatsCount` | `Open desk` | None | No live WhatsApp connector or validated active-session count is configured |
 
 ---
 
 ## refunds.html — CLV Optimizer KPIs
 
-> The three KPIs inside the CLV Optimizer card are loaded via
-> `GET /api/escrow/clv-optimizer/{customerId}` when a customer is selected.
-> They are **not** hardcoded globally — they default to `--` until a customer
-> is chosen. **No action required here**, but listed for completeness.
+> Retention/churn estimates are unavailable. The API returns an explicit unavailable reason until verified customer history and an approved model are connected.
 
 | Element (visible label) | Default | Real Source |
 |---|---|---|
-| Retention Probability | `--` | `/api/escrow/clv-optimizer/{id}` → `retention_probability` |
-| Churn Risk | `--` | `/api/escrow/clv-optimizer/{id}` → `churn_risk` |
-| CLV Ceiling | `--` | `/api/escrow/clv-optimizer/{id}` → `clv_ceiling` |
+| Retention Probability | `Not available` | No validated model |
+| Churn Risk | `Not available` | No validated model |
+| CLV Ceiling | `Not available` | No verified transaction history |
 
 ---
 
-## How to Wire Up a Mocked Metric
+## Next integration work
 
-1. Implement the backend route listed in the table above.
-2. In the relevant JS file, add a `fetch()` call after DOM load, e.g.:
-
-```js
-// Example: hydrate agentThroughputCount
-fetch('/api/agent/stats')
-  .then(r => r.json())
-  .then(data => {
-    const el = document.getElementById('agentThroughputCount');
-    if (el && data.throughput_today !== undefined) {
-      el.textContent = `${data.throughput_today} Cases`;
-      el.removeAttribute('data-mock');   // mark as live once wired
-    }
-  })
-  .catch(() => { /* keep placeholder on error */ });
-```
-
-3. Remove the `data-mock="true"` attribute from the element **and** delete the
-   corresponding row from this table once the metric is live.
+1. Connect a persistent chat provider before reporting active chat counts.
+2. Add a validated multimodal provider and human-reviewed evaluation set before reporting vision accuracy.
+3. Add payment-service integration, verified transaction records, idempotency, and audit controls before claiming payments are processed.
+4. Add timestamp and outcome data collection before reporting SLA or agent-performance rates.
 
 ---
 

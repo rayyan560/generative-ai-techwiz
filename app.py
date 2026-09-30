@@ -3,6 +3,7 @@ import json
 import logging
 import datetime
 import asyncio
+import secrets
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, Form, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, FileResponse
@@ -38,6 +39,10 @@ os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+def require_page_role(user: Dict[str, Any], *allowed_roles: str) -> None:
+    if user.get("role") not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Your role cannot access this page.")
 
 # Register Domain APIRouters
 app.include_router(auth.router)
@@ -81,6 +86,11 @@ async def startup_event():
 @app.websocket("/ws/triage")
 async def websocket_triage_endpoint(websocket: WebSocket):
     """Real-time bi-directional stream for triage dashboard & multi-agent notifications."""
+    token = websocket.cookies.get("supportnova_session")
+    user = AuthManager.verify_session_token(token) if token else None
+    if not user or user.get("role") not in {"admin", "agent", "warranty_manager"}:
+        await websocket.close(code=1008)
+        return
     await ws_manager.connect(websocket)
     try:
         while True:
@@ -127,9 +137,8 @@ async def customer_portal(request: Request):
 async def login_page(request: Request):
     user = AuthManager.get_current_user(request)
     if user:
-        if user.get("role") == "admin":
-            return RedirectResponse(url="/admin", status_code=302)
-        return RedirectResponse(url="/", status_code=302)
+        target = {"admin": "/admin", "agent": "/agent", "warranty_manager": "/warranty"}.get(user.get("role"), "/")
+        return RedirectResponse(url=target, status_code=302)
     return templates.TemplateResponse(request=request, name="login.html", context={
         "app_name": settings.APP_NAME,
         "error": None,
@@ -160,9 +169,20 @@ async def handle_login(request: Request, username: str = Form(...), password: st
             "demo_mode": settings.DEMO_MODE
         })
     token = AuthManager.create_session_token(user)
-    target_url = "/admin" if user.get("role") in ["admin", "agent"] else "/"
+    target_url = {
+        "admin": "/admin",
+        "agent": "/agent",
+        "warranty_manager": "/warranty",
+    }.get(user.get("role"), "/")
     response = RedirectResponse(url=target_url, status_code=302)
-    response.set_cookie(key="supportnova_session", value=token, httponly=True, max_age=7*86400, samesite="lax")
+    response.set_cookie(
+        key="supportnova_session",
+        value=token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        max_age=7 * 86400,
+        samesite="lax"
+    )
     return response
 
 @app.get("/logout")
@@ -175,23 +195,40 @@ async def handle_logout():
 async def google_oauth_login():
     if settings.GOOGLE_CLIENT_ID:
         import urllib.parse
+        state = secrets.token_urlsafe(32)
         params = {
             "client_id": settings.GOOGLE_CLIENT_ID,
             "redirect_uri": f"{settings.BASE_URL}/auth/google/callback",
             "response_type": "code",
             "scope": "openid email profile",
             "access_type": "offline",
-            "prompt": "select_account"
+            "prompt": "select_account",
+            "state": state
         }
         google_auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
-        return RedirectResponse(url=google_auth_url, status_code=302)
+        response = RedirectResponse(url=google_auth_url, status_code=302)
+        response.set_cookie(
+            "google_oauth_state", state, httponly=True,
+            secure=settings.COOKIE_SECURE, max_age=600, samesite="lax"
+        )
+        return response
     else:
         return RedirectResponse(url="/login?google_prompt=true", status_code=302)
 
 @app.get("/auth/google/callback")
-async def google_oauth_callback(request: Request, code: Optional[str] = None, error: Optional[str] = None):
+async def google_oauth_callback(
+    request: Request,
+    code: Optional[str] = None,
+    state: Optional[str] = None,
+    error: Optional[str] = None
+):
+    expected_state = request.cookies.get("google_oauth_state", "")
+    if not state or not expected_state or not secrets.compare_digest(state, expected_state):
+        return RedirectResponse(url="/login?error=Invalid%20Google%20sign-in%20state", status_code=302)
     if error or not code:
-        return RedirectResponse(url=f"/login?error={error or 'Google authorization cancelled'}", status_code=302)
+        response = RedirectResponse(url="/login?error=Google%20authorization%20cancelled", status_code=302)
+        response.delete_cookie("google_oauth_state")
+        return response
     
     try:
         import urllib.request
@@ -223,6 +260,8 @@ async def google_oauth_callback(request: Request, code: Optional[str] = None, er
             userinfo = json.loads(resp.read().decode("utf-8"))
         
         email = userinfo.get("email")
+        if not email or not userinfo.get("email_verified"):
+            raise ValueError("Google account email is not verified.")
         name = userinfo.get("name") or email.split("@")[0].title()
         picture = userinfo.get("picture")
         sub = userinfo.get("sub")
@@ -235,20 +274,25 @@ async def google_oauth_callback(request: Request, code: Optional[str] = None, er
         )
         
         token = AuthManager.create_session_token(user)
-        target = "/admin" if user.get("role") in ["admin", "agent"] else "/"
+        target = {"admin": "/admin", "agent": "/agent", "warranty_manager": "/warranty"}.get(user.get("role"), "/")
         response = RedirectResponse(url=target, status_code=302)
-        response.set_cookie(key="supportnova_session", value=token, httponly=True, max_age=7*86400, samesite="lax")
+        response.set_cookie(key="supportnova_session", value=token, httponly=True, secure=settings.COOKIE_SECURE, max_age=7*86400, samesite="lax")
+        response.delete_cookie("google_oauth_state")
         return response
         
     except Exception as e:
         logger.error(f"Error in Google OAuth callback: {e}")
-        return RedirectResponse(url=f"/login?error=Google login failed: {str(e)}", status_code=302)
+        logger.warning("Google OAuth callback failed.", exc_info=True)
+        response = RedirectResponse(url="/login?error=Google%20sign-in%20failed", status_code=302)
+        response.delete_cookie("google_oauth_state")
+        return response
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, view: Optional[str] = None):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin")
     
     if view == "communication":
         return templates.TemplateResponse(request=request, name="communication.html", context={
@@ -396,6 +440,7 @@ async def project_documents(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent", "warranty_manager")
     return templates.TemplateResponse(request=request, name="project_documents.html", context={
         "request": request, "current_user": user, "app_name": settings.APP_NAME,
         "org_name": settings.ORG_NAME, "documents": PROJECT_DOCUMENTS,
@@ -406,6 +451,7 @@ async def project_document_page(request: Request, slug: str):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent", "warranty_manager")
     document = PROJECT_DOCUMENTS.get(slug)
     if not document:
         raise HTTPException(status_code=404, detail="Project document not found")
@@ -419,6 +465,7 @@ async def project_document_file(request: Request, filename: str):
     user = AuthManager.get_current_user(request)
     if not user or filename not in PROJECT_FILES:
         raise HTTPException(status_code=404, detail="Project file not found")
+    require_page_role(user, "admin", "agent", "warranty_manager")
     file_path = os.path.join(BASE_DIR, PROJECT_FILES[filename])
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="Project file is missing")
@@ -430,6 +477,7 @@ async def agent_dashboard(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent")
     return templates.TemplateResponse(request=request, name="agent_dashboard.html", context={
         "request": request,
         "current_user": user,
@@ -445,6 +493,7 @@ async def warranty_dashboard(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent", "warranty_manager")
     return templates.TemplateResponse(request=request, name="warranty_dashboard.html", context={
         "request": request,
         "current_user": user,
@@ -457,6 +506,7 @@ async def communication_portal(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent")
     return templates.TemplateResponse(request=request, name="communication.html", context={
         "request": request,
         "current_user": user,
@@ -469,6 +519,7 @@ async def refunds_portal(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "warranty_manager")
     return templates.TemplateResponse(request=request, name="refunds.html", context={
         "request": request,
         "current_user": user,
@@ -481,6 +532,7 @@ async def knowledge_portal(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent", "warranty_manager")
     return templates.TemplateResponse(request=request, name="knowledge_base.html", context={"request": request, "current_user": user, "app_name": settings.APP_NAME})
 
 @app.get("/rules", response_class=HTMLResponse)
@@ -488,6 +540,7 @@ async def rules_portal(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "agent", "warranty_manager")
     return templates.TemplateResponse(request=request, name="rules_matrix.html", context={"request": request, "current_user": user, "app_name": settings.APP_NAME})
 
 @app.get("/analytics", response_class=HTMLResponse)
@@ -495,6 +548,7 @@ async def analytics_portal(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    require_page_role(user, "admin", "warranty_manager")
     return templates.TemplateResponse(request=request, name="analytics_reports.html", context={"request": request, "current_user": user, "app_name": settings.APP_NAME})
 
 # -------------------------------------------------------------

@@ -7,7 +7,7 @@ export const store = {
   selectedCommComplaintId: null,
   currentCommThreads: [],
   currentRefundRecords: [],
-  isOnCall: true,
+  isOnCall: false,
   soundEnabled: true,
   wsConnection: null,
 

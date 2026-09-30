@@ -40,11 +40,11 @@
   <div class="summary-card">
     <div>
       <div class="summary-card-title">Complaint & Claim Outstanding</div>
-      <div class="summary-card-value">$ 20,000</div>
-      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Unbilled / Pending Audit: $ 1,000</div>
+      <div class="summary-card-value">Not available</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">No verified payment ledger is connected.</div>
     </div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 75%;"></div>
+      <div class="progress-bar-fill" style="width: 0%;"></div>
     </div>
     <a href="javascript:void(0)" class="card-link-more" onclick="filterComplaints('Refund Request')">View Financial Claims &rarr;</a>
   </div>
@@ -53,11 +53,11 @@
   <div class="summary-card">
     <div>
       <div class="summary-card-title">Dual-Pipeline Verification Rate</div>
-      <div class="summary-card-value" style="color: #10b981;">98.4%</div>
-      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Ground-Truth Rule Consistency: 100%</div>
+      <div class="summary-card-value" style="color: #10b981;">Not measured</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">No validated GenAI comparison sample is available.</div>
     </div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 98%; background: #10b981;"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: #10b981;"></div>
     </div>
     <a href="/analytics" class="card-link-more">View Rule Audit Details &rarr;</a>
   </div>
@@ -66,11 +66,11 @@
   <div class="summary-card">
     <div>
       <div class="summary-card-title">Active SLA Performance</div>
-      <div class="summary-card-value" style="color: #3b82f6;">94.2% On Track</div>
-      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Avg First Response Time: 14 mins</div>
+      <div class="summary-card-value" style="color: #3b82f6;">Not measured</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Response-time history has not been recorded.</div>
     </div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 94%; background: #3b82f6;"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: #3b82f6;"></div>
     </div>
     <a href="/analytics" class="card-link-more">SLA Risk Breakdown &rarr;</a>
   </div>
@@ -78,7 +78,7 @@
 
 <!-- Pill Navigation Filters (Matching Mockup) -->
 <div class="tab-pills-row">
-  <button class="pill-tab active" onclick="filterByTab('All')">All Complaints (520+)</button>
+  <button class="pill-tab active" onclick="filterByTab('All')">All Complaints</button>
   <button class="pill-tab" onclick="filterByTab('Critical')">🚨 P0 Critical / Safety</button>
   <button class="pill-tab" onclick="filterByTab('Refund')">💵 Refund & Compensation</button>
   <button class="pill-tab" onclick="filterByTab('Adversarial')">🛡️ Prompt Injection / Traps</button>
@@ -106,7 +106,7 @@
       <tr>
         <td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">
           <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem;"></i><br>
-          Loading 520+ Complaints & Dual-Pipeline Intelligence...
+          Loading complaint records and available analysis...
         </td>
       </tr>
     </tbody>
@@ -164,12 +164,12 @@
     <div id="verificationScoreBanner" class="triage-subcard" style="display: flex; gap: 16px; padding: 16px 24px; margin-bottom: 24px; align-items: center; justify-content: space-between;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <span style="font-size: 0.88rem; color: var(--text-heading); font-weight: 800;">Dual-Pipeline Status:</span>
-        <span id="modalVerificationStatus" class="badge badge-success" style="font-size: 0.88rem;">Verified</span>
+        <span id="modalVerificationStatus" class="badge badge-secondary" style="font-size: 0.88rem;">Not evaluated</span>
       </div>
       <div style="display: flex; gap: 32px; font-size: 0.88rem; color: var(--text-heading); font-weight: 700;">
-        <div>Policy Coverage: <strong id="modalCoverageScore" style="color: var(--primary); font-weight: 800;">100%</strong></div>
-        <div>Source Traceability: <strong id="modalTraceabilityScore" style="color: var(--primary); font-weight: 800;">100%</strong></div>
-        <div>Rule Consistency: <strong id="modalConsistencyScore" style="color: var(--primary); font-weight: 800;">100%</strong></div>
+        <div>Policy Coverage: <strong id="modalCoverageScore" style="color: var(--primary); font-weight: 800;">Not measured</strong></div>
+        <div>Source Traceability: <strong id="modalTraceabilityScore" style="color: var(--primary); font-weight: 800;">Not measured</strong></div>
+        <div>Rule Consistency: <strong id="modalConsistencyScore" style="color: var(--primary); font-weight: 800;">Not measured</strong></div>
       </div>
     </div>
 

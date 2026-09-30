@@ -6,13 +6,19 @@
   <title>{% block title %}SupportNova - ResponseX Intelligence{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=8.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=9.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     (function() {
-      let saved = localStorage.getItem("supportnova_theme") || localStorage.getItem("theme") || "dark";
+      let saved = "dark";
+      try {
+        const stored = localStorage.getItem("supportnova_theme") || localStorage.getItem("theme");
+        if (stored === "light" || stored === "dark") saved = stored;
+      } catch (error) {
+        saved = "dark";
+      }
       document.documentElement.setAttribute("data-theme", saved);
     })();
   </script>
@@ -42,7 +48,7 @@
         <div class="command-item" onclick="navigateCommand('/admin')">
           <div style="display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-table-cells-large" style="color: var(--ink, #101010);"></i>
-            <span>All Complaints Queue (520+ Grievances)</span>
+            <span>All Complaints Queue</span>
           </div>
           <span style="font-size: 0.78rem; color: var(--text-muted);">Jump &rarr;</span>
         </div>
@@ -94,26 +100,37 @@
       </div>
 
       <nav class="sidebar-nav">
+        {% if current_user.role == 'admin' %}
         <a href="/admin" class="nav-item {% if request.url.path == '/admin' and not request.query_params.get('view') %}active{% endif %}">
           <i class="fa-solid fa-shield-halved icon"></i>
           <span>Super Admin Operations</span>
         </a>
+        {% endif %}
+        {% if current_user.role in ['admin', 'agent'] %}
         <a href="/agent" class="nav-item {% if request.url.path == '/agent' %}active{% endif %}">
           <i class="fa-solid fa-microchip icon"></i>
           <span>Agent Triage Desk</span>
         </a>
+        {% endif %}
+        {% if current_user.role in ['admin', 'agent', 'warranty_manager'] %}
         <a href="/warranty" class="nav-item {% if request.url.path == '/warranty' or (request.url.path == '/admin' and request.query_params.get('view') == 'refunds') %}active{% endif %}">
           <i class="fa-solid fa-scale-balanced icon"></i>
           <span>Warranty & Refund Desk</span>
         </a>
+        {% endif %}
+        {% if current_user.role in ['admin', 'agent'] %}
         <a href="/communication" class="nav-item {% if request.url.path == '/communication' or (request.url.path == '/admin' and request.query_params.get('view') == 'communication') %}active{% endif %}">
           <i class="fa-brands fa-whatsapp icon"></i>
           <span>Live WhatsApp Hub</span>
         </a>
+        {% endif %}
+        {% if current_user.role in ['admin', 'warranty_manager'] %}
         <a href="/analytics" class="nav-item {% if request.url.path == '/analytics' %}active{% endif %}">
           <i class="fa-solid fa-chart-line icon"></i>
           <span>Financial & SLA Tracking</span>
         </a>
+        {% endif %}
+        {% if current_user.role in ['admin', 'agent', 'warranty_manager'] %}
         <a href="/knowledge" class="nav-item {% if request.url.path == '/knowledge' %}active{% endif %}">
           <i class="fa-solid fa-book-bookmark icon"></i>
           <span>Knowledge & Policies</span>
@@ -124,12 +141,14 @@
         </a>
         <a href="/rules" class="nav-item {% if request.url.path == '/rules' %}active{% endif %}">
           <i class="fa-solid fa-network-wired icon"></i>
-          <span>Rules Matrix (105+)</span>
+          <span>Rules Matrix (175+)</span>
         </a>
+        {% if current_user.role == 'admin' %}
         <a href="javascript:void(0)" class="nav-item" onclick="openAdminUsersModal()">
           <i class="fa-solid fa-users-gear icon"></i>
           <span>Users & RBAC Roles</span>
         </a>
+        {% endif %}
         <a href="/" target="_blank" class="nav-item" style="margin-top: auto; border-top: 1px solid var(--glass-border-subtle); padding-top: 16px;">
           <i class="fa-solid fa-arrow-up-right-from-square icon"></i>
           <span>Public Customer View</span>
@@ -162,11 +181,11 @@
           <!-- Staff Online / Offline Presence Toggle Button -->
           <button class="pill-tab" id="staffPresenceToggleBtn" onclick="toggleStaffPresence()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(16, 185, 129, 0.4); color: #059669; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; gap: 6px;" title="Toggle your online availability for customer internet calls">
             <span id="staffPresenceDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
-            <span id="staffPresenceText">Staff Online</span>
+            <span id="staffPresenceText">Staff Offline</span>
           </button>
 
           <!-- Dark / Light Theme Toggle -->
-          <button class="icon-glass-btn" onclick="toggleTheme()" title="Toggle Crystal Dark / Light Glass Mode" id="themeToggleBtn">
+          <button class="icon-glass-btn" onclick="toggleTheme()" title="Toggle dark or light theme" aria-label="Toggle dark or light theme" id="themeToggleBtn">
             <i class="fa-solid fa-moon"></i>
           </button>
 
@@ -179,35 +198,6 @@
             <i class="fa-solid fa-phone"></i>
             <span id="callBtnText">On Call</span>
           </button>
-
-          <div style="position: relative;">
-            <button class="pill-tab" onclick="toggleRoleSwitchMenu()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(238, 240, 208, 0.4); display: flex; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-arrows-rotate" style="color: var(--primary);"></i> Switch Staff Role
-            </button>
-            <div id="roleSwitchMenu" style="display: none; position: absolute; right: 0; top: 120%; background: var(--glass-bg); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 8px; box-shadow: var(--glass-shadow-hover); width: 280px; z-index: 100;">
-              <div onclick="quickSwitchStaffRole('admin')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; transition: var(--transition);" onmouseover="this.style.background='var(--glass-bg-hover)'" onmouseout="this.style.background='transparent'">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
-                <div>
-                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading);">Rayyan Ahmed Khan</div>
-                  <div style="font-size: 0.72rem; color: var(--primary); font-weight: 700;">Super Admin (Operations Director)</div>
-                </div>
-              </div>
-              <div onclick="quickSwitchStaffRole('agent')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; transition: var(--transition);" onmouseover="this.style.background='var(--glass-bg-hover)'" onmouseout="this.style.background='transparent'">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
-                <div>
-                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading);">Marcus Chen</div>
-                  <div style="font-size: 0.72rem; color: var(--cream, #eef0d0); font-weight: 700;">Lead Triage Specialist (Agent)</div>
-                </div>
-              </div>
-              <div onclick="quickSwitchStaffRole('warranty_manager')" style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; transition: var(--transition);" onmouseover="this.style.background='var(--glass-bg-hover)'" onmouseout="this.style.background='transparent'">
-                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
-                <div>
-                  <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-heading);">Sarah Jenkins</div>
-                  <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">Warranty & Refund Manager</div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div class="user-profile-pill" onclick="openProfileSettingsModal()" style="cursor: pointer;" title="Click to Edit Profile & Credentials">
             <img src="{{ (current_user.avatar if current_user and current_user.avatar else 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80') }}" alt="User Avatar" class="avatar-img" id="topbarAvatarImg">

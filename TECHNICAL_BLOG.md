@@ -214,23 +214,12 @@ Support agents and supervisors access a high-density, modern SaaS dashboard insp
 
 SupportNova underwent rigorous end-to-end evaluation across 525+ pre-seeded complaints and 21 company policy documents:
 
-```
-============================= test session starts =============================
-platform win32 -- Python 3.12.14 -- pytest-9.1.1
-tests/test_comparison_engine.py::test_comparison_perfect_match PASSED    [ 14%]
-tests/test_genai_pipeline.py::test_genai_pipeline_structure PASSED       [ 28%]
-tests/test_python_validation.py::test_ground_truth_safety_critical PASSED [ 42%]
-tests/test_python_validation.py::test_ground_truth_double_charge PASSED  [ 57%]
-tests/test_security_injection.py::test_prompt_injection_detection PASSED [ 71%]
-tests/test_security_injection.py::test_system_override_detection PASSED  [ 85%]
-tests/test_security_injection.py::test_safe_customer_complaint PASSED    [100%]
-======================== 7 passed in 0.44s ========================
-```
+The test transcript previously included in this report is historical and is not a current verification result. In particular, its GenAI test exercised a synthetic fallback rather than a live provider. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. Execute `pytest -q` in the target environment and record the actual output before using test results as submission evidence. Live model quality, rate limits, and integration credentials require separate provider-backed tests.
 
-### Key Performance Benchmarks:
-- **Triage Latency**: Sub-second deterministic validation and < 3s GenAI analysis.
-- **Compliance Accuracy**: 100% enforcement of mandatory safety escalations and refund caps.
-- **Zero Hallucination Escapes**: 100% of unauthorized refund promises caught by Pipeline 2.
+### Performance and assurance limits:
+- No reproducible latency benchmark is currently checked in. Deterministic rule evaluation is designed to run locally; provider latency varies with network, model availability, and quota.
+- Rule checks can flag configured safety and refund conditions, but they are not proof of perfect compliance across unseen cases.
+- Comparison checks can identify configured unauthorized-promise patterns; they cannot establish zero hallucination risk. Cases outside tested rules should remain subject to human review.
 
 ---
 
@@ -245,3 +234,15 @@ Future planned enhancements include:
 
 ---
 *SupportNova - ResponseX Intelligence © 2026. Built with pride for Techwiz 7.*
+
+## 11. Operational Readiness, Privacy, and Human Review
+
+An important part of a responsible complaint-intelligence system is what it does when one of its dependencies is unavailable. A provider timeout, exhausted API quota, malformed response, or missing key must not silently turn into a fabricated answer. SupportNova now separates the deterministic path from the optional generative path: Python rules can still compute a ground-truth recommendation, while GenAI-only fields remain unavailable and the case is marked for review. This is less flashy than displaying a confident answer in every row, but it gives supervisors a truthful signal about what the system actually knows.
+
+Operational configuration belongs outside the source tree. Database connection strings, signing keys, AI provider keys, OAuth credentials, and the designated administrator identity are supplied through deployment environment variables. The example environment file contains blank values rather than working credentials. Hosted deployments should disable demo accounts, use HTTPS-only cookies, and configure a strong session secret. If a secret has ever been committed to a public repository, removing it from the latest revision is not sufficient: revoke and rotate it at the service, then consider repository-history cleanup under the repository owner's control.
+
+The local JSON database fallback is useful for development and constrained demonstrations, but it is not equivalent to a managed production database. Its persistence depends on the filesystem lifecycle of the host, and concurrent writes, backups, retention, and access control need deployment-specific verification. For production use, configure a managed database, least-privilege credentials, backups, and a documented restore procedure. Do not treat a successful local run as evidence that production data is durable.
+
+The interface should communicate uncertainty as carefully as the API. A missing comparison is not a verified result; an absent sentiment score is not a neutral score; and a queue count should come from a live endpoint rather than a decorative constant. When the UI cannot obtain a value, it should say that the value was not measured or could not be loaded. The same principle applies to theme switching: charts and labels must keep enough contrast in both color schemes, keyboard focus must remain visible, and reduced-motion preferences should be respected. Theme QA should inspect actual text and controls, not merely confirm that the page background changed.
+
+Finally, static quality checks and end-to-end validation answer different questions. Unit tests cover known examples. Route tests check that each role can reach only its intended workspace. Browser checks reveal visual regressions, broken controls, console errors, and responsive-layout failures. A complete release should also validate document uploads, CSV exports, model-outage handling, duplicate complaints, escalation paths, and the real hosting environment. Until those checks have current recorded results, the project should be described as a development build with explicit verification gaps—not as a certified production system.

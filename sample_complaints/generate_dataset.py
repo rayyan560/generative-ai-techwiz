@@ -68,6 +68,27 @@ TEMPLATES = [
         "desc": "I returned my {product} under RMA-88910. The courier confirmation confirms delivery at your central return facility on {date}. Why has my refund of ${amount} not been credited back to my card?",
         "type": "Simple"
     },
+    {
+        "category": "Technical Support",
+        "subcategory": "Connectivity Issue",
+        "title": "{product} keeps losing its Wi-Fi connection",
+        "desc": "My {product} repeatedly drops its Wi-Fi connection after the latest firmware update. I have restarted the device and router, but the issue continues on order {order_id}. Please help me restore a stable connection.",
+        "type": "Technical"
+    },
+    {
+        "category": "Service Quality",
+        "subcategory": "Poor Installation Service",
+        "title": "Installation service left my {product} unusable",
+        "desc": "The installation technician for order {order_id} left without completing setup or explaining the controls for my {product}. I paid for professional installation and would like the service corrected.",
+        "type": "Service quality"
+    },
+    {
+        "category": "Order Cancellation",
+        "subcategory": "Cancellation Denied",
+        "title": "Cancellation request was denied for order {order_id}",
+        "desc": "I requested cancellation before shipment, but the order for my {product} is still being processed. Please stop fulfillment and confirm the cancellation under the order cancellation policy.",
+        "type": "Cancellation"
+    },
     # Safety Hazard (P0 Critical)
     {
         "category": "Safety Hazard",
@@ -178,6 +199,7 @@ CUSTOMER_NAMES = [
 ]
 
 def generate_520_dataset():
+    random.seed(7107)
     complaints = []
     
     # 1. Add 25 dedicated Adversarial / Prompt Injections

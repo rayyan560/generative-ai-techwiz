@@ -499,7 +499,7 @@
       body: JSON.stringify({ client_id: selectedClientId, client_name: 'Client ' + selectedClientId })
     }).then(r=>r.json()).then(d=>{
       if(d.status==='ringing'){
-        if(typeof showToast==='function') showToast('📞 Internet Voice Call initiated to ' + selectedClientId, 'info');
+        if(typeof showToast==='function') showToast('Call request created. Live audio is not integrated.', 'warning');
       } else if(d.status==='unavailable') {
         if(typeof showToast==='function') showToast('⚠️ ' + d.message, 'warning');
       }

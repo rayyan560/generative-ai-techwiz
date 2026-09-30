@@ -10,10 +10,15 @@ from config.database import get_complaints_col, get_audit_logs_col
 from src.analytics.escrow_clv_optimizer import EscrowClvOptimizer
 from src.analytics.defect_radar import DefectRadarEngine
 from routers.common import clean_doc, clean_docs, ws_manager
+from src.security.permissions import require_roles
 
 logger = logging.getLogger("SupportNova.AnalyticsRouter")
 
-router = APIRouter(prefix="/api", tags=["Analytics & Financial Refunds"])
+router = APIRouter(
+    prefix="/api",
+    tags=["Analytics & Financial Refunds"],
+    dependencies=[Depends(require_roles("admin", "warranty_manager"))]
+)
 
 @router.get("/refunds/summary")
 async def get_refunds_summary():
@@ -34,50 +39,39 @@ async def get_refunds_summary():
             "charge" in c.get("complaint_title", "").lower()
         )
         
-        amount = 149.99
-        entities = c.get("genai_analysis", {}).get("extracted_entities", {})
-        if entities and "amount" in entities and entities["amount"]:
-            try:
-                amount = float(entities["amount"])
-            except (ValueError, TypeError) as e:
-                logger.warning(f"Could not parse amount float: {e}")
-                amount = 149.99
-        elif "price" in str(c.get("product_metadata", {})):
-            try:
-                amount = float(c.get("product_metadata", {}).get("price", 149.99))
-            except (ValueError, TypeError) as e:
-                logger.warning(f"Could not parse product metadata price: {e}")
-                amount = 149.99
+        amount_value = c.get("verified_transaction_amount")
+        if amount_value is None:
+            amount_value = (c.get("payout_details") or {}).get("amount")
+        try:
+            amount = float(amount_value) if amount_value is not None else None
+            if amount is not None and amount < 0:
+                amount = None
+        except (ValueError, TypeError):
+            amount = None
 
-        escrow_status = c.get("escrow_status")
-        if not escrow_status:
-            if c.get("status") in ["Refund Approved", "Resolved"]:
-                escrow_status = "Released / Paid"
-            elif c.get("status") == "Escalated" or c.get("urgency") == "Critical":
-                escrow_status = "Disputed / Held"
-            else:
-                escrow_status = "Held in Escrow"
+        escrow_status = c.get("escrow_status") or "Not recorded"
 
         if is_refund_related:
-            total_claims_val += amount
-            if escrow_status == "Held in Escrow":
-                escrow_held_val += amount
-            elif escrow_status == "Released / Paid":
-                approved_payout_val += amount
-            elif "Disputed" in escrow_status:
-                disputed_val += amount
+            if amount is not None:
+                total_claims_val += amount
+                if escrow_status == "Held in Escrow":
+                    escrow_held_val += amount
+                elif escrow_status == "Released / Paid":
+                    approved_payout_val += amount
+                elif "Disputed" in escrow_status:
+                    disputed_val += amount
 
             refund_items.append({
                 "complaint_id": c.get("complaint_id"),
                 "customer_name": c.get("customer_name"),
                 "customer_type": c.get("customer_type", "Standard"),
                 "complaint_title": c.get("complaint_title"),
-                "product_or_service": c.get("product_or_service", "NovaTech Device"),
-                "order_reference": c.get("order_reference") or f"ORD-{c.get('complaint_id')[-4:]}",
-                "amount": round(amount, 2),
+                "product_or_service": c.get("product_or_service") or "Not recorded",
+                "order_reference": c.get("order_reference") or "Not linked",
+                "amount": round(amount, 2) if amount is not None else None,
                 "escrow_status": escrow_status,
-                "refund_eligible": c.get("ground_truth", {}).get("refund_eligible", True),
-                "policy_matched": c.get("ground_truth", {}).get("applicable_policy_id", "POL-REF-02"),
+                "refund_eligible": c.get("ground_truth", {}).get("refund_eligible", False),
+                "policy_matched": c.get("ground_truth", {}).get("applicable_policy_id") or "Not evaluated",
                 "status": c.get("status", "New"),
                 "created_at": c.get("created_at")
             })
@@ -106,29 +100,37 @@ async def process_refund_action(
     if not doc:
         raise HTTPException(status_code=404, detail="Complaint not found.")
 
+    if action not in {"release_escrow", "reject_claim"}:
+        raise HTTPException(status_code=400, detail="That settlement action is not supported by an integrated payment service.")
+    if action == "release_escrow":
+        gt = doc.get("ground_truth") or {}
+        verified_amount = doc.get("verified_transaction_amount")
+        if not doc.get("payment_verified") or not gt.get("refund_eligible") or verified_amount is None:
+            raise HTTPException(status_code=409, detail="Verified payment amount and policy eligibility are required before approval.")
+        try:
+            verified_amount = float(verified_amount)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=409, detail="The verified transaction amount is invalid.")
+        if amount <= 0 or amount != verified_amount:
+            raise HTTPException(status_code=400, detail="Decision amount must match the verified transaction amount.")
+        if doc.get("payout_details"):
+            raise HTTPException(status_code=409, detail="A payout record already exists for this case.")
+
     update_fields = {"last_modified": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-    if action in ["release_escrow", "approve_refund"]:
-        update_fields["escrow_status"] = "Released / Paid"
-        update_fields["status"] = "Refund Approved"
-        update_fields["payout_details"] = {
+    if action == "release_escrow":
+        update_fields["escrow_status"] = "Approval Recorded — payment pending integration"
+        update_fields["status"] = "Refund Approval Pending"
+        update_fields["refund_decision"] = {
+            "decision": "approved_pending_payment",
             "amount": amount,
             "method": payment_method,
-            "processed_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "transaction_id": f"TXN-ESC-{int(datetime.datetime.now().timestamp())}"
+            "recorded_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     elif action == "reject_claim":
-        update_fields["escrow_status"] = "Claim Rejected / Funds Restored"
+        update_fields["escrow_status"] = "Claim Rejected"
         update_fields["status"] = "Refund Denied"
-    elif action == "issue_credit":
-        update_fields["escrow_status"] = "Goodwill Credit Issued"
-        update_fields["status"] = "Resolved"
-        update_fields["payout_details"] = {
-            "amount": amount,
-            "method": "NovaTech Store Wallet Credit",
-            "processed_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "credit_voucher": f"VOUCHER-{int(datetime.datetime.now().timestamp())}"
-        }
+        update_fields["refund_decision"] = {"decision": "rejected", "recorded_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     if reviewer_notes:
         update_fields["reviewer_notes"] = reviewer_notes
@@ -140,12 +142,12 @@ async def process_refund_action(
         "log_id": f"AUD-REF-{int(datetime.datetime.now().timestamp())}",
         "complaint_id": complaint_id,
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "actor": "Finance & Support Admin",
+        "actor": "Authenticated Finance & Support Staff",
         "action": f"Refund/Escrow: {action}",
-        "details": {"amount": amount, "method": payment_method, "notes": reviewer_notes}
+        "details": {"amount": amount if action == "release_escrow" else None, "method": payment_method if action == "release_escrow" else None, "notes": reviewer_notes}
     })
 
-    return {"success": True, "complaint_id": complaint_id, "action": action, "escrow_status": update_fields.get("escrow_status")}
+    return {"success": True, "complaint_id": complaint_id, "action": action, "escrow_status": update_fields.get("escrow_status"), "payment_executed": False}
 
 @router.get("/analytics/metrics")
 async def get_analytics():
@@ -248,8 +250,10 @@ async def get_clv_settlement_options(complaint_id: str):
     if not doc:
         raise HTTPException(status_code=404, detail="Complaint not found.")
     
-    optimization = EscrowClvOptimizer.optimize_settlement(doc)
-    return optimization
+    return {
+        "available": False,
+        "reason": "A verified transaction amount and validated customer history are required; no live payment or retention model is connected.",
+    }
 
 @router.get("/analytics/defect-radar")
 async def get_defect_radar():

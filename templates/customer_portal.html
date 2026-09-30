@@ -693,7 +693,7 @@
     <div class="portal-hud-line"></div>
     <div class="portal-hud-chip"><span class="cyber-dot"></span> NEURAL SLA CORE v4.8</div>
     <div class="portal-hud-metric">LAT: 37.7749° N &bull; LNG: 122.4194° W</div>
-    <div class="portal-hud-metric">SLA GUARANTEE &bull; 99.98% RESOLUTION</div>
+    <div class="portal-hud-metric">Review targets vary by case; no resolution rate is guaranteed.</div>
   </aside>
 
   <aside class="portal-hud-side portal-hud-right" aria-hidden="true">
@@ -760,7 +760,7 @@
       {% else %}
       <button class="google-btn" onclick="triggerCustomerGoogleLogin()" style="margin-bottom: 0; padding: 8px 18px; font-size: 0.86rem; border-radius: 9999px; background: rgba(238, 240, 208, 0.1); border-color: rgba(214, 217, 170, 0.35); color: #eef0d0;">
         <i class="fa-solid fa-bolt" style="color: #eef0d0; font-size: 0.95rem;"></i>
-        <span>Guest Login</span>
+        <span>Account Login</span>
       </button>
 
       <a href="/login" class="sn-pill-primary" style="text-decoration: none; padding: 8px 18px; font-size: 0.84rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
@@ -981,21 +981,19 @@
               <span id="charCountLabel" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">228 chars</span>
             </div>
           </div>
-          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required placeholder="Please provide all relevant facts, dates, serial numbers, and requested resolution..." oninput="updateCharCount(this); triggerAiPreCheck()">I received my order ORD-84920 yesterday. When unboxing the unit, I noticed the glass display screen was cracked across the center, and the battery pack is noticeably warm and bulging along the lower seam. I request an urgent replacement or refund.</textarea>
+          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required placeholder="Please provide relevant facts, dates, order reference, and requested resolution..." oninput="updateCharCount(this); triggerAiPreCheck()"></textarea>
         </div>
 
         <!-- Multimodal AI Vision & Photo Forensic Dropzone -->
         <div class="form-group">
           <label class="form-label">
-            <span><i class="fa-solid fa-camera"></i> Multimodal Vision Evidence / Hardware Damage Photo</span>
-            <span style="font-size: 0.76rem; color: var(--cream); font-weight: 700;">Gemini 1.5 Vision Auto-Inspect</span>
+            <span><i class="fa-solid fa-camera"></i> Photo evidence</span>
+            <span style="font-size: 0.76rem; color: var(--cream); font-weight: 700;">Upload not available</span>
           </label>
-          <div class="file-dropzone sn-scan-line-wrap" onclick="document.getElementById('fileInput').click()">
-            <input type="file" id="fileInput" class="form-control" style="display: none;" onchange="handleVisionImageUpload(this)">
-            <div class="sn-scan-line" id="visionScanLine" style="display: none;"></div>
+          <div class="file-dropzone sn-scan-line-wrap" aria-disabled="true">
             <i class="fa-solid fa-camera-retro" style="font-size: 2.2rem; color: var(--cream); margin-bottom: 8px;"></i>
-            <div style="font-weight: 600; color: var(--text-heading); font-size: 1rem;" id="dropzoneText">Click to Upload Hardware Damage Photo or Receipt</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">AI automatically detects display fractures, battery swelling, burn marks & extracts serial numbers</div>
+            <div style="font-weight: 600; color: var(--text-heading); font-size: 1rem;">Photo evidence upload is not connected yet</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Describe the issue in the form; contact support if a photo is required for review.</div>
           </div>
 
           <!-- Multimodal Vision Analysis Preview Card -->
@@ -1008,7 +1006,7 @@
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.88rem; color: var(--ink);">
               <div><strong>Detected Defect:</strong> <span id="visionDefectType" style="color: #991b1b; font-weight: 700;">-</span></div>
-              <div><strong>AI Confidence:</strong> <span id="visionConfidence" style="color: #065f46; font-weight: 700;">99.2%</span></div>
+              <div><strong>Image analysis confidence:</strong> <span id="visionConfidence" style="color: #065f46; font-weight: 700;">Not measured</span></div>
               <div><strong>OCR Serial Number:</strong> <span id="visionSerial" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #1e1b4b;">-</span></div>
               <div><strong>Warranty Policy Impact:</strong> <span id="visionWarrantyImpact">-</span></div>
             </div>
@@ -1019,7 +1017,7 @@
         <div id="aiPreCheckBox" class="cream-highlight-card sn-floating-cream-card" style="display: none; padding: 18px 24px; margin-bottom: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <strong style="color: var(--ink); font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-bolt"></i> Live AI SLA & Coverage Estimation:
+              <i class="fa-solid fa-bolt"></i> Rule-based intake estimate (not a guarantee):
             </strong>
             <span id="preCheckCategoryBadge" class="badge badge-primary">Product Defect</span>
           </div>
@@ -1162,8 +1160,8 @@
               </div>
             </div>
           </div>
-          <button class="call-btn" onclick="startClientVoiceCall()" style="background: linear-gradient(135deg, #25d366, #128c7e); border: none; padding: 9px 22px; border-radius: 9999px; font-weight: 800; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37,211,102,0.4);" title="Start Internet Voice Call">
-            <i class="fa-solid fa-phone"></i> Voice Call Admin
+          <button class="call-btn" onclick="startClientVoiceCall()" style="background: linear-gradient(135deg, #25d366, #128c7e); border: none; padding: 9px 22px; border-radius: 9999px; font-weight: 800; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37,211,102,0.4);" title="Create a call request; live audio is not integrated">
+            <i class="fa-solid fa-phone"></i> Request a Call
           </button>
         </div>
 

@@ -61,6 +61,13 @@ class VisionForensicsEngine:
         """
         Runs multimodal inspection on uploaded hardware photo or receipt.
         """
+        return {
+            "status": "manual_review_required",
+            "filename": filename,
+            "confidence_score": None,
+            "reason": "No image-analysis provider is configured. The image was not analyzed; a human review is required.",
+        }
+
         text_lower = f"{filename} {complaint_text}".lower()
 
         # Determine damage type based on visual indicators / input cues

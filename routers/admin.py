@@ -44,11 +44,13 @@ async def update_user_role(user_id: str, request: Request):
         logger.warning(f"Invalid role update JSON: {e}")
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
-    if new_role not in ["customer", "agent", "warranty", "admin"]:
+    if new_role not in ["customer", "agent", "warranty_manager", "admin"]:
         raise HTTPException(status_code=400, detail="Invalid role specified.")
+    if user_id == user.get("user_id") and new_role != "admin":
+        raise HTTPException(status_code=400, detail="You cannot remove your own administrator access.")
 
     updated = AuthManager.update_user_role(user_id, new_role)
     if not updated:
-        raise HTTPException(status_code=44, detail="User not found.")
+        raise HTTPException(status_code=404, detail="User not found.")
 
     return JSONResponse({"success": True, "message": f"User role updated to {new_role}", "user": updated})

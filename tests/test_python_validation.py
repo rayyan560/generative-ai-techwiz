@@ -1,6 +1,8 @@
 import pytest
 from src.python_validation.pipeline import python_validation_pipeline
 from src.schemas.models import PythonGroundTruthResult
+from src.complaint_rules.matrix import RuleMatrixManager
+from config.settings import settings
 
 def test_ground_truth_safety_critical():
     safety_complaint = {
@@ -30,3 +32,8 @@ def test_ground_truth_double_charge():
     assert gt.expected_category == "Billing & Charges"
     assert gt.expected_department == "Billing & Payments"
     assert gt.refund_eligible is True
+
+def test_rule_matrix_covers_all_configured_categories():
+    rules = RuleMatrixManager.get_all_rules()
+    assert len(rules) >= 100
+    assert set(settings.CATEGORIES).issubset({rule["category"] for rule in rules})

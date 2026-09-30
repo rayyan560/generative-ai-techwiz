@@ -8,7 +8,7 @@ import logging
 from config.database import get_complaints_col, get_audit_logs_col
 from src.products.catalog import ProductCatalog
 from src.complaint_processing.preprocessor import ComplaintPreprocessor
-from src.genai_pipeline.pipeline import genai_pipeline
+from src.genai_pipeline.pipeline import GenAIUnavailableError, genai_pipeline
 from src.python_validation.pipeline import python_validation_pipeline
 from src.comparison_engine.engine import ComparisonEngine
 from src.analytics.sentiment import SentimentTelemetryEngine
@@ -42,9 +42,20 @@ async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_d
             complaint_dict["department"] = ground_truth.expected_department
             complaint_dict["urgency"] = ground_truth.expected_urgency
             complaint_dict["priority"] = ground_truth.expected_priority
+        except GenAIUnavailableError as e:
+            ground_truth = python_validation_pipeline.validate_complaint(complaint_dict)
+            complaint_dict["ground_truth"] = ground_truth.model_dump()
+            complaint_dict["category"] = ground_truth.expected_category
+            complaint_dict["subcategory"] = ground_truth.expected_subcategory
+            complaint_dict["department"] = ground_truth.expected_department
+            complaint_dict["urgency"] = ground_truth.expected_urgency
+            complaint_dict["priority"] = ground_truth.expected_priority
+            complaint_dict["analysis_error"] = str(e)
+            complaint_dict["status"] = "Manual Review Required"
         except Exception as e:
             logger.error(f"Error executing dual pipeline on complaint {new_id}: {e}")
-            complaint_dict["status"] = "New"
+            complaint_dict["analysis_error"] = "The complaint could not be analyzed automatically and requires review."
+            complaint_dict["status"] = "Manual Review Required"
 
         complaints_col = get_complaints_col()
         # Update the existing record instead of inserting a new one
@@ -156,7 +167,7 @@ async def submit_complaint(
     return {
         "success": True,
         "complaint_id": new_id,
-        "message": "Your complaint has been officially registered with NovaTech Customer Support Operations. AI is currently analyzing your ticket.",
+        "message": "Your complaint has been registered. Triage is processing; if an automated analysis is unavailable, the case will be queued for human review.",
         "status": "AI Pipeline Processing",
         "submitted_at": complaint_dict["created_at"]
     }
@@ -211,13 +222,17 @@ async def inspect_hardware_image(
     complaint_text: str = Form(""),
     sample_defect: Optional[str] = Form(None)
 ):
-    fname = file.filename if file else (sample_defect or "hardware_defect.jpg")
-    content_bytes = None
-    if file:
-        content_bytes = await file.read()
+    if not file:
+        raise HTTPException(status_code=400, detail="Attach an image for manual review.")
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=415, detail="Only image files are accepted.")
+    content_bytes = await file.read(10 * 1024 * 1024 + 1)
+    if len(content_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image size must be 10 MB or less.")
+    fname = file.filename or "uploaded-image"
     
     analysis = VisionForensicsEngine.analyze_image(fname, content_bytes, complaint_text)
-    return analysis
+    raise HTTPException(status_code=503, detail=analysis["reason"])
 
 @router.post("/complaints/pre-check")
 async def pre_check_complaint(
@@ -237,7 +252,7 @@ async def pre_check_complaint(
         "estimated_category": ground_truth.expected_category,
         "estimated_priority": ground_truth.expected_priority,
         "estimated_urgency": ground_truth.expected_urgency,
-        "estimated_sla": "2 Hours (Priority)" if ground_truth.expected_urgency in ["Critical", "High"] else "24 Hours (Standard)",
+        "estimated_sla": "Priority review target — not a guarantee" if ground_truth.expected_urgency in ["Critical", "High"] else "Standard review target — not a guarantee",
         "refund_eligibility_preview": ground_truth.refund_eligible,
         "sentiment": sentiment,
         "safety_advisory": "Hazardous battery issue detected — Keep device powered off" if ground_truth.mandatory_escalation else "Normal warranty coverage applicable"

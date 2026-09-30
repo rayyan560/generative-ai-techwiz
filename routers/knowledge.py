@@ -10,10 +10,15 @@ from src.knowledge_base.manager import KnowledgeBaseManager, rebuild_vector_inde
 from src.knowledge_base.policy_auditor import PolicyConflictAuditor
 from src.complaint_rules.matrix import RuleMatrixManager
 from routers.common import clean_doc, clean_docs
+from src.security.permissions import require_roles
 
 logger = logging.getLogger("SupportNova.KnowledgeRouter")
 
-router = APIRouter(prefix="/api", tags=["Knowledge Base & RAG Rules"])
+router = APIRouter(
+    prefix="/api",
+    tags=["Knowledge Base & RAG Rules"],
+    dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))]
+)
 
 @router.post("/knowledge/upload")
 async def upload_policy_document(

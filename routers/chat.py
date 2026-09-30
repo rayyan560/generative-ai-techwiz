@@ -9,15 +9,16 @@ import logging
 from config.database import get_live_chats_col, get_complaints_col, get_audit_logs_col
 from src.security.auth import AuthManager
 from routers.common import clean_doc, clean_docs, ws_manager
+from src.security.permissions import require_roles
 
 logger = logging.getLogger("SupportNova.ChatRouter")
 
 router = APIRouter(prefix="/api", tags=["Live Chat & Staff Calls"])
 
 STAFF_PRESENCE = {
-    "admin": {"name": "Rayyan Ahmed Khan", "role": "Super Admin & CEO", "online": True, "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=160&auto=format&fit=crop&q=80"},
-    "agent": {"name": "Marcus Chen", "role": "Lead Triage Specialist", "online": True, "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80"},
-    "warranty_manager": {"name": "Sarah Jenkins", "role": "Warranty Officer", "online": True, "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80"}
+    "admin": {"name": "Administrator", "role": "Administrator", "online": False, "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=160&auto=format&fit=crop&q=80"},
+    "agent": {"name": "Support Agent", "role": "Triage Specialist", "online": False, "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80"},
+    "warranty_manager": {"name": "Warranty Manager", "role": "Warranty Officer", "online": False, "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80"}
 }
 
 ACTIVE_CALLS: Dict[str, Dict[str, Any]] = {}
@@ -26,10 +27,12 @@ ACTIVE_CALLS: Dict[str, Dict[str, Any]] = {}
 async def get_live_chat_messages(request: Request, client_id: Optional[str] = None):
     user = AuthManager.get_current_user(request)
     chats_col = get_live_chats_col()
-    cid = client_id or (user.get("user_id") if user else "guest_client_001")
+    is_staff = bool(user and user.get("role") in ["admin", "agent", "warranty_manager"])
+    cid = (client_id if is_staff else (user.get("user_id") if user else "guest_client_001")) or "guest_client_001"
     
     messages = list(chats_col.find({"client_id": cid}))
     if not messages:
+        return {"messages": [], "client_id": cid}
         initial_msgs = [
             {
                 "msg_id": "MSG-001",
@@ -64,8 +67,9 @@ async def send_live_chat_message(request: Request):
     user = AuthManager.get_current_user(request)
     body = await request.json()
     message_text = (body.get("message") or "").strip()
-    client_id = body.get("client_id") or (user.get("user_id") if user else "guest_client_001")
-    sender_type = body.get("sender") or ("agent" if user and user.get("role") in ["admin", "agent", "warranty_manager"] else "customer")
+    is_staff = bool(user and user.get("role") in ["admin", "agent", "warranty_manager"])
+    client_id = (body.get("client_id") if is_staff else (user.get("user_id") if user else "guest_client_001")) or "guest_client_001"
+    sender_type = "agent" if is_staff else "customer"
     
     if not message_text:
         raise HTTPException(status_code=400, detail="Message text is required.")
@@ -73,16 +77,8 @@ async def send_live_chat_message(request: Request):
     chats_col = get_live_chats_col()
     now_str = datetime.datetime.now().strftime("%I:%M %p")
     
-    sender_name = body.get("sender_name")
-    avatar = body.get("avatar")
-    
-    if not sender_name:
-        if user:
-            sender_name = user.get("display_name") or user.get("username")
-            avatar = user.get("avatar")
-        else:
-            sender_name = "You (Valued Customer)"
-            avatar = "https://ui-avatars.com/api/?name=Customer&background=4f46e5&color=fff"
+    sender_name = (user.get("display_name") or user.get("username")) if user else "You (Valued Customer)"
+    avatar = user.get("avatar") if user else "https://ui-avatars.com/api/?name=Customer&background=4f46e5&color=fff"
     
     msg_doc = {
         "msg_id": f"MSG-{int(datetime.datetime.now().timestamp()*1000)}",
@@ -106,6 +102,7 @@ async def send_live_chat_message(request: Request):
         logger.warning(f"Error broadcasting WS live chat: {e}")
     
     if sender_type == "customer":
+        return {"success": True, "message": clean_doc(msg_doc)}
         async def delayed_agent_ack():
             await asyncio.sleep(1.8)
             ack_msg = {
@@ -171,13 +168,10 @@ async def get_all_live_conversations(request: Request):
 async def get_staff_presence():
     return {"presence": STAFF_PRESENCE}
 
-@router.post("/staff/presence/toggle")
+@router.post("/staff/presence/toggle", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def toggle_staff_presence(request: Request):
     user = AuthManager.get_current_user(request)
-    body = await request.json()
-    role = body.get("role") or (user.get("role") if user else "admin")
-    if role not in STAFF_PRESENCE:
-        role = "admin"
+    role = user.get("role")
     
     current_status = STAFF_PRESENCE[role]["online"]
     STAFF_PRESENCE[role]["online"] = not current_status
@@ -249,7 +243,7 @@ async def initiate_voice_call(request: Request):
         "message": f"Calling {target_staff['name']} ({target_staff['role']})..."
     }
 
-@router.post("/call/accept")
+@router.post("/call/accept", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def accept_voice_call(request: Request):
     body = await request.json()
     call_id = body.get("call_id") or (ACTIVE_CALLS.get("current", {}).get("call_id"))
@@ -270,7 +264,7 @@ async def accept_voice_call(request: Request):
         
     return {"success": True, "call": ACTIVE_CALLS[call_id]}
 
-@router.post("/call/decline")
+@router.post("/call/decline", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def decline_voice_call(request: Request):
     body = await request.json()
     call_id = body.get("call_id") or (ACTIVE_CALLS.get("current", {}).get("call_id"))
@@ -291,7 +285,7 @@ async def decline_voice_call(request: Request):
         
     return {"success": True, "message": "Call declined"}
 
-@router.post("/call/end")
+@router.post("/call/end", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def end_voice_call(request: Request):
     body = await request.json()
     call_id = body.get("call_id") or (ACTIVE_CALLS.get("current", {}).get("call_id"))
@@ -319,7 +313,7 @@ async def get_call_status(client_id: Optional[str] = None):
         return {"active": False, "status": "none"}
     return {"active": True, "call": current}
 
-@router.get("/communication/threads")
+@router.get("/communication/threads", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def get_communication_threads(limit: int = 50):
     col = get_complaints_col()
     raw = list(col.find({}, limit=limit, sort=[("created_at", -1)]))
@@ -331,7 +325,7 @@ async def get_communication_threads(limit: int = 50):
             "complaint_id": c.get("complaint_id"),
             "customer_name": c.get("customer_name"),
             "customer_email": c.get("customer_email"),
-            "customer_phone": c.get("customer_phone", "+1 98567 45956"),
+            "customer_phone": c.get("customer_phone") or "Not provided",
             "customer_type": c.get("customer_type", "Standard"),
             "channel": c.get("preferred_channel", "Web Form"),
             "complaint_title": c.get("complaint_title"),
@@ -344,7 +338,7 @@ async def get_communication_threads(limit: int = 50):
         })
     return {"threads": threads, "total": len(threads)}
 
-@router.get("/communication/thread/{complaint_id}")
+@router.get("/communication/thread/{complaint_id}", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def get_communication_thread_details(complaint_id: str):
     col = get_complaints_col()
     doc = col.find_one({"complaint_id": complaint_id.strip()})
@@ -374,18 +368,12 @@ async def get_communication_thread_details(complaint_id: str):
                 "channel": "Email / Web Ticket"
             })
     
-    call_transcript = [
-        {"speaker": "Customer", "time": "00:01:12", "text": f"Hello, I am calling regarding my ticket {doc.get('complaint_id')} about {doc.get('complaint_title')}."},
-        {"speaker": "Agent", "time": "00:01:25", "text": "Thank you for calling NovaTech Support. I have your file right in front of me and our systems are processing the details according to policy."},
-        {"speaker": "Customer", "time": "00:02:10", "text": "I really need this resolved as soon as possible. Can you confirm the status?"},
-        {"speaker": "Agent", "time": "00:02:40", "text": "Absolutely, I am logging our conversation and verifying the policy approval steps right now."}
-    ]
-
+    call_transcript = []
     return {
         "complaint_id": doc.get("complaint_id"),
         "customer_name": doc.get("customer_name"),
         "customer_email": doc.get("customer_email"),
-        "customer_phone": doc.get("customer_phone", "+1 98567 45956"),
+        "customer_phone": doc.get("customer_phone") or "Not provided",
         "customer_type": doc.get("customer_type", "Standard"),
         "product_or_service": doc.get("product_or_service", "General Item"),
         "category": doc.get("category", "General"),
@@ -394,17 +382,16 @@ async def get_communication_thread_details(complaint_id: str):
         "priority": doc.get("priority", "P2"),
         "status": doc.get("status", "New"),
         "messages": messages,
-        "ai_suggested_draft": doc.get("genai_analysis", {}).get("customer_response") or "Thank you for reaching out to NovaTech Customer Support. We have verified your request and are actively processing the next steps.",
+        "ai_suggested_draft": doc.get("genai_analysis", {}).get("customer_response") or "",
         "call_transcript": call_transcript,
         "sentiment": doc.get("genai_analysis", {}).get("sentiment", "Neutral")
     }
 
-@router.post("/communication/send")
+@router.post("/communication/send", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def send_communication_message(
     complaint_id: str = Form(...),
     message_text: str = Form(...),
-    channel: str = Form("Web Portal"),
-    sender: str = Form("agent")
+    channel: str = Form("Web Portal")
 ):
     col = get_complaints_col()
     doc = col.find_one({"complaint_id": complaint_id.strip()})
@@ -413,8 +400,8 @@ async def send_communication_message(
 
     new_msg = {
         "id": f"msg-{int(datetime.datetime.now().timestamp())}",
-        "sender": sender,
-        "sender_name": "NovaTech Support Agent" if sender == "agent" else doc.get("customer_name"),
+        "sender": "agent",
+        "sender_name": "NovaTech Support Agent",
         "text": message_text.strip(),
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "channel": channel

@@ -14,7 +14,7 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
 | Field | Description |
 | :--- | :--- |
 | **Primary GenAI Provider** | Google Gemini API (`gemini-1.5-flash` / `gemini-1.5-pro`) |
-| **API Architecture** | Multi-Key Load Balancer & Automatic Fallback Rotation (3 Keys) |
+| **API Architecture** | Environment-configured key rotation; no API keys are stored in source control |
 | **Independent Validation Pipeline** | 100% Deterministic Python Ground-Truth Rule Engine (No AI in Pipeline 2) |
 | **Ground-Truth Rules Enforced** | 105+ Rules in Complaint Resolution Matrix & 32+ Escalation Conditions |
 
@@ -23,7 +23,7 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
 ## 2. Granular Module AI Assistance & Validation Audit
 
 ### Module 1: GenAI Complaint Intelligence Pipeline (`src/genai_pipeline/pipeline.py`)
-- **Tool / Model**: Google Gemini 1.5 Flash (`AQ.Ab8RN...` Key Pool)
+- **Tool / Model**: Google Gemini API (model selected through application configuration)
 - **Purpose**: Autonomous analysis of unstructured customer complaints, primary & secondary issue extraction, sentiment analysis, entity parsing, draft response generation, and agent resolution guidance.
 - **Type of Assistance**: Natural Language Understanding and structured JSON schema generation.
 - **Files Affected**:
@@ -32,9 +32,9 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
   - `src/schemas/models.py`
 - **Modifications & Safety Controls Implemented**:
   - Untrusted data fencing (`<<<UNTRUSTED_TEXT_START>>>`) to mitigate prompt injection attacks.
-  - Strict Pydantic JSON schema parser with automatic retry and JSON fence extraction.
-  - Fallback synthesizer ensuring 100% uptime if external API quotas are exhausted.
-- **Tests Performed**: `tests/test_genai_pipeline.py` (Structured JSON output validation, multi-field verification).
+  - Strict Pydantic JSON schema parser, bounded key rotation, and JSON fence extraction.
+  - Provider failures now result in manual review; no synthetic response is represented as GenAI output.
+- **Tests Performed**: `tests/test_genai_pipeline.py` (provider-unavailable/manual-review behavior). This is not a live provider integration test.
 - **Verified By**: SupportNova Engineering Team.
 
 ---
@@ -47,7 +47,7 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
   - `src/complaint_rules/matrix.py`
   - `src/escalation_rules/manager.py`
   - `src/routing_rules/router.py`
-- **Tests Performed**: `tests/test_python_validation.py`, `tests/test_sla_and_routing.py`.
+- **Tests Present**: `tests/test_python_validation.py`. A separate SLA/routing test module is not currently present.
 - **Verified By**: SupportNova QA Directorate.
 
 ---
@@ -65,17 +65,17 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
 ---
 
 ### Module 4: Knowledge Base & Document Processing (`src/document_processing/parser.py`)
-- **Tool / Libraries**: PyMuPDF (`fitz`), `python-docx`, `reportlab`.
+- **Tool / Libraries**: `pypdf`, `python-docx`, `reportlab` (confirm installed versions from the environment before claiming a runtime test).
 - **Purpose**: Parsing PDF and DOCX company policies into traceable chunks with document ID, section numbers, and version controls (Active vs Superseded).
 - **Files Affected**:
   - `src/document_processing/parser.py`
   - `src/knowledge_base/manager.py`
   - `sample_documents/generate_docs.py`
-- **Tests Performed**: Ingestion and parsing of 21 generated DOCX and PDF policy files.
+- **Dataset**: 21 generated policy documents are present as PDF/DOCX artifacts. A repeatable parser test is not currently present in `tests/`.
 - **Verified By**: SupportNova Architecture Review Board.
 
 ---
 
 ## 3. Team Verification Sign-Off
 
-All AI-generated recommendations and system outputs are strictly guarded by deterministic validation layers, preventing unauthorized commitments, policy bypasses, or hallucinated claims from reaching end users.
+GenAI output must not be treated as available when the provider is unreachable. In that situation, the Python ground-truth result and human-review queue remain the supported path. The report CSV files in `reports/` are historical generated artifacts and are not verified evidence of a live Gemini evaluation; rerun them with configured credentials before submission.

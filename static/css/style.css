@@ -3208,3 +3208,70 @@ body {
     animation: pulseGlow 2s infinite;
 }
 
+:root {
+  color-scheme: dark;
+  --text-secondary: #c5d1ca;
+  --text-muted: #a9b8ae;
+  --text-body: #dce5df;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+  --info: #38bdf8;
+  --primary-gradient: linear-gradient(135deg, #047857, #047857);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --text-secondary: #3f4c43;
+  --text-muted: #536158;
+  --text-body: #27332b;
+  --text-heading: #152219;
+  --text-primary: #1e2b22;
+  --primary: #047857;
+  --primary-hover: #065f46;
+  --primary-gradient: linear-gradient(135deg, #047857, #047857);
+  --success: #15803d;
+  --warning: #92400e;
+  --danger: #be123c;
+  --info: #0369a1;
+  --glass-border: rgba(20, 45, 30, 0.16);
+  --glass-border-subtle: rgba(20, 45, 30, 0.12);
+}
+
+[data-theme="light"] [style*="color: #10b981"],
+[data-theme="light"] [style*="color:#10b981"],
+[data-theme="light"] [style*="color: #059669"],
+[data-theme="light"] [style*="color:#059669"],
+[data-theme="light"] [style*="color: #34d399"],
+[data-theme="light"] [style*="color:#34d399"] {
+  color: #047857 !important;
+}
+
+[data-theme="light"] [style*="color: #f59e0b"],
+[data-theme="light"] [style*="color:#f59e0b"],
+[data-theme="light"] [style*="color: #eab308"],
+[data-theme="light"] [style*="color:#eab308"] {
+  color: #854d0e !important;
+}
+
+[data-theme="light"] .live-status,
+[data-theme="light"] #liveStreamPill {
+  color: #065f46 !important;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import logging
 
 from src.security.auth import AuthManager
+from config.settings import settings
 
 logger = logging.getLogger("SupportNova.AuthRouter")
 
@@ -36,7 +37,7 @@ async def api_login(request: Request):
         },
         "token": token
     })
-    res.set_cookie(key="supportnova_session", value=token, httponly=True, max_age=7*86400, samesite="lax")
+    res.set_cookie(key="supportnova_session", value=token, httponly=True, secure=settings.COOKIE_SECURE, max_age=7*86400, samesite="lax")
     return res
 
 @router.post("/register")
@@ -79,7 +80,7 @@ async def api_register(request: Request):
             },
             "token": token
         })
-        res.set_cookie(key="supportnova_session", value=token, httponly=True, max_age=7*86400, samesite="lax")
+        res.set_cookie(key="supportnova_session", value=token, httponly=True, secure=settings.COOKIE_SECURE, max_age=7*86400, samesite="lax")
         return res
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
@@ -112,8 +113,22 @@ async def api_google_login(request: Request):
         logger.warning(f"Invalid Google login payload: {e}")
         raise HTTPException(status_code=400, detail="Invalid Google payload")
 
-    if not email:
-        raise HTTPException(status_code=400, detail="Valid Gmail address is required for Google Sign-in.")
+    if not credential or not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=401, detail="Use the configured Google Sign-In flow. Email-only sign-in is not accepted.")
+
+    try:
+        from google.auth.transport.requests import Request as GoogleRequest
+        from google.oauth2 import id_token
+        verified = id_token.verify_oauth2_token(credential, GoogleRequest(), settings.GOOGLE_CLIENT_ID)
+        email = (verified.get("email") or "").strip().lower()
+        if not email or not verified.get("email_verified"):
+            raise ValueError("Verified Google email is required.")
+        name = verified.get("name") or email.split("@")[0].title()
+        picture = verified.get("picture") or None
+        google_id = verified.get("sub")
+    except Exception:
+        logger.warning("Google ID token verification failed.")
+        raise HTTPException(status_code=401, detail="Google identity could not be verified.")
 
     user = AuthManager.authenticate_google_user(
         email=email,
@@ -137,7 +152,7 @@ async def api_google_login(request: Request):
         },
         "token": token
     })
-    res.set_cookie(key="supportnova_session", value=token, httponly=True, max_age=7*86400, samesite="lax")
+    res.set_cookie(key="supportnova_session", value=token, httponly=True, secure=settings.COOKIE_SECURE, max_age=7*86400, samesite="lax")
     return res
 
 @router.post("/update-profile")

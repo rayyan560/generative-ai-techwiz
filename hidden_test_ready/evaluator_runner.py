@@ -6,10 +6,11 @@ import argparse
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from src.genai_pipeline.pipeline import genai_pipeline
+from src.genai_pipeline.pipeline import GenAIUnavailableError
 from src.python_validation.pipeline import python_validation_pipeline
 from src.comparison_engine.engine import ComparisonEngine
 
-def run_hidden_evaluation(input_file: str, output_csv: str):
+def run_hidden_evaluation(input_file: str, output_csv: str, limit: int = 50, all_records: bool = False):
     """
     Evaluator Runner for Techwiz 7 Judges.
     Processes any unseen JSON complaints file through the Dual-Pipeline and outputs a full verification report.
@@ -21,20 +22,43 @@ def run_hidden_evaluation(input_file: str, output_csv: str):
     with open(input_file, "r", encoding="utf-8") as f:
         complaints = json.load(f)
 
-    if not args.all:
-        complaints = complaints[:args.limit]
+    if not all_records:
+        complaints = complaints[:limit]
 
     print(f"=== Techwiz 7 Hidden Dataset Evaluation Runner ===")
-    print(f"Loaded {len(complaints)} test complaints from '{inp}'.")
+    print(f"Loaded {len(complaints)} test complaints from '{input_file}'.")
     print(f"Executing Dual-Pipeline Analysis & Python Ground-Truth Verification...\n")
 
     results = []
     for idx, c in enumerate(complaints, start=1):
         # Pipeline 1: GenAI
-        ai_out = genai_pipeline._generate_intelligent_fallback(c, None)
-        # Pipeline 2: Python Ground Truth
         gt_out = python_validation_pipeline.validate_complaint(c)
-        # Comparison
+        try:
+            ai_out = genai_pipeline.generate_intelligence(c)
+        except GenAIUnavailableError as error:
+            results.append({
+                "Complaint_ID": c.get("complaint_id", f"HIDDEN-{idx:04d}"),
+                "Customer": c.get("customer_name", "Evaluator Customer"),
+                "Title": c.get("complaint_title", "Test Title"),
+                "GenAI_Category": "Unavailable",
+                "Python_Category": gt_out.expected_category,
+                "Category_Match": "Not compared",
+                "GenAI_Dept": "Unavailable",
+                "Python_Dept": gt_out.expected_department,
+                "Dept_Match": "Not compared",
+                "GenAI_Urgency": "Unavailable",
+                "Python_Urgency": gt_out.expected_urgency,
+                "GenAI_Escalation": "Unavailable",
+                "Python_Escalation": gt_out.mandatory_escalation,
+                "Escalation_Tier": gt_out.escalation_tier,
+                "Coverage_Score": "Not measured",
+                "Traceability_Score": "Not measured",
+                "Consistency_Score": "Not measured",
+                "Verification_Status": "Manual Review Required",
+                "Manual_Review_Needed": True,
+                "Flags": str(error)
+            })
+            continue
         comp = ComparisonEngine.compare_and_verify(ai_out, gt_out, c)
 
         results.append({
@@ -61,8 +85,14 @@ def run_hidden_evaluation(input_file: str, output_csv: str):
         })
 
     # Write results to CSV
+    fieldnames = [
+        "Complaint_ID", "Customer", "Title", "GenAI_Category", "Python_Category", "Category_Match",
+        "GenAI_Dept", "Python_Dept", "Dept_Match", "GenAI_Urgency", "Python_Urgency",
+        "GenAI_Escalation", "Python_Escalation", "Escalation_Tier", "Coverage_Score",
+        "Traceability_Score", "Consistency_Score", "Verification_Status", "Manual_Review_Needed", "Flags"
+    ]
     with open(output_csv, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(results[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
 
@@ -85,4 +115,4 @@ if __name__ == "__main__":
     if not os.path.exists(inp):
         inp = "sample_complaints/complaints_500.json"
         
-    run_hidden_evaluation(inp, args.output)
+    run_hidden_evaluation(inp, args.output, limit=args.limit, all_records=args.all)

@@ -13,6 +13,10 @@ from src.complaint_processing.preprocessor import ComplaintPreprocessor
 
 logger = logging.getLogger("SupportNova.GenAIPipeline")
 
+
+class GenAIUnavailableError(RuntimeError):
+    pass
+
 class GenAIPipeline:
     def __init__(self):
         self.api_keys = settings.GEMINI_API_KEYS
@@ -99,15 +103,15 @@ class GenAIPipeline:
                     last_error = str(e)
                     logger.warning(f"Attempt {attempt+1} with key failed: {e}. Rotating to next API key.")
 
-        # 5. High-Precision Deterministic Fallback if external API is temporarily unavailable
         if not parsed_result:
-            logger.info("Using local high-precision GenAI Intelligence synthesizer fallback.")
-            parsed_result = self._generate_intelligent_fallback(complaint_dict, adversarial_msg)
+            logger.error("No valid response was received from the configured GenAI provider: %s", last_error or "No API key configured")
+            raise GenAIUnavailableError("GenAI analysis is unavailable; the complaint must be reviewed by a human.")
 
         return parsed_result
 
     def _generate_intelligent_fallback(self, complaint_dict: Dict[str, Any], adversarial_warning: Optional[str]) -> GenAIIntelligenceOutput:
-        """Synthesizes structured complaint intelligence with high contextual accuracy."""
+        raise GenAIUnavailableError("Synthetic GenAI output is disabled; use deterministic ground truth and human review.")
+        """Legacy implementation retained temporarily for migration reference."""
         title = complaint_dict.get("complaint_title", "")
         desc = complaint_dict.get("complaint_description", "")
         full_text = f"{title} {desc}".lower()

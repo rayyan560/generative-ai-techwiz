@@ -43,6 +43,12 @@ class PythonGroundTruthPipeline:
         elif any(w in full_text for w in ["rude agent", "unprofessional staff", "hung up on me", "harassed", "insulted"]):
             category = "Staff Conduct"
             subcategory = "Agent Misbehavior"
+        elif any(w in full_text for w in ["poor installation", "misleading information", "service quality", "installation service"]):
+            category = "Service Quality"
+            subcategory = "Poor Installation Service" if "installation" in full_text else "Misleading Information"
+        elif any(w in full_text for w in ["software crash", "firmware update", "wifi", "wi-fi", "connectivity issue", "bluetooth"]):
+            category = "Technical Support"
+            subcategory = "Connectivity Issue" if any(w in full_text for w in ["wifi", "wi-fi", "connectivity", "bluetooth"]) else "Software Crash"
         elif any(w in full_text for w in ["warranty", "repair", "service center"]):
             category = "Warranty Claim"
             subcategory = "Repair Delay"

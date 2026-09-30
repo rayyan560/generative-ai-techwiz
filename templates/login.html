@@ -542,7 +542,7 @@
 
       <button type="button" class="google-btn" onclick="triggerGoogleSignIn()">
         <i class="fa-solid fa-bolt" style="color: var(--cream, #eef0d0); font-size: 1.05rem;"></i>
-        <span>Quick Demo / Guest Access</span>
+        <span>Continue with Google</span>
       </button>
 
       <div class="divider-row"><span>Or with Username &amp; Password</span></div>
@@ -585,8 +585,7 @@
           </div>
           <div class="demo-row">
             <span>One-Click Guest:</span>
-            <span class="demo-pill" onclick="quickGmailDemo('customer@supportnova.io','John Smith')">Guest
-              Customer</span>
+            <a class="demo-pill" href="/" style="text-decoration:none;">Browse public portal</a>
           </div>
         </div>
         {% endif %}
@@ -736,23 +735,28 @@
       document.getElementById("loginPassword").value = p;
     }
 
-    function triggerGoogleSignIn() { openGoogleModal(); }
+    function triggerGoogleSignIn() { window.location.href = "/auth/google/login"; }
     function openGoogleModal() { document.getElementById("googleAuthModal").style.display = "flex"; }
     function closeGoogleModal() { document.getElementById("googleAuthModal").style.display = "none"; }
 
     function showStatus(msg, isSuccess = false) {
-      document.getElementById("statusMessageContainer").innerHTML = `
-        <div class="${isSuccess ? 'success-banner' : 'error-banner'}">
-          <i class="fa-solid ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i>
-          <span>${msg}</span>
-        </div>`;
+      const container = document.getElementById("statusMessageContainer");
+      if (!container) return;
+      const banner = document.createElement("div");
+      banner.className = isSuccess ? "success-banner" : "error-banner";
+      const icon = document.createElement("i");
+      icon.className = `fa-solid ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}`;
+      const text = document.createElement("span");
+      text.textContent = msg;
+      banner.append(icon, text);
+      container.replaceChildren(banner);
     }
 
     // ── Google / Guest Auth ────────────────────────────────────
     async function submitDirectGoogleAuth() {
       const email = document.getElementById("googleEmailInput").value.trim();
       const name = document.getElementById("googleNameInput").value.trim();
-      if (!email) { alert("Please enter a valid email address."); return; }
+      if (!email) { showStatus("Please enter a valid email address."); return; }
       closeGoogleModal();
       await executeGoogleAuthPayload({ email, name });
     }
@@ -764,7 +768,8 @@
     }
 
     function getRedirectUrlForRole(role) {
-      if (role === "admin" || role === "agent") return "/admin";
+      if (role === "admin") return "/admin";
+      if (role === "agent") return "/agent";
       if (role === "warranty_manager") return "/warranty";
       return "/";
     }

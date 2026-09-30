@@ -26,33 +26,33 @@
 <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
   <div class="summary-card">
     <div class="summary-card-title">Total Claims Outstanding</div>
-    <div class="summary-card-value" id="kpiTotalClaims">$ 24,580.00</div>
+    <div class="summary-card-value" id="kpiTotalClaims">Loading…</div>
     <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Across active customer disputes</div>
   </div>
 
   <div class="summary-card">
     <div class="summary-card-title">Funds Held in Secure Escrow</div>
-    <div class="summary-card-value" id="kpiEscrowHeld" style="color: var(--cream, #eef0d0);">$ 14,230.50</div>
+    <div class="summary-card-value" id="kpiEscrowHeld" style="color: var(--cream, #eef0d0);">Loading…</div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 60%; background: var(--cream, #eef0d0);"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: var(--cream, #eef0d0);"></div>
     </div>
     <div style="font-size: 0.8rem; color: var(--text-muted);">Awaiting SLA & inspection verification</div>
   </div>
 
   <div class="summary-card">
     <div class="summary-card-title">Authorized & Released Payouts</div>
-    <div class="summary-card-value" id="kpiApprovedPayouts" style="color: #10b981;">$ 8,150.00</div>
+    <div class="summary-card-value" id="kpiApprovedPayouts" style="color: #10b981;">Loading…</div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 35%; background: #10b981;"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: #10b981;"></div>
     </div>
-    <div style="font-size: 0.8rem; color: var(--text-muted);">100% Ground-Truth Rule Compliant</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted);">Decision totals require verified transaction records.</div>
   </div>
 
   <div class="summary-card">
     <div class="summary-card-title">Disputed / High-Risk Claims</div>
-    <div class="summary-card-value" id="kpiDisputedClaims" style="color: #e11d48;">$ 2,199.50</div>
+    <div class="summary-card-value" id="kpiDisputedClaims" style="color: #e11d48;">Loading…</div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 15%; background: #e11d48;"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: #e11d48;"></div>
     </div>
     <div style="font-size: 0.8rem; color: var(--text-muted);">Requires supervisor authorization</div>
   </div>
@@ -60,10 +60,10 @@
 
 <!-- Tab Pills Filter -->
 <div class="tab-pills-row" style="margin-bottom: 20px;">
-  <button class="pill-tab active" onclick="filterRefundTable('All')">All Refund & Billing Claims</button>
-  <button class="pill-tab" onclick="filterRefundTable('Held in Escrow')">⏳ Held in Escrow</button>
-  <button class="pill-tab" onclick="filterRefundTable('Released / Paid')">✅ Released / Paid</button>
-  <button class="pill-tab" onclick="filterRefundTable('Disputed')">⚠️ ï¸ Disputed / Under Review</button>
+  <button class="pill-tab active" onclick="filterRefundTable('All', event)">All Refund & Billing Claims</button>
+  <button class="pill-tab" onclick="filterRefundTable('Held in Escrow', event)">⏳ Held in Escrow</button>
+  <button class="pill-tab" onclick="filterRefundTable('Released / Paid', event)">✅ Released / Paid</button>
+  <button class="pill-tab" onclick="filterRefundTable('Disputed', event)">⚠️ Disputed / Under Review</button>
 </div>
 
 <!-- Refunds & Escrow Ledger Data Table -->
@@ -111,23 +111,23 @@
     <div id="modalClvOptimizerCard" style="background: rgba(238, 240, 208, 0.08); border: 1px solid rgba(238, 240, 208, 0.35); border-radius: var(--radius-md); padding: 18px 22px; margin-bottom: 22px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <span style="font-weight: 800; font-size: 0.92rem; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-sparkles"></i> AI Customer Lifetime Value (CLV) Settlement Optimizer
+          <i class="fa-solid fa-sparkles"></i> Customer Retention Offer
         </span>
-        <span class="badge badge-success" id="clvChurnBadge">Churn Risk: 18%</span>
+        <span class="badge badge-secondary" id="clvChurnBadge">Not available</span>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.85rem; margin-bottom: 10px;">
         <div style="background: var(--glass-bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border);">
-          <strong style="color: var(--text-heading);">Option A: Cash Refund</strong>
-          <div style="color: #e11d48; font-weight: 800; font-size: 1.1rem; margin-top: 4px;" id="optACashAmt">$ 149.99</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">Retention Chance: 32%</div>
+          <strong style="color: var(--text-heading);">Verified transaction</strong>
+          <div style="color: #e11d48; font-weight: 800; font-size: 1.1rem; margin-top: 4px;" id="optACashAmt">Not verified</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Use validated payment records.</div>
         </div>
         <div style="background: rgba(16, 185, 129, 0.12); padding: 12px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.35);">
-          <strong style="color: #047857;">Option B: 125% Store Voucher + VIP Care</strong>
-          <div style="color: var(--cream, #eef0d0); font-weight: 800; font-size: 1.1rem; margin-top: 4px;" id="optBVoucherAmt">$ 187.50</div>
-          <div style="font-size: 0.75rem; color: #065f46; font-weight: 700;">Retention Chance: 94.2% (Saves Cash)</div>
+          <strong style="color: #047857;">Retention offer</strong>
+          <div style="color: var(--cream, #eef0d0); font-weight: 800; font-size: 1.1rem; margin-top: 4px;" id="optBVoucherAmt">Not available</div>
+          <div style="font-size: 0.75rem; color: #065f46; font-weight: 700;">No approved wallet integration.</div>
         </div>
       </div>
-      <div style="font-size: 0.78rem; color: var(--primary); font-weight: 700;" id="clvStrategyRec">AI Recommendation: Issue Option B to save 58% in net capital while preserving customer retention.</div>
+      <div style="font-size: 0.78rem; color: var(--primary); font-weight: 700;" id="clvStrategyRec">Retention optimization is unavailable until verified history and an approved model are connected.</div>
     </div>
 
     <form id="refundExecutionForm" onsubmit="event.preventDefault(); submitRefundExecution();">
@@ -137,8 +137,7 @@
       <div class="form-group">
         <label class="form-label"><span>Settlement Action *</span></label>
         <select id="refundModalAction" class="form-control" required>
-          <option value="release_escrow">✅ Release Escrow & Payout Full Direct Refund</option>
-          <option value="issue_credit">🎁 Option B: Issue 125% Store Voucher Credit (+ Goodwill VIP Care)</option>
+          <option value="release_escrow">Record refund approval (payment integration required)</option>
           <option value="reject_claim">❌ Reject Refund Claim (Policy Ineligible / Return Window Expired)</option>
         </select>
       </div>
@@ -146,10 +145,7 @@
       <div class="form-group">
         <label class="form-label"><span>Payout / Disbursement Method</span></label>
         <select id="refundModalMethod" class="form-control">
-          <option value="Original Payment Method (Stripe/Card)">Original Card / Stripe Gateway</option>
-          <option value="NovaTech Store Wallet Voucher">NovaTech Store Wallet Credit (Instant)</option>
-          <option value="PayPal Business Escrow">PayPal Escrow Settlement</option>
-          <option value="Direct ACH Bank Wire">Direct ACH / Wire Transfer</option>
+          <option value="Not connected">External payment service is not connected</option>
         </select>
       </div>
 
@@ -160,7 +156,7 @@
 
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
         <button type="button" class="pill-tab" onclick="closeRefundActionModal()">Cancel</button>
-        <button type="submit" class="submit-btn" style="width: auto; padding: 12px 28px; font-size: 0.95rem;">Confirm & Settle Payout</button>
+        <button type="submit" class="submit-btn" style="width: auto; padding: 12px 28px; font-size: 0.95rem;">Record Decision</button>
       </div>
     </form>
   </div>

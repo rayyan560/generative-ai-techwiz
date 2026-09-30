@@ -11,7 +11,7 @@
       <div class="hero-meta-grid">
         <div class="hero-meta-item">
           <i class="fa-solid fa-scale-balanced" style="color: #10b981;"></i>
-          <span>Grievance Escrow & Warranty Treasury</span>
+          <span>Warranty & Refund Review</span>
         </div>
         <div class="hero-meta-item">
           <i class="fa-regular fa-envelope"></i>
@@ -26,10 +26,10 @@
   </div>
 
   <div class="hero-account-summary">
-    <div class="label">Escrow Liquidity Pool</div>
-    <div class="value" style="color: #10b981;">$ 20,000.00</div>
+    <div class="label">Verified Escrow Balance</div>
+    <div class="value" style="color: #10b981;">Not available</div>
     <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
-      Audited Payouts: <strong style="color: var(--cream, #eef0d0);">$ 3,450.00</strong> | Fraud Blocked: <strong style="color: #e11d48;">$ 1,200.00</strong>
+      No verified payment ledger is connected.
     </div>
   </div>
 </div>
@@ -37,24 +37,24 @@
 <div class="metrics-grid">
   <div class="summary-card" style="border-top: 3px solid #10b981;">
     <div>
-      <div class="summary-card-title">Authorized Warranty Claims</div>
-      <div class="summary-card-value" style="color: #10b981;">94.8%</div>
-      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Ground-Truth Rule Strict Match</div>
+      <div class="summary-card-title">Validated Claim Accuracy</div>
+      <div class="summary-card-value" style="color: #10b981;">Not measured</div>
+      <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">No reviewed evaluation sample exists.</div>
     </div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 95%; background: #10b981;"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: #10b981;"></div>
     </div>
     <a href="/rules" class="card-link-more">Inspect 105+ Matrix Rules &rarr;</a>
   </div>
 
   <div class="summary-card" style="border-top: 3px solid var(--accent, #f59e0b);">
     <div>
-      <div class="summary-card-title">Pending Claims Review</div>
-      <div class="summary-card-value" style="color: #d97706;">7 Requests</div>
+      <div class="summary-card-title">Claims Needing Review</div>
+      <div class="summary-card-value" style="color: #d97706;" id="agentQueuePending">Loading…</div>
       <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Awaiting Officer Authorization</div>
     </div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 45%; background: var(--accent, #f59e0b);"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: var(--accent, #f59e0b);"></div>
     </div>
     <a href="/refunds" class="card-link-more">Manage Ledger & Escrow Pool &rarr;</a>
   </div>
@@ -62,11 +62,11 @@
   <div class="summary-card cream-highlight-card" style="border-top: 3px solid var(--cream, #eef0d0);">
     <div>
       <div class="summary-card-title">Customer CLV Preservation</div>
-      <div class="summary-card-value" style="color: var(--cream, #eef0d0);">$ 145,200</div>
-      <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Retained Value via Resolution Protocols</div>
+      <div class="summary-card-value" style="color: var(--cream, #eef0d0);">Not available</div>
+      <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">No validated lifetime-value model is connected.</div>
     </div>
     <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width: 88%; background: var(--cream, #eef0d0);"></div>
+      <div class="progress-bar-fill" style="width: 0%; background: var(--cream, #eef0d0);"></div>
     </div>
     <a href="/analytics" class="card-link-more">View Retention Analytics &rarr;</a>
   </div>
@@ -85,11 +85,12 @@
       <tr>
         <th>Ticket Ref</th>
         <th>Customer & Tier</th>
-        <th>Product Model</th>
-        <th>Claim Title</th>
-        <th>Warranty Coverage</th>
-        <th>Requested Payout</th>
-        <th>Python Validation</th>
+        <th>Complaint</th>
+        <th>AI Category</th>
+        <th>Assigned Department</th>
+        <th>Urgency</th>
+        <th>Priority</th>
+        <th>Validation</th>
         <th>Action</th>
       </tr>
     </thead>

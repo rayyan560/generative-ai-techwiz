@@ -5,8 +5,10 @@ import base64
 import json
 import logging
 import os
+import secrets
 from typing import Optional, Dict, Any, List
 from fastapi import Request
+from config.settings import settings
 # passlib replaced by direct bcrypt
 from config.database import get_users_col
 
@@ -14,8 +16,10 @@ logger = logging.getLogger("SupportNova.Auth")
 
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 if not SESSION_SECRET_KEY:
-    logger.warning("SESSION_SECRET_KEY environment variable not found. Loading fallback secret.")
-    SESSION_SECRET_KEY = "e8f3b9c1d2e4a5f6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0"
+    if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER"):
+        raise RuntimeError("SESSION_SECRET_KEY must be configured for hosted deployments.")
+    SESSION_SECRET_KEY = secrets.token_urlsafe(48)
+    logger.warning("A temporary local session secret was generated; sessions will expire after restart.")
 
 SECRET_KEY = SESSION_SECRET_KEY
 
@@ -107,13 +111,36 @@ class AuthManager:
             return
         try:
             users_col = get_users_col()
-            for u in DEFAULT_USERS:
-                existing = users_col.find_one({"username": u["username"]})
-                if not existing:
-                    u_copy = dict(u)
-                    if not u_copy["password"].startswith("$2b$") and not u_copy["password"].startswith("$2a$"):
+            if settings.DEMO_MODE:
+                for u in DEFAULT_USERS:
+                    existing = users_col.find_one({"username": u["username"]})
+                    if not existing:
+                        u_copy = dict(u)
                         u_copy["password"] = get_password_hash(u_copy["password"])
-                    users_col.insert_one(u_copy)
+                        users_col.insert_one(u_copy)
+                    elif not existing.get("password"):
+                        users_col.update_one({"username": u["username"]}, {"$set": {"password": get_password_hash(u["password"])}})
+            elif settings.ADMIN_EMAIL and settings.ADMIN_PASSWORD:
+                username = settings.ADMIN_EMAIL.split("@", 1)[0].replace(".", "_")
+                existing = users_col.find_one({"email": settings.ADMIN_EMAIL})
+                user_id = (existing or {}).get("user_id")
+                if user_id in {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}:
+                    user_id = None
+                profile = {
+                    "user_id": user_id or f"USR-BOOTSTRAP-{int(time.time())}",
+                    "username": (existing or {}).get("username") or username,
+                    "email": settings.ADMIN_EMAIL,
+                    "password": get_password_hash(settings.ADMIN_PASSWORD),
+                    "role": "admin",
+                    "display_name": (existing or {}).get("display_name") or username.replace("_", " ").title(),
+                    "auth_provider": (existing or {}).get("auth_provider", "local"),
+                    "phone": (existing or {}).get("phone", ""),
+                    "created_at": (existing or {}).get("created_at") or time.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                if existing:
+                    users_col.update_one({"email": settings.ADMIN_EMAIL}, {"$set": profile})
+                else:
+                    users_col.insert_one(profile)
             _USERS_INITIALIZED = True
         except Exception as e:
             logger.error(f"Error initializing default users: {e}")
@@ -146,6 +173,9 @@ class AuthManager:
     @staticmethod
     def authenticate_user(identifier: str, password: str) -> Optional[Dict[str, Any]]:
         user = AuthManager.get_user_by_identifier(identifier)
+        demo_user_ids = {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}
+        if user and not settings.DEMO_MODE and user.get("user_id") in demo_user_ids:
+            return None
         if user and verify_password(password, user.get("password", "")):
             # Automatic seamless migration of legacy unhashed password to bcrypt hash
             if not user.get("password", "").startswith("$2b$") and not user.get("password", "").startswith("$2a$"):
@@ -171,7 +201,7 @@ class AuthManager:
             avatar = generate_google_avatar(display_name, clean_email)
 
         # Check if this email is an admin/owner email
-        role = "admin" if ("admin" in clean_email or clean_email.startswith("asp") or clean_email.startswith("owner") or clean_email == "admin@supportnova.io") else "customer"
+        role = "admin" if settings.ADMIN_EMAIL and clean_email == settings.ADMIN_EMAIL else "customer"
 
         if user:
             # Update user profile pic & display name from Google
@@ -182,6 +212,8 @@ class AuthManager:
             }
             if google_id:
                 update_data["google_id"] = google_id
+            if role == "admin":
+                update_data["role"] = "admin"
             users_col.update_one({"email": clean_email}, {"$set": update_data})
             user.update(update_data)
             return user
@@ -330,18 +362,22 @@ class AuthManager:
             payload = json.loads(base64.urlsafe_b64decode(data_b64.encode()).decode())
             if payload.get("exp", 0) < time.time():
                 return None  # Expired
-            
-            # Construct standard user identity from verified signature payload
+            user = AuthManager.get_user_by_id(payload.get("user_id", ""))
+            if not user:
+                return None
+            demo_user_ids = {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}
+            if not settings.DEMO_MODE and user.get("user_id") in demo_user_ids:
+                return None
             return {
-                "sub": payload.get("sub", ""),
-                "username": payload.get("sub", ""),
-                "user_id": payload.get("user_id", ""),
-                "email": payload.get("email", ""),
-                "role": payload.get("role", "customer"),
-                "display_name": payload.get("display_name", payload.get("sub", "")),
-                "avatar": payload.get("avatar", ""),
-                "auth_provider": payload.get("auth_provider", "local"),
-                "phone": payload.get("phone", "")
+                "sub": user.get("username", ""),
+                "username": user.get("username", ""),
+                "user_id": user.get("user_id", ""),
+                "email": user.get("email", ""),
+                "role": user.get("role", "customer"),
+                "display_name": user.get("display_name", user.get("username", "")),
+                "avatar": user.get("avatar", ""),
+                "auth_provider": user.get("auth_provider", "local"),
+                "phone": user.get("phone", "")
             }
         except Exception as e:
             logger.error(f"Token verification error: {e}")

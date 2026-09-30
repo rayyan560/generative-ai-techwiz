@@ -79,22 +79,33 @@ class LocalJSONCollection:
         self._save()
         return type("InsertManyResult", (), {"inserted_ids": ids})()
 
+    @staticmethod
+    def _matches(item: Dict[str, Any], filter_dict: Dict[str, Any]) -> bool:
+        for key, expected in filter_dict.items():
+            if key == "$or":
+                if not isinstance(expected, list) or not any(LocalJSONCollection._matches(item, clause) for clause in expected):
+                    return False
+                continue
+            actual = item.get(key)
+            if isinstance(expected, dict) and expected and all(str(operator).startswith("$") for operator in expected):
+                for operator, value in expected.items():
+                    if operator == "$in" and actual not in value:
+                        return False
+                    if operator == "$nin" and actual in value:
+                        return False
+                    if operator == "$ne" and actual == value:
+                        return False
+                    if operator == "$exists" and ((key in item) != bool(value)):
+                        return False
+                    if operator not in {"$in", "$nin", "$ne", "$exists"}:
+                        raise ValueError(f"Unsupported local query operator: {operator}")
+            elif actual != expected:
+                return False
+        return True
+
     def find(self, filter_dict: Optional[Dict[str, Any]] = None, sort: Optional[List] = None, limit: int = 0):
-        results = []
         filter_dict = filter_dict or {}
-        for item in self._data:
-            match = True
-            for k, v in filter_dict.items():
-                if k == "$or" and isinstance(v, list):
-                    or_match = any(all(item.get(ok) == ov for ok, ov in cond.items()) for cond in v)
-                    if not or_match:
-                        match = False
-                        break
-                elif item.get(k) != v:
-                    match = False
-                    break
-            if match:
-                results.append(item)
+        results = [item for item in self._data if self._matches(item, filter_dict)]
         
         if sort:
             # Simple sorting by first sort key
@@ -112,8 +123,7 @@ class LocalJSONCollection:
 
     def update_one(self, filter_dict: Dict[str, Any], update_dict: Dict[str, Any]):
         for item in self._data:
-            match = all(item.get(k) == v for k, v in filter_dict.items())
-            if match:
+            if self._matches(item, filter_dict):
                 if "$set" in update_dict:
                     item.update(update_dict["$set"])
                 if "$push" in update_dict:
@@ -128,7 +138,7 @@ class LocalJSONCollection:
 
     def delete_one(self, filter_dict: Dict[str, Any]):
         for i, item in enumerate(self._data):
-            if all(item.get(k) == v for k, v in filter_dict.items()):
+            if self._matches(item, filter_dict):
                 self._data.pop(i)
                 self._save()
                 return type("DeleteResult", (), {"deleted_count": 1})()
@@ -147,6 +157,11 @@ class DatabaseManager:
         self.connect()
 
     def connect(self):
+        if not settings.MONGODB_URI:
+            if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER"):
+                raise RuntimeError("MONGODB_URI must be configured for hosted deployments to prevent ephemeral data loss.")
+            logger.info("MONGODB_URI is not configured. Using the persistent local JSON database.")
+            return
         try:
             from pymongo import MongoClient
             import certifi
@@ -170,6 +185,8 @@ class DatabaseManager:
             logger.warning(f"MongoDB Atlas connection unvailable ({e}). Activating persistent JSON local database engine fallback.")
             self.is_atlas_connected = False
             self.db = None
+            if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER"):
+                raise RuntimeError("MongoDB is unavailable in the hosted environment; refusing to start with an ephemeral database.") from e
 
     def get_collection(self, name: str):
         if self.is_atlas_connected and self.db is not None:

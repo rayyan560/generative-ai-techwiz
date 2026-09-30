@@ -14,7 +14,7 @@ function showToast(message, type = "info") {
   }
   const toast = document.createElement("div");
   toast.className = `custom-toast toast-${type}`;
-  toast.style.background = type === "danger" ? "#e11d48" : (type === "success" ? "#10b981" : (type === "warning" ? "#f59e0b" : "var(--cream, #eef0d0)"));
+  toast.style.background = type === "danger" ? "#be123c" : (type === "success" ? "#047857" : (type === "warning" ? "#854d0e" : "var(--primary)"));
   toast.style.color = "#ffffff";
   toast.style.padding = "12px 22px";
   toast.style.borderRadius = "12px";
@@ -25,7 +25,11 @@ function showToast(message, type = "info") {
   toast.style.alignItems = "center";
   toast.style.gap = "10px";
   toast.style.animation = "fadeIn 0.3s ease";
-  toast.innerHTML = `<i class="fa-solid ${type === 'danger' ? 'fa-triangle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-circle-info')}"></i> <span>${message}</span>`;
+  const icon = document.createElement("i");
+  icon.className = `fa-solid ${type === 'danger' ? 'fa-triangle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-circle-info')}`;
+  const label = document.createElement("span");
+  label.textContent = message;
+  toast.append(icon, label);
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.opacity = "0";
@@ -69,7 +73,7 @@ async function checkCustomerAuthState() {
 }
 
 function triggerCustomerGoogleLogin() {
-  openCustomerGoogleModal();
+  window.location.href = "/login";
 }
 
 function openCustomerGoogleModal() {
@@ -359,7 +363,8 @@ async function handleVisionImageUpload(input) {
     clearInterval(stageTimer);
     if (scanLine) scanLine.style.display = "none";
 
-    dropText.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-file-circle-check"></i> Image Analyzed: ${file.name}</span>`;
+    if (!res.ok) throw new Error(data.detail || "Image analysis is unavailable; manual review is required.");
+    dropText.textContent = `Image attached: ${file.name}. Automated analysis is unavailable; a reviewer must inspect it.`;
 
     const box = document.getElementById("visionAnalysisBox");
     box.style.display = "block";
@@ -382,7 +387,8 @@ async function handleVisionImageUpload(input) {
   } catch (e) {
     clearInterval(stageTimer);
     if (scanLine) scanLine.style.display = "none";
-    console.error("Error running vision analysis:", e);
+    if (dropText) dropText.textContent = e.message || "Automated image analysis failed; a reviewer must inspect the attachment.";
+    console.warn("Image analysis unavailable:", e);
   }
 }
 
@@ -413,10 +419,10 @@ function triggerAiPreCheck() {
 
       document.getElementById("preCheckCategoryBadge").innerText = `${data.estimated_category} (${data.estimated_priority})`;
       document.getElementById("preCheckSla").innerText = data.estimated_sla;
-      document.getElementById("preCheckRefund").innerText = data.refund_eligibility_preview ? "Eligible (100% Policy Match)" : "Inspection Required";
+      document.getElementById("preCheckRefund").innerText = data.refund_eligibility_preview ? "Potentially eligible — verification required" : "Inspection required";
       
       const sent = data.sentiment || {};
-      document.getElementById("preCheckFrustration").innerText = `${sent.frustration_score || 50}% (${sent.emotion_state || 'Standard'})`;
+      document.getElementById("preCheckFrustration").innerText = Number.isFinite(sent.frustration_score) ? `${sent.frustration_score}% heuristic estimate (${sent.emotion_state || 'Unclassified'})` : "Not measured";
 
     } catch (e) {
       console.error("Error running AI pre-check:", e);
