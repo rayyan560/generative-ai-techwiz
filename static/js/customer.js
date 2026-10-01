@@ -12,6 +12,10 @@ function showToast(message, type = "info") {
     container.style.gap = "10px";
     document.body.appendChild(container);
   }
+  const alreadyVisible = Array.from(container.querySelectorAll(".custom-toast span"))
+    .some((label) => label.textContent === message);
+  if (alreadyVisible) return;
+
   const toast = document.createElement("div");
   toast.className = `custom-toast toast-${type}`;
   toast.style.background = type === "danger" ? "#be123c" : (type === "success" ? "#047857" : (type === "warning" ? "#854d0e" : "var(--primary)"));
@@ -768,11 +772,37 @@ function quickTrackTicket(id) {
   window.supportNovaTrackTicket?.(id, window.supportNovaCustomerEmail || "");
 }
 
+let complaintSubmitInProgress = false;
+
 async function handleComplaintSubmit(e) {
   e.preventDefault();
+  if (complaintSubmitInProgress) return;
+
   const form = document.getElementById("complaintForm");
   const submitBtn = document.getElementById("submitFormBtn");
-  const formData = new FormData(form);
+  const titleInput = document.getElementById("complaintTitleInput");
+  const descriptionInput = document.getElementById("complaintDescriptionInput");
+  const title = titleInput?.value.trim() || "";
+  const description = descriptionInput?.value.trim() || "";
+
+  if (title.length < 3) {
+    titleInput?.setCustomValidity("Enter a complaint title with at least 3 characters.");
+    titleInput?.reportValidity();
+    titleInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+    titleInput?.focus({ preventScroll: true });
+    return;
+  }
+  titleInput?.setCustomValidity("");
+
+  if (description.length < 10) {
+    descriptionInput?.setCustomValidity("Describe the issue using at least 10 characters.");
+    descriptionInput?.reportValidity();
+    descriptionInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+    descriptionInput?.focus({ preventScroll: true });
+    return;
+  }
+  descriptionInput?.setCustomValidity("");
+
   const evidenceImage = document.getElementById("complaintEvidenceImage");
   const evidenceConsent = document.getElementById("evidenceProcessingConsent");
   if (evidenceImage?.files?.length && !evidenceConsent?.checked) {
@@ -781,6 +811,8 @@ async function handleComplaintSubmit(e) {
     return;
   }
 
+  complaintSubmitInProgress = true;
+  const formData = new FormData(form);
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting to Official Support Operations...';
 
@@ -819,6 +851,7 @@ async function handleComplaintSubmit(e) {
   } catch (err) {
     showToast("Network or Server error: " + err, "danger");
   } finally {
+    complaintSubmitInProgress = false;
     submitBtn.disabled = false;
     submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i> Submit Official Complaint to Support Operations';
   }
@@ -835,6 +868,9 @@ function copyAndTrack() {
  * PRIORITY 5: AUTOMATIC SCROLL & ENTRANCE ANIMATION CONTROLLER
  * ============================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
+  const descriptionInput = document.getElementById("complaintDescriptionInput");
+  if (descriptionInput) updateCharCount(descriptionInput);
+
   // 1. Scroll Progress Bar Fill
   const bar = document.getElementById("scrollProgressBar");
   window.addEventListener("scroll", () => {

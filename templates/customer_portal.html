@@ -417,6 +417,16 @@
       margin-bottom: 8px;
       font-size: 0.92rem;
     }
+    .field-requirement {
+      display: block;
+      margin-top: 6px;
+      color: var(--text-muted, #a7b0aa);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    #complaintTitleInput, #complaintDescriptionInput {
+      scroll-margin-top: calc(var(--navbar-height, 70px) + 24px);
+    }
     .portal-tab-btn {
       padding: 9px 20px;
       font-weight: 700;
@@ -988,7 +998,8 @@
 
         <div class="form-group">
           <label class="form-label"><span>Complaint Title / Summary *</span></label>
-          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" required placeholder="Brief summary of your complaint" oninput="triggerRulePreview()">
+          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" required minlength="3" maxlength="160" aria-describedby="complaintTitleHint" placeholder="e.g., Screen arrived cracked" oninput="this.setCustomValidity(''); triggerRulePreview()">
+          <small class="field-requirement" id="complaintTitleHint">At least 3 characters. Summarize the issue, for example: “Screen arrived cracked.”</small>
         </div>
 
         <!-- Description with Voice Dictation Button -->
@@ -999,10 +1010,11 @@
               <button type="button" class="pill-tab" id="voiceMicBtn" onclick="toggleVoiceDictation()" style="padding: 4px 12px; font-size: 0.78rem; font-weight: 800;">
                 <i class="fa-solid fa-microphone"></i> <span id="voiceMicText">Voice Dictation</span>
               </button>
-              <span id="charCountLabel" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">228 chars</span>
+              <span id="charCountLabel" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">0 characters</span>
             </div>
           </div>
-          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required placeholder="Describe what happened, including relevant dates or details" oninput="updateCharCount(this); triggerRulePreview()"></textarea>
+          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required minlength="10" maxlength="5000" aria-describedby="complaintDescriptionHint" placeholder="Describe what happened, including relevant dates or details" oninput="this.setCustomValidity(''); updateCharCount(this); triggerRulePreview()"></textarea>
+          <small class="field-requirement" id="complaintDescriptionHint">At least 10 characters. Include what happened and any useful details.</small>
         </div>
 
         <div class="form-group">
