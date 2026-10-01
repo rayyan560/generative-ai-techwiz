@@ -16,8 +16,9 @@ def run_hidden_evaluation(input_file: str, output_csv: str, limit: int = 50, all
     Processes any unseen JSON complaints file through the Dual-Pipeline and outputs a full verification report.
     """
     if not os.path.exists(input_file):
-        print(f"Error: Input file '{input_file}' not found.")
-        return
+        raise FileNotFoundError(f"Evaluator input file '{input_file}' not found.")
+    if os.path.exists(output_csv):
+        raise FileExistsError(f"Output file '{output_csv}' already exists; choose a new path to preserve it.")
 
     with open(input_file, "r", encoding="utf-8") as f:
         complaints = json.load(f)
@@ -105,14 +106,13 @@ def run_hidden_evaluation(input_file: str, output_csv: str, limit: int = 50, all
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="SupportNova Hidden Dataset Evaluation Runner")
-    parser.add_argument("--input", default="sample_complaints/complaints_500.json", help="Path to unseen complaints JSON")
-    parser.add_argument("--output", default="reports/hidden_evaluation_results.csv", help="Path to output CSV report")
+    parser.add_argument("--input", required=True, help="Path to evaluator-provided unseen complaints JSON")
+    parser.add_argument("--output", required=True, help="New output CSV path; existing files are never overwritten")
     parser.add_argument("--limit", type=int, default=50, help="Max sample cases to evaluate")
     parser.add_argument("--all", action="store_true", help="Evaluate entire dataset")
     args = parser.parse_args()
     
-    inp = args.input
-    if not os.path.exists(inp):
-        inp = "sample_complaints/complaints_500.json"
-        
-    run_hidden_evaluation(inp, args.output, limit=args.limit, all_records=args.all)
+    if not os.path.isfile(args.input):
+        parser.error(f"Evaluator input file '{args.input}' not found.")
+
+    run_hidden_evaluation(args.input, args.output, limit=args.limit, all_records=args.all)

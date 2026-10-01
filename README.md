@@ -116,6 +116,14 @@ pip install -r requirements-dev.txt
 pytest -v
 ```
 
+To run the hidden-evaluation tool, supply the evaluator's JSON file explicitly and choose a **new** output CSV path:
+
+```bash
+python hidden_test_ready/evaluator_runner.py --input /path/to/evaluator_cases.json --output /path/to/new_results.csv --limit 50
+```
+
+The runner does not substitute the bundled sample dataset when input is missing and refuses to overwrite an existing report. Do not commit evaluator-provided hidden cases, secrets, or their results.
+
 ### 5. Launch the Application
 ```bash
 python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
@@ -146,4 +154,4 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Structured Resolution Rules | >= 100 | **175 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **34 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **126 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **129 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |
