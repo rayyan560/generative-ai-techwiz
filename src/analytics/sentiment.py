@@ -2,11 +2,7 @@ import re
 from typing import Dict, Any, List
 
 class SentimentTelemetryEngine:
-    """
-    Enterprise Sentiment, Emotion & Frustration Telemetry Engine.
-    Computes fine-grained emotional heat, frustration index, tone analysis, 
-    and churn-risk telemetry for customer grievances.
-    """
+    """Estimates sentiment from complaint text using a keyword heuristic."""
 
     FRUSTRATION_TRIGGERS = {
         "critical_furious": ["unacceptable", "furious", "lawsuit", "lawyer", "attorney", "scam", "fraud", "police", "legal action", "garbage", "trash", "worst", "disaster", "horrible"],
@@ -79,5 +75,5 @@ class SentimentTelemetryEngine:
             "heat_color": heat_color,
             "urgency_flag": urgency_flag,
             "key_emotional_triggers": all_keywords,
-            "acoustic_tone_estimate": "Aggressive / Demanding" if frustration_index > 70 else "Formal / Assertive" if frustration_index > 40 else "Neutral / Polite"
+            "text_tone_estimate": "Strongly negative" if frustration_index > 70 else "Negative or concerned" if frustration_index > 40 else "Neutral or positive"
         }

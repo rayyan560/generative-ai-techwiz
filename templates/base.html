@@ -24,6 +24,9 @@
   </script>
 </head>
 <body>
+  {% if current_user and current_user.role == 'judge' %}
+  <div role="status" style="position:fixed;z-index:1200;top:8px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:999px;background:#0f766e;color:#fff;font-size:.8rem;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.2);white-space:nowrap;">Judge review mode · read-only</div>
+  {% endif %}
   <!-- TemplateMo 3D Glassmorphism Background & Floating Luxury Orbs -->
   <div class="background"></div>
   <div class="orb orb-1"></div>
@@ -100,37 +103,37 @@
       </div>
 
       <nav class="sidebar-nav">
-        {% if current_user.role == 'admin' %}
+        {% if current_user.role in ['admin', 'judge'] %}
         <a href="/admin" class="nav-item {% if request.url.path == '/admin' and not request.query_params.get('view') %}active{% endif %}">
-          <i class="fa-solid fa-shield-halved icon"></i>
-          <span>Super Admin Operations</span>
+          <i class="fa-solid {% if current_user.role == 'judge' %}fa-eye{% else %}fa-shield-halved{% endif %} icon"></i>
+          <span>{% if current_user.role == 'judge' %}Judge Project Overview{% else %}Super Admin Operations{% endif %}</span>
         </a>
         {% endif %}
-        {% if current_user.role in ['admin', 'agent'] %}
+        {% if current_user.role in ['admin', 'agent', 'judge'] %}
         <a href="/agent" class="nav-item {% if request.url.path == '/agent' %}active{% endif %}">
           <i class="fa-solid fa-microchip icon"></i>
           <span>Agent Triage Desk</span>
         </a>
         {% endif %}
-        {% if current_user.role in ['admin', 'agent', 'warranty_manager'] %}
+        {% if current_user.role in ['admin', 'agent', 'warranty_manager', 'judge'] %}
         <a href="/warranty" class="nav-item {% if request.url.path == '/warranty' or (request.url.path == '/admin' and request.query_params.get('view') == 'refunds') %}active{% endif %}">
           <i class="fa-solid fa-scale-balanced icon"></i>
           <span>Warranty & Refund Desk</span>
         </a>
         {% endif %}
-        {% if current_user.role in ['admin', 'agent'] %}
+        {% if current_user.role in ['admin', 'agent', 'judge'] %}
         <a href="/communication" class="nav-item {% if request.url.path == '/communication' or (request.url.path == '/admin' and request.query_params.get('view') == 'communication') %}active{% endif %}">
-          <i class="fa-brands fa-whatsapp icon"></i>
-          <span>Live WhatsApp Hub</span>
+          <i class="fa-solid fa-comments icon"></i>
+          <span>Live Support Chat</span>
         </a>
         {% endif %}
-        {% if current_user.role in ['admin', 'warranty_manager'] %}
+        {% if current_user.role in ['admin', 'warranty_manager', 'judge'] %}
         <a href="/analytics" class="nav-item {% if request.url.path == '/analytics' %}active{% endif %}">
           <i class="fa-solid fa-chart-line icon"></i>
           <span>Financial & SLA Tracking</span>
         </a>
         {% endif %}
-        {% if current_user.role in ['admin', 'agent', 'warranty_manager'] %}
+        {% if current_user.role in ['admin', 'agent', 'warranty_manager', 'judge'] %}
         <a href="/knowledge" class="nav-item {% if request.url.path == '/knowledge' %}active{% endif %}">
           <i class="fa-solid fa-book-bookmark icon"></i>
           <span>Knowledge & Policies</span>
@@ -143,6 +146,7 @@
           <i class="fa-solid fa-network-wired icon"></i>
           <span>Rules Matrix (175+)</span>
         </a>
+        {% endif %}
         {% if current_user.role == 'admin' %}
         <a href="javascript:void(0)" class="nav-item" onclick="openAdminUsersModal()">
           <i class="fa-solid fa-users-gear icon"></i>
@@ -170,16 +174,11 @@
           <!-- Real-time Live Connection Pill -->
           <div id="liveStreamPill" style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 800; color: #059669; background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 9999px;">
             <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
-            <span id="liveStatusText">Live Feed Active</span>
-          </div>
-
-          <div class="live-rec-badge" style="display: none;">
-            <i class="fa-solid fa-circle" style="font-size: 0.55rem; animation: pulse 1.5s infinite;"></i>
-            <span>Call Active 00:00</span>
+            <span id="liveStatusText">Connecting…</span>
           </div>
 
           <!-- Staff Online / Offline Presence Toggle Button -->
-          <button class="pill-tab" id="staffPresenceToggleBtn" onclick="toggleStaffPresence()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(16, 185, 129, 0.4); color: #059669; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; gap: 6px;" title="Toggle your online availability for customer internet calls">
+          <button class="pill-tab" id="staffPresenceToggleBtn" onclick="toggleStaffPresence()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(16, 185, 129, 0.4); color: #059669; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; gap: 6px;" title="Toggle your availability for customer call requests">
             <span id="staffPresenceDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
             <span id="staffPresenceText">Staff Offline</span>
           </button>
@@ -194,10 +193,10 @@
             <i class="fa-solid fa-volume-high"></i>
           </button>
 
-          <button class="call-btn" id="callSimBtn" onclick="toggleCallSimulation()">
+          <a class="call-btn" id="callRequestsLink" href="/communication" title="Open call and customer communication requests">
             <i class="fa-solid fa-phone"></i>
-            <span id="callBtnText">On Call</span>
-          </button>
+            <span>Call requests</span>
+          </a>
 
           <div class="user-profile-pill" onclick="openProfileSettingsModal()" style="cursor: pointer;" title="Click to Edit Profile & Credentials">
             <img src="{{ (current_user.avatar if current_user and current_user.avatar else 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80') }}" alt="User Avatar" class="avatar-img" id="topbarAvatarImg">
@@ -329,19 +328,18 @@
     </div>
   </div>
 
-  <!-- WHATSAPP VOICE CALL INCOMING & ACTIVE OVERLAY MODAL (Matching Screenshot) -->
   <div id="snVoiceCallBackdrop" class="sn-call-backdrop" style="display: none;">
     <div class="sn-call-card">
       <div class="sn-call-topbar">
-        <i class="fa-brands fa-whatsapp"></i>
-        <span>WhatsApp Voice Call</span>
+        <i class="fa-solid fa-phone"></i>
+        <span>Call request</span>
       </div>
 
       <div class="sn-call-body">
         <div class="sn-call-avatar-wrap">
           <img id="snCallAvatar" src="https://ui-avatars.com/api/?name=Customer&background=4f46e5&color=fff&size=180" class="sn-call-avatar" alt="Caller Avatar">
           <div class="sn-call-avatar-pulse"></div>
-          <div class="sn-call-wa-badge"><i class="fa-brands fa-whatsapp"></i></div>
+          <div class="sn-call-wa-badge"><i class="fa-solid fa-message"></i></div>
         </div>
 
         <div id="snCallName" class="sn-call-name">Valued Client</div>

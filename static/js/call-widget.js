@@ -129,15 +129,8 @@ async function acceptIncomingCall() {
   const arrowsEl = document.getElementById('snCallArrows');
   if (statusEl) statusEl.textContent = 'REQUEST ACCEPTED — AUDIO NOT CONNECTED';
   if (arrowsEl) arrowsEl.style.display = 'none';
-
-  let sec = 0;
   if (callTimerInterval) clearInterval(callTimerInterval);
-  callTimerInterval = setInterval(() => {
-    sec++;
-    const m = String(Math.floor(sec / 60)).padStart(2, '0');
-    const s = String(sec % 60).padStart(2, '0');
-    if (statusEl) statusEl.textContent = `AUDIO UNAVAILABLE (${m}:${s})`;
-  }, 1000);
+  callTimerInterval = null;
 
   const actionRow = document.getElementById('snCallActionRow');
   if (actionRow) {

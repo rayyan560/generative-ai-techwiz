@@ -1,53 +1,72 @@
-from typing import Dict, Any, List
+from datetime import date
+from typing import Any, Dict, List
+
+from src.complaint_rules.matrix import ALL_RULES
+
 
 class PolicyConflictAuditor:
-    """
-    RAG Policy Drift & Deterministic Rule Conflict Auditor.
-    Scans indexed policy document chunks and cross-evaluates them against
-    ground-truth rule matrices to detect contradictions, SLA ambiguities,
-    and policy drifts.
-    """
-
-    SAMPLE_CONFLICTS = [
-        {
-            "conflict_id": "CNF-001",
-            "title": "Return Window Horizon Discrepancy",
-            "policy_a": {"doc_id": "POL-GEN-01", "section": "Section 3.2", "text": "Customers are eligible for direct return within 14 calendar days of delivery."},
-            "policy_b": {"doc_id": "POL-REF-02", "section": "Section 1.1", "text": "Full refund requests for hardware peripherals are accepted up to 30 calendar days."},
-            "conflict_type": "Temporal Mismatch (14 Days vs 30 Days)",
-            "risk_level": "High Ambiguity",
-            "deterministic_precedence_rule": "RUL-REF-001 (Ground-Truth Rule Enforces 30 Days for Hardware Peripherals)",
-            "ai_resolution_recommendation": "Harmonize POL-GEN-01 Section 3.2 to specify 30 days for hardware and 14 days for digital software licenses."
-        },
-        {
-            "conflict_id": "CNF-002",
-            "title": "Restocking Fee Waiver for Open-Box VIP Returns",
-            "policy_a": {"doc_id": "POL-WARR-01", "section": "Section 4.5", "text": "All open-box returns incur a mandatory 15% restocking fee."},
-            "policy_b": {"doc_id": "POL-VIP-03", "section": "Section 2.4", "text": "Titanium VIP members enjoy zero restocking fees on all open-box hardware returns."},
-            "conflict_type": "Privilege Exception Overlap",
-            "risk_level": "Medium",
-            "deterministic_precedence_rule": "RUL-VIP-002 (VIP Master Policy supersedes General Hardware Restocking)",
-            "ai_resolution_recommendation": "Add explicit clause exemption in POL-WARR-01 referencing VIP Tier Override."
-        },
-        {
-            "conflict_id": "CNF-003",
-            "title": "Lithium Battery Transit Authorization Clause",
-            "policy_a": {"doc_id": "POL-SAF-04", "section": "Section 6.1", "text": "Swollen lithium batteries must NOT be shipped via standard commercial couriers."},
-            "policy_b": {"doc_id": "POL-RMA-01", "section": "Section 3.3", "text": "Provide customer with prepaid return postal label upon grievance receipt."},
-            "conflict_type": "Hazardous Material Transport Safety Violation",
-            "risk_level": "P0 Critical Regulatory Risk",
-            "deterministic_precedence_rule": "RUL-SAF-001 (Hazardous Safety Policy strictly prohibits standard courier labels; requires specialized hazardous courier dispatch)",
-            "ai_resolution_recommendation": "Automatically block automated return label generation when battery thermal runaway is detected."
-        }
-    ]
-
     @classmethod
     def audit_all_policies(cls) -> Dict[str, Any]:
+        from config.database import get_chunks_col, get_knowledge_col
+
+        documents = list(get_knowledge_col().find({}))
+        chunks = list(get_chunks_col().find({}))
+        today = date.today().isoformat()
+        active_documents = {
+            str(doc.get("document_id", "")).strip().upper(): doc
+            for doc in documents
+            if doc.get("status", "Active") == "Active"
+            and (not doc.get("effective_date") or str(doc["effective_date"]) <= today)
+            and (not doc.get("expiry_date") or str(doc["expiry_date"]) >= today)
+        }
+        referenced_policy_ids = {
+            str(rule.get("policy_id", "")).strip().upper()
+            for rule in ALL_RULES
+            if rule.get("policy_id")
+        }
+        missing_ids = sorted(referenced_policy_ids - active_documents.keys())
+        findings: List[Dict[str, Any]] = []
+        for index, policy_id in enumerate(missing_ids, start=1):
+            findings.append({
+                "conflict_id": f"REF-{index:03d}",
+                "severity": "HIGH",
+                "category": "Policy traceability",
+                "topic": policy_id,
+                "clause_a_ref": "Rule matrix",
+                "clause_a_text": f"Rules reference {policy_id}.",
+                "clause_b_ref": "Active knowledge base",
+                "clause_b_text": "No currently valid Active document with this ID is indexed.",
+                "resolution_guideline": "Index the approved source policy or correct the rule reference.",
+                "precedence_winner": "Not determined",
+            })
+
+        expired_ids = sorted({
+            str(doc.get("document_id", ""))
+            for doc in documents
+            if doc.get("status", "Active") == "Active"
+            and doc.get("expiry_date")
+            and str(doc["expiry_date"]) < today
+        })
+        for policy_id in expired_ids:
+            findings.append({
+                "conflict_id": f"EXP-{len(findings) + 1:03d}",
+                "severity": "HIGH",
+                "category": "Document validity",
+                "topic": policy_id,
+                "clause_a_ref": "Indexed metadata",
+                "clause_a_text": f"{policy_id} is marked Active.",
+                "clause_b_ref": "Expiry date",
+                "clause_b_text": "Its recorded expiry date has passed.",
+                "resolution_guideline": "Review the document and update its status or expiry date.",
+                "precedence_winner": "Not determined",
+            })
+
         return {
-            "total_policies_scanned": 12,
-            "total_chunks_evaluated": 154,
-            "total_rules_cross_referenced": 105,
-            "conflicts_detected": len(cls.SAMPLE_CONFLICTS),
-            "governance_health_score": 96.4,
-            "conflicts": cls.SAMPLE_CONFLICTS
+            "total_policies_scanned": len(documents),
+            "total_chunks_evaluated": len(chunks),
+            "total_rules_cross_referenced": len(ALL_RULES),
+            "conflicts_detected": len(findings),
+            "governance_health_score": None,
+            "score_note": "A governance score is not calculated; semantic policy contradictions are not evaluated.",
+            "conflicts": findings,
         }

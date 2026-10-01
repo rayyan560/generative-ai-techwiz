@@ -160,6 +160,8 @@ async def api_update_profile(request: Request):
     user = AuthManager.get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required.")
+    if user.get("role") == "judge":
+        raise HTTPException(status_code=403, detail="Judge access is read-only.")
     
     try:
         body = await request.json()

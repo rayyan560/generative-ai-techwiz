@@ -517,7 +517,7 @@ RULES_MATRIX: List[Dict[str, Any]] = [
     }
 ]
 
-# Generate helper to extend rule matrix to 105+ detailed rules across all permutations
+# Generate helper to extend the rule matrix across supported complaint permutations.
 def build_full_rule_matrix() -> List[Dict[str, Any]]:
     rules = list(RULES_MATRIX)
     existing_ids = {r["rule_id"] for r in rules}
@@ -571,7 +571,11 @@ def build_full_rule_matrix() -> List[Dict[str, Any]]:
                 tier = "Tier 5 - Executive Management Escalation" if is_safety else ("Tier 4 - Compliance & Legal Team" if is_sec else ("Tier 3 - Department Manager" if is_repeat else "Tier 1 - Standard Agent"))
                 
                 policy_id = f"POL-{cat[:3].upper()}-01"
-                if cat == "Refund Request": policy_id = "POL-REF-02"
+                if cat == "Product Defect":
+                    policy_id = "POL-DOA-16" if sub == "Dead on Arrival" else "POL-WAR-07" if sub in ["Malfunctioning Hardware", "Intermittent Failure"] else "POL-REP-03"
+                elif cat == "Technical Support": policy_id = "POL-TEC-12"
+                elif cat == "Service Quality": policy_id = "POL-CON-10"
+                elif cat == "Refund Request": policy_id = "POL-REF-02"
                 elif cat == "Delivery & Shipping": policy_id = "POL-DEL-04"
                 elif cat == "Safety Hazard": policy_id = "POL-SAF-05"
                 elif cat == "Billing & Charges": policy_id = "POL-BIL-06"
@@ -619,23 +623,29 @@ class RuleMatrixManager:
     def match_rule(category: str, subcategory: str, customer_type: str = "Standard", description: str = "") -> Optional[Dict[str, Any]]:
         """Finds the most specific matching rule in the Complaint Resolution Rule Matrix."""
         desc_lower = description.lower()
-        
-        # 1. First check explicit keyword / safety / legal triggers
-        for rule in ALL_RULES:
-            if any(kw in desc_lower for kw in rule.get("keywords", [])):
-                if rule.get("category") == category:
-                    return rule
-                    
-        # 2. Check category + subcategory match
-        for rule in ALL_RULES:
-            if rule["category"] == category and rule.get("subcategory") == subcategory:
-                if customer_type == "VIP" and rule.get("customer_tier_condition") == "VIP Customer":
-                    return rule
-                return rule
+        exact_rules = [
+            rule for rule in ALL_RULES
+            if rule["category"] == category and rule.get("subcategory") == subcategory
+        ]
+        if exact_rules:
+            preferred_tier = "VIP Customer" if customer_type == "VIP" else "Standard"
+            return next(
+                (rule for rule in exact_rules if rule.get("customer_tier_condition") == preferred_tier),
+                next((rule for rule in exact_rules if not rule.get("customer_tier_condition")), exact_rules[0]),
+            )
 
-        # 3. Fallback to category match
-        for rule in ALL_RULES:
-            if rule["category"] == category:
-                return rule
-
+        category_rules = [rule for rule in ALL_RULES if rule["category"] == category]
+        specific_matches = []
+        for rule in category_rules:
+            terms = [
+                term for term in rule.get("keywords", [])
+                if term.lower() not in {category.lower(), customer_type.lower(), "standard", "vip customer", "repeat complaint"}
+            ]
+            matching_terms = [term for term in terms if term and term in desc_lower]
+            if matching_terms:
+                specific_matches.append((max(map(len, matching_terms)), rule))
+        if specific_matches:
+            return max(specific_matches, key=lambda match: match[0])[1]
+        if category_rules:
+            return next((rule for rule in category_rules if not rule.get("customer_tier_condition")), category_rules[0])
         return ALL_RULES[0]

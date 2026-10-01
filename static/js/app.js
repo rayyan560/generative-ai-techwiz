@@ -8,7 +8,6 @@ let selectedComplaintId = null;
 let selectedCommComplaintId = null;
 let currentCommThreads = [];
 let currentRefundRecords = [];
-let isOnCall = false;
 let soundEnabled = true;
 let wsConnection = null;
 
@@ -473,36 +472,6 @@ async function loadAgentStats() {
   });
 }
 
-// Telephony Call Simulation
-function toggleCallSimulation() {
-  SoundFX.playClick();
-  isOnCall = !isOnCall;
-  const btn = document.getElementById("callSimBtn");
-  const text = document.getElementById("callBtnText");
-  const commBtnText = document.getElementById("commCallBtnText");
-  const telephonyBadge = document.getElementById("telephonyLiveBadge");
-
-  if (isOnCall) {
-    if (btn) btn.style.background = "var(--success-gradient)";
-    if (text) text.innerText = "On Call";
-    if (commBtnText) commBtnText.innerText = "On Call Simulation";
-    if (telephonyBadge) {
-      telephonyBadge.className = "badge badge-success";
-      telephonyBadge.innerHTML = '<i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Active Call';
-    }
-    showToast("Telephony Simulation: Live Audio Channel Connected", "success");
-  } else {
-    if (btn) btn.style.background = "#64748b";
-    if (text) text.innerText = "Call Ended";
-    if (commBtnText) commBtnText.innerText = "Call Ended (Resume)";
-    if (telephonyBadge) {
-      telephonyBadge.className = "badge badge-secondary";
-      telephonyBadge.innerHTML = '<i class="fa-solid fa-phone-slash" style="font-size: 0.5rem;"></i> Call Disconnected';
-    }
-    showToast("Telephony Simulation: Call Ended", "warning");
-  }
-}
-
 // -------------------------------------------------------------
 // 8. ALL COMPLAINTS & DASHBOARD TRIAGE
 // -------------------------------------------------------------
@@ -617,6 +586,24 @@ async function openTriageModal(complaintId) {
     document.getElementById("modalComplaintTitle").innerText = data.complaint_title;
     document.getElementById("modalComplaintSubtitle").innerText = `ID: ${data.complaint_id} | Customer: ${data.customer_name} (${data.customer_type}) | Product: ${data.product_or_service || 'N/A'}`;
     document.getElementById("modalRawDescription").innerText = data.complaint_description;
+    const vision = data.vision_analysis || null;
+    const visionCard = document.getElementById("modalVisionAssessment");
+    if (visionCard) {
+      visionCard.style.display = vision ? "block" : "none";
+      if (vision) {
+        document.getElementById("modalVisionIssue").textContent = vision.visible_issue || "Not assessed";
+        document.getElementById("modalVisionSeverity").textContent = vision.severity || "Unclear";
+        document.getElementById("modalVisionSafety").textContent = vision.potential_safety_hazard === true ? "Possible hazard — urgent staff verification" : "No hazard identified by model; staff verification still required";
+        document.getElementById("modalVisionNextStep").textContent = vision.recommended_next_step || "Manual image review";
+        document.getElementById("modalVisionReviewNote").textContent = vision.review_note || "This AI summary is advisory and does not determine warranty coverage.";
+        const observations = document.getElementById("modalVisionObservations");
+        observations.replaceChildren(...(vision.observations || []).map(text => {
+          const item = document.createElement("li");
+          item.textContent = text;
+          return item;
+        }));
+      }
+    }
 
     // 🧠 Customer Emotion & Frustration Heatmap Rendering
     const sent = data.sentiment_telemetry || {};
@@ -858,38 +845,72 @@ async function executeTriageAction(action) {
 async function loadKnowledgeList() {
   try {
     const res = await fetch("/api/knowledge/list");
+    if (!res.ok) throw new Error(`Knowledge Base request failed (${res.status}).`);
     const data = await res.json();
     const tbody = document.getElementById("knowledgeTableBody");
     if (!tbody) return;
-    tbody.innerHTML = "";
-
     const docs = data.documents || [];
+    tbody.replaceChildren();
+    const activeCount = docs.filter(doc => (doc.status || "Active") === "Active").length;
+    const activeCountEl = document.getElementById("activePolicyCount");
+    const chunksCountEl = document.getElementById("totalChunksCount");
+    const versionSummaryEl = document.getElementById("policyVersionSummary");
+    if (activeCountEl) activeCountEl.textContent = `${activeCount} Active`;
+    if (chunksCountEl) chunksCountEl.textContent = `${Number(data.total_chunks) || 0} Chunks`;
+    if (versionSummaryEl) {
+      const versions = [...new Set(docs.map(doc => doc.version).filter(Boolean))];
+      versionSummaryEl.textContent = versions.length ? versions.join(", ") : "No versions recorded";
+    }
     if (docs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No knowledge documents indexed.</td></tr>`;
+      const row = tbody.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 8;
+      cell.textContent = "No knowledge documents indexed.";
+      cell.style.cssText = "text-align:center; padding:20px; color:var(--text-muted);";
       return;
     }
 
     docs.forEach(doc => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${doc.document_id}</td>
-        <td><strong style="color: var(--text-heading);">${doc.title}</strong></td>
-        <td>${doc.doc_type || 'Active Policy'}</td>
-        <td><span class="badge badge-primary">${doc.category || 'General'}</span></td>
-        <td>${doc.version || 'v2.0'}</td>
-        <td><strong>${doc.total_chunks || 4} Chunks</strong></td>
-        <td><span class="badge badge-success">${doc.status || 'Active'}</span></td>
-        <td>
-          <button class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem;" onclick="inspectPolicy('${doc.document_id}')">
-            Inspect &rarr;
-          </button>
-        </td>
-      `;
+      const cell = (value, className = "") => {
+        const td = tr.insertCell();
+        if (className) td.className = className;
+        td.textContent = value == null || value === "" ? "Not recorded" : String(value);
+        return td;
+      };
+      const idCell = cell(doc.document_id);
+      idCell.style.cssText = "font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--text-heading);";
+      const titleCell = cell(doc.title || doc.filename);
+      titleCell.style.fontWeight = "700";
+      cell(doc.doc_type || "Policy / SOP");
+      cell(doc.version);
+      cell(doc.status || "Active");
+      cell(Number.isFinite(Number(doc.precedence_score)) ? doc.precedence_score : "Not calculated");
+      cell(`${Number(doc.total_chunks) || 0} Chunks`);
+      const actionCell = tr.insertCell();
+      const inspectButton = document.createElement("button");
+      inspectButton.className = "pill-tab";
+      inspectButton.style.cssText = "padding:5px 14px; font-size:0.78rem;";
+      inspectButton.textContent = "Inspect →";
+      inspectButton.addEventListener("click", () => inspectPolicy(doc.document_id));
+      actionCell.appendChild(inspectButton);
       tbody.appendChild(tr);
     });
     init3DCardTilt();
   } catch (e) {
     console.error("Error loading knowledge docs:", e);
+    ["activePolicyCount", "totalChunksCount", "policyVersionSummary"].forEach(id => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = "Unavailable";
+    });
+    const tbody = document.getElementById("knowledgeTableBody");
+    if (tbody) {
+      const row = tbody.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 8;
+      cell.textContent = "Knowledge Base records could not be loaded. Please try again.";
+      cell.style.cssText = "text-align:center; padding:20px; color:var(--text-muted);";
+    }
   }
 }
 
@@ -901,35 +922,61 @@ async function inspectPolicy(docId) {
 
   try {
     const res = await fetch(`/api/knowledge/document/${docId}`);
+    if (!res.ok) throw new Error(`Document request failed (${res.status}).`);
     const data = await res.json();
 
     // Support both ID naming schemes
     const titleEl = document.getElementById("inspectDocTitle") || document.getElementById("modalPolicyTitle");
-    if (titleEl) titleEl.innerText = data.title || docId;
+    if (titleEl) titleEl.textContent = data.title || docId;
+
+    const statusEl = document.getElementById("inspectDocStatus");
+    if (statusEl) {
+      const status = data.status || "Not recorded";
+      statusEl.textContent = status;
+      statusEl.className = `badge ${status === "Active" ? "badge-success" : status === "Superseded" ? "badge-warning" : "badge-primary"}`;
+    }
 
     const subEl = document.getElementById("inspectDocSubtitle") || document.getElementById("modalPolicyDocId");
-    if (subEl) subEl.innerText = `Document ID: ${data.document_id} | Version: ${data.version || 'v2.0'}`;
+    if (subEl) subEl.textContent = `Document ID: ${data.document_id || "Not recorded"} | Version: ${data.version || "Not recorded"}`;
 
     const catEl = document.getElementById("inspectDocCategory") || document.getElementById("modalPolicyCategory");
-    if (catEl) catEl.innerText = data.category || "General";
+    if (catEl) catEl.textContent = data.category || "General";
 
     const countEl = document.getElementById("inspectDocChunkCount") || document.getElementById("modalPolicyChunksCount");
     if (countEl) countEl.innerText = `${(data.chunks || []).length} Traceable Chunks`;
 
+    const precedenceEl = document.getElementById("inspectDocPrecedence");
+    if (precedenceEl) precedenceEl.textContent = data.precedence_score == null ? "Not calculated" : String(data.precedence_score);
+    const filenameEl = document.getElementById("inspectDocFilename");
+    if (filenameEl) filenameEl.textContent = data.filename || "Not recorded";
+
     const chunksCont = document.getElementById("inspectChunksList") || document.getElementById("modalPolicyChunks");
     if (chunksCont) {
-      chunksCont.innerHTML = (data.chunks || []).map((c, i) => `
-        <div style="background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 18px; margin-bottom: 14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <strong style="font-family:'JetBrains Mono', monospace; color:var(--primary); font-size:0.85rem;">Chunk #${i+1}: ${c.chunk_id || 'CHK-'+(i+1)}</strong>
-            <span class="badge badge-primary" style="font-size:0.75rem;">Clause Section ${c.section_number || (i+1)}</span>
-          </div>
-          <p style="font-size:0.92rem; color:var(--text-body); line-height:1.6; white-space:pre-wrap;">${c.text_content || c.clause_text}</p>
-        </div>
-      `).join("");
+      chunksCont.replaceChildren();
+      (data.chunks || []).forEach((chunk, index) => {
+        const card = document.createElement("div");
+        card.style.cssText = "background:var(--glass-bg-subtle); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:18px; margin-bottom:14px;";
+        const heading = document.createElement("div");
+        heading.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;";
+        const chunkLabel = document.createElement("strong");
+        chunkLabel.style.cssText = "font-family:'JetBrains Mono',monospace; color:var(--primary); font-size:0.85rem;";
+        chunkLabel.textContent = `Chunk #${index + 1}: ${chunk.chunk_id || `CHK-${index + 1}`}`;
+        const sectionLabel = document.createElement("span");
+        sectionLabel.className = "badge badge-primary";
+        sectionLabel.style.fontSize = "0.75rem";
+        sectionLabel.textContent = `Clause Section ${chunk.section_number || index + 1}`;
+        heading.append(chunkLabel, sectionLabel);
+        const content = document.createElement("p");
+        content.style.cssText = "font-size:0.92rem; color:var(--text-body); line-height:1.6; white-space:pre-wrap;";
+        content.textContent = chunk.content || chunk.text_content || chunk.clause_text || "No extracted text available.";
+        card.append(heading, content);
+        chunksCont.appendChild(card);
+      });
     }
   } catch (e) {
     console.error("Error inspecting policy:", e);
+    const chunksCont = document.getElementById("inspectChunksList") || document.getElementById("modalPolicyChunks");
+    if (chunksCont) chunksCont.textContent = "This document could not be loaded. Close this window and try again.";
   }
 }
 
@@ -956,40 +1003,45 @@ async function openPolicyConflictModal() {
 
   try {
     const res = await fetch("/api/knowledge/conflicts");
+    if (!res.ok) throw new Error(`Audit request failed (${res.status}).`);
     const data = await res.json();
     const conflicts = data.conflicts || [];
+    const auditCount = document.getElementById("policyAuditFindingCount");
+    const summary = {
+      auditPolicyCount: data.total_policies_scanned,
+      auditChunkCount: data.total_chunks_evaluated,
+      auditRuleCount: data.total_rules_cross_referenced,
+      auditScore: data.governance_health_score == null ? "Not measured" : `${data.governance_health_score}%`
+    };
+    Object.entries(summary).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value == null ? "0" : String(value);
+    });
+    if (auditCount) auditCount.textContent = `${conflicts.length} finding${conflicts.length === 1 ? "" : "s"}`;
 
     if (conflicts.length === 0) {
-      cont.innerHTML = `<div style="text-align:center; padding:30px; color:#10b981; font-weight:700;">No conflicts were identified in the currently indexed policy text. This is not a guarantee that all policies are conflict-free.</div>`;
+      cont.textContent = "No metadata or rule-reference findings were identified. This audit does not evaluate semantic contradictions between policy text.";
+      cont.style.cssText = "text-align:center; padding:30px; color:var(--text-muted); font-weight:600;";
       return;
     }
 
-    cont.innerHTML = conflicts.map(c => `
-      <div style="background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); border-left: 4px solid ${c.severity === 'HIGH' ? '#e11d48' : '#f59e0b'}; border-radius: var(--radius-sm); padding: 18px 22px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <div>
-            <strong style="font-family:'JetBrains Mono', monospace; color:var(--primary); font-size:0.9rem;">${c.conflict_id}</strong>
-            <span style="font-weight:700; color:var(--text-heading); margin-left:10px;">${c.category} &bull; ${c.topic}</span>
-          </div>
-          <span class="badge ${c.severity === 'HIGH' ? 'badge-danger' : 'badge-warning'}">${c.severity} RISK</span>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin: 10px 0; font-size:0.86rem;">
-          <div style="background: rgba(255,255,255,0.4); padding:10px; border-radius:8px; border:1px solid var(--glass-border);">
-            <strong style="color:var(--text-heading); font-size:0.8rem;">Clause A (${c.clause_a_ref})</strong>
-            <div style="color:var(--text-body); margin-top:4px;">"${c.clause_a_text}"</div>
-          </div>
-          <div style="background: rgba(255,255,255,0.4); padding:10px; border-radius:8px; border:1px solid var(--glass-border);">
-            <strong style="color:var(--text-heading); font-size:0.8rem;">Clause B (${c.clause_b_ref})</strong>
-            <div style="color:var(--text-body); margin-top:4px;">"${c.clause_b_text}"</div>
-          </div>
-        </div>
-        <div style="font-size:0.82rem; color:#047857; background: rgba(16, 185, 129, 0.1); padding:8px 12px; border-radius:6px; margin-top:6px;">
-          <strong>🛡️ System Precedence Resolution:</strong> ${c.resolution_guideline} (Precedence Winner: <strong>${c.precedence_winner}</strong>)
-        </div>
-      </div>
-    `).join("");
+    cont.replaceChildren();
+    conflicts.forEach(conflict => {
+      const card = document.createElement("div");
+      card.style.cssText = `background:var(--glass-bg-subtle); border:1px solid var(--glass-border); border-left:4px solid ${conflict.severity === "HIGH" ? "#e11d48" : "#f59e0b"}; border-radius:var(--radius-sm); padding:18px 22px;`;
+      const title = document.createElement("strong");
+      title.textContent = `${conflict.conflict_id || "Finding"} — ${conflict.category || "Review"} • ${conflict.topic || ""}`;
+      const findingText = document.createElement("p");
+      findingText.style.margin = "12px 0";
+      findingText.textContent = `${conflict.clause_a_ref || "Source"}: ${conflict.clause_a_text || ""} ${conflict.clause_b_ref || "Compared record"}: ${conflict.clause_b_text || ""}`;
+      const resolution = document.createElement("p");
+      resolution.textContent = `${conflict.resolution_guideline || "Review this finding."} ${conflict.precedence_winner ? `Winner: ${conflict.precedence_winner}` : ""}`;
+      card.append(title, findingText, resolution);
+      cont.appendChild(card);
+    });
   } catch (e) {
-    cont.innerHTML = `<div style="color:#e11d48; text-align:center; padding:20px;">Error scanning policies: ${e}</div>`;
+    cont.textContent = `Error scanning policies: ${e.message || e}`;
+    cont.style.cssText = "color:#e11d48; text-align:center; padding:20px;";
   }
 }
 
@@ -1013,20 +1065,23 @@ async function handlePolicyUpload(e) {
     showToast("Parsing and indexing policy chunks via PyMuPDF...", "info");
     const res = await fetch("/api/knowledge/upload", { method: "POST", body: formData });
     const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.detail || `Upload failed (${res.status}).`);
+    }
     if (data.success) {
       SoundFX.playSuccess();
-      showToast(`Document indexed successfully! ${data.chunks_count || 4} chunks generated.`, "success");
+      showToast(`Document indexed successfully! ${data.chunks_created} chunks generated.`, "success");
       document.getElementById("uploadPolicyModal").style.display = "none";
       form.reset();
-      loadKnowledgeList();
+      await loadKnowledgeList();
     }
   } catch (err) {
-    showToast("Error uploading policy: " + err, "danger");
+    showToast("Error uploading policy: " + (err.message || err), "danger");
   }
 }
 
 // -------------------------------------------------------------
-// 10. RULES MATRIX (105+ DETERMINISTIC RULES)
+// 10. RULES MATRIX (DETERMINISTIC COMPLAINT RULES)
 // -------------------------------------------------------------
 async function loadRulesList() {
   try {
@@ -1382,6 +1437,8 @@ async function loadAnalyticsDashboard() {
 
     const kpiTot = document.getElementById("kpiTotal");
     if (kpiTot) kpiTot.innerText = data.total_complaints ?? "—";
+    const kpiCompliance = document.getElementById("kpiCompliance");
+    if (kpiCompliance) kpiCompliance.innerText = data.checked_count ? `${data.compliance_rate}%` : "—";
 
     // Category Doughnut Chart
     const catCtx = document.getElementById("categoryChart");

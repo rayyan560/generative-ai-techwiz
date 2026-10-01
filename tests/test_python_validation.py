@@ -3,6 +3,7 @@ from src.python_validation.pipeline import python_validation_pipeline
 from src.schemas.models import PythonGroundTruthResult
 from src.complaint_rules.matrix import RuleMatrixManager
 from config.settings import settings
+from src.escalation_rules.manager import ESCALATION_CONDITIONS, EscalationManager
 
 def test_ground_truth_safety_critical():
     safety_complaint = {
@@ -37,3 +38,26 @@ def test_rule_matrix_covers_all_configured_categories():
     rules = RuleMatrixManager.get_all_rules()
     assert len(rules) >= 100
     assert set(settings.CATEGORIES).issubset({rule["category"] for rule in rules})
+
+
+def test_rule_matrix_prefers_exact_subcategory_over_category_keyword():
+    rule = RuleMatrixManager.match_rule(
+        "Product Defect",
+        "Physical Damage",
+        "Standard",
+        "Please review my product defect. The screen was cracked.",
+    )
+    assert rule["category"] == "Product Defect"
+    assert rule["subcategory"] == "Physical Damage"
+
+
+def test_escalation_conditions_are_named_and_not_placeholder_rules():
+    assert len(ESCALATION_CONDITIONS) == 34
+    assert all(not condition["name"].startswith("Specific Regulatory / Operational") for condition in ESCALATION_CONDITIONS)
+    escalated, tier, _, rule_id = EscalationManager.evaluate_escalation({
+        "complaint_title": "Hospitalized after chemical exposure",
+        "complaint_description": "The device released toxic fumes.",
+    })
+    assert escalated is True
+    assert "Tier 5" in tier
+    assert rule_id == "ESC-016"

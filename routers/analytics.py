@@ -162,6 +162,7 @@ async def get_analytics():
     mismatch_count = 0
     sla_risk_count = 0
     verified_count = 0
+    checked_count = 0
     manual_review_count = 0
 
     for c in all_complaints:
@@ -177,6 +178,7 @@ async def get_analytics():
         
         comp = c.get("comparison", {})
         if comp:
+            checked_count += 1
             if comp.get("verification_status") == "Verified":
                 verified_count += 1
             if comp.get("requires_manual_review"):
@@ -190,6 +192,7 @@ async def get_analytics():
     return {
         "total_complaints": total,
         "verified_count": verified_count,
+        "checked_count": checked_count,
         "manual_review_count": manual_review_count,
         "mismatch_count": mismatch_count,
         "sla_risk_count": sla_risk_count,
@@ -197,7 +200,7 @@ async def get_analytics():
         "departments": dept_counts,
         "urgencies": urgency_counts,
         "statuses": status_counts,
-        "compliance_rate": round((verified_count / total * 100) if total > 0 else 100, 1)
+        "compliance_rate": round((verified_count / checked_count * 100) if checked_count > 0 else 0, 1)
     }
 
 @router.get("/reports/export/csv")

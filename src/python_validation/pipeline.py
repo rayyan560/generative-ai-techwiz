@@ -28,18 +28,35 @@ class PythonGroundTruthPipeline:
         elif any(w in full_text for w in ["hacked", "stolen", "unauthorized login", "data breach", "privacy", "gdpr", "compromised"]):
             category = "Account Security" if ("login" in full_text or "password" in full_text or "hacked" in full_text) else "Data Privacy"
             subcategory = "Suspicious Login" if category == "Account Security" else "Data Deletion Request"
-        elif any(w in full_text for w in ["double charge", "charged twice", "overcharge", "unauthorized charge", "billing error", "subscription"]):
+        elif any(w in full_text for w in ["double charge", "charged twice", "overcharge", "unauthorized charge", "billing error", "subscription", "missing invoice", "invoice is missing"]):
             category = "Billing & Charges"
-            subcategory = "Double Charge" if ("twice" in full_text or "double" in full_text) else "Incorrect Amount"
+            if "twice" in full_text or "double" in full_text:
+                subcategory = "Double Charge"
+            elif "subscription" in full_text or "renewal" in full_text:
+                subcategory = "Subscription Overcharge"
+            elif "invoice" in full_text:
+                subcategory = "Missing Invoice"
+            else:
+                subcategory = "Incorrect Amount"
         elif any(w in full_text for w in ["refund", "money back", "return my money", "where is my refund"]):
             category = "Refund Request"
             subcategory = "Refund Not Processed"
-        elif any(w in full_text for w in ["late delivery", "delayed delivery", "lost package", "package not arrived", "tracking stuck"]):
+        elif any(w in full_text for w in ["late delivery", "delayed delivery", "lost package", "package not arrived", "tracking stuck", "wrong item", "wrong product", "incorrect item"]):
             category = "Delivery & Shipping"
-            subcategory = "Delayed Delivery" if "delay" in full_text or "late" in full_text else "Package Lost in Transit"
-        elif any(w in full_text for w in ["dead on arrival", "doa", "broken", "cracked screen", "defect", "damage", "malfunction"]):
+            if any(w in full_text for w in ["wrong item", "wrong product", "incorrect item"]):
+                subcategory = "Wrong Item Delivered"
+            elif "delay" in full_text or "late" in full_text:
+                subcategory = "Delayed Delivery"
+            else:
+                subcategory = "Package Lost in Transit"
+        elif any(w in full_text for w in ["dead on arrival", "doa", "broken", "cracked screen", "defect", "damage", "malfunction", "intermittent", "shuts down"]):
             category = "Product Defect"
-            subcategory = "Dead on Arrival" if ("doa" in full_text or "dead" in full_text) else "Physical Damage"
+            if "doa" in full_text or "dead" in full_text:
+                subcategory = "Dead on Arrival"
+            elif "intermittent" in full_text or "randomly shuts down" in full_text:
+                subcategory = "Intermittent Failure"
+            else:
+                subcategory = "Physical Damage"
         elif any(w in full_text for w in ["rude agent", "unprofessional staff", "hung up on me", "harassed", "insulted"]):
             category = "Staff Conduct"
             subcategory = "Agent Misbehavior"

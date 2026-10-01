@@ -135,6 +135,27 @@ TEMPLATES = [
         "title": "Authorized service center holding {product} for over 4 weeks",
         "desc": "I sent my {product} under warranty ticket {order_id} to your authorized repair hub in Dallas on {date}. They keep claiming replacement motherboards are backordered. Your 1-year limited warranty states repairs take max 10 days. Either fix it or provide a replacement.",
         "type": "Simple"
+    },
+    {
+        "category": "Product Defect",
+        "subcategory": "Intermittent Failure",
+        "title": "{product} intermittently shuts down during normal use",
+        "desc": "My {product} has an intermittent hardware failure: it randomly shuts down while plugged in, then restarts after cooling. The power light flashes and the issue persists on order {order_id}. Please diagnose it under warranty; do not assume physical damage.",
+        "type": "Technical"
+    },
+    {
+        "category": "Billing & Charges",
+        "subcategory": "Missing Invoice",
+        "title": "Paid order {order_id} has no downloadable invoice",
+        "desc": "The payment for order {order_id} posted successfully, but the invoice is missing from my account and email. Please provide an itemized invoice and confirm the tax amount for transaction {txn_id}.",
+        "type": "Simple"
+    },
+    {
+        "category": "Delivery & Shipping",
+        "subcategory": "Wrong Item Delivered",
+        "title": "Received the wrong product for order {order_id}",
+        "desc": "I ordered a 4K monitor on order {order_id}, but the parcel contained a wireless mouse. The shipping label has the correct order number. Please arrange the correct item and tell me how to return the item sent by mistake.",
+        "type": "Service quality"
     }
 ]
 
@@ -314,6 +335,58 @@ def generate_520_dataset():
             "subcategory": tmpl["subcategory"],
             "issue_type": tmpl["type"],
             "is_adversarial": False
+        })
+
+    required_subcategories = [
+        {
+            "category": "Product Defect",
+            "subcategory": "Intermittent Failure",
+            "title": "NovaBook intermittently shuts down during normal use",
+            "description": "My NovaBook Pro 16 Laptop has an intermittent hardware failure: it randomly shuts down while plugged in, then restarts after cooling. The power light flashes and the issue persists on order ORD-52601. Please diagnose it under warranty; do not assume physical damage.",
+            "product": "NovaBook Pro 16 Laptop",
+            "order": "ORD-52601",
+            "transaction": "TXN-52601",
+        },
+        {
+            "category": "Billing & Charges",
+            "subcategory": "Missing Invoice",
+            "title": "Paid order ORD-52602 has no downloadable invoice",
+            "description": "The payment for order ORD-52602 posted successfully, but the invoice is missing from my account and email. Please provide an itemized invoice and confirm the tax amount for transaction TXN-52602.",
+            "product": "NovaBook Pro 16 Laptop",
+            "order": "ORD-52602",
+            "transaction": "TXN-52602",
+        },
+        {
+            "category": "Delivery & Shipping",
+            "subcategory": "Wrong Item Delivered",
+            "title": "Received the wrong product for order ORD-52603",
+            "description": "I ordered a 4K monitor on order ORD-52603, but the parcel contained a wireless mouse. The shipping label has the correct order number. Please arrange the correct item and tell me how to return the item sent by mistake.",
+            "product": "UltraVision 4K Gaming Monitor",
+            "order": "ORD-52603",
+            "transaction": "TXN-52603",
+        },
+    ]
+    for item in required_subcategories:
+        next_id = len(complaints) + 1
+        complaints.append({
+            "complaint_id": f"CMP-{next_id:05d}",
+            "customer_id": f"CUST-{6000 + next_id}",
+            "customer_name": "Sample Review Customer",
+            "customer_email": f"sample.review.{next_id}@example.com",
+            "customer_phone": None,
+            "customer_type": "Standard",
+            "complaint_title": item["title"],
+            "complaint_description": item["description"],
+            "product_or_service": item["product"],
+            "order_reference": item["order"],
+            "transaction_reference": item["transaction"],
+            "preferred_channel": "Web Form",
+            "attachment_names": [],
+            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "category": item["category"],
+            "subcategory": item["subcategory"],
+            "issue_type": "Boundary case",
+            "is_adversarial": False,
         })
 
     with open(DATASET_FILE, "w", encoding="utf-8") as f:

@@ -35,7 +35,8 @@ POLICY_TITLES = {
     "POL-SUB-17": "Subscription & Recurring Billing Terms",
     "POL-B2B-19": "B2B Enterprise SLA & Bulk Refund Policy",
     "POL-GWD-15": "Global Warranty & Defect Exchange Policy",
-    "POL-REP-03": "Product Replacement & Repair Operations Policy"
+    "POL-REP-03": "Product Replacement & Repair Operations Policy",
+    "POL-CAN-11": "Order Cancellation & Change Request Policy"
 }
 
 _RAG_MODEL = None

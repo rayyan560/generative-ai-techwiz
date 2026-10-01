@@ -267,7 +267,7 @@
 
     .form-control::placeholder {
       color: var(--text-muted);
-      opacity: 0.6;
+      opacity: 1;
     }
 
     .form-control:focus {
@@ -285,10 +285,10 @@
     /* ─── Submit Button ──────────────────────────────────────── */
     .submit-auth-btn {
       width: 100%;
-      background: var(--cream);
+      background: #065f46;
       background-size: 200% 200%;
       animation: gradientShift 6s ease infinite;
-      color: white;
+      color: #ffffff;
       border: none;
       padding: 13px;
       border-radius: 14px;
@@ -297,7 +297,7 @@
       cursor: pointer;
       margin-top: 10px;
       transition: all 0.25s;
-      box-shadow: 0 8px 25px rgba(238, 240, 208, 0.45);
+      box-shadow: 0 8px 25px rgba(6, 95, 70, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -305,8 +305,9 @@
     }
 
     .submit-auth-btn:hover {
+      background: #047857;
       transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(238, 240, 208, 0.6);
+      box-shadow: 0 12px 32px rgba(6, 95, 70, 0.38);
     }
 
     .submit-auth-btn:disabled {
@@ -359,7 +360,7 @@
 
     .demo-pill:hover {
       background: var(--cream);
-      color: white;
+      color: #1c1917;
       transform: scale(1.04);
       border-color: transparent;
     }
@@ -569,26 +570,26 @@
           </button>
         </form>
 
-        {% if demo_mode %}
         <div class="demo-credentials-box">
           <div
             style="font-weight: 800; color: var(--text-heading); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-key" style="color: var(--primary);"></i> Quick Demo Credentials (Click to Autofill):
+            <i class="fa-solid fa-key" style="color: var(--primary);"></i> Judge Demo Access (Click to Autofill):
           </div>
           <div class="demo-row">
-            <span>Admin Superuser:</span>
-            <span class="demo-pill" onclick="fillCreds('admin','admin123')">admin / admin123</span>
+            <span>Read-only Judge:</span>
+            <button type="button" class="demo-pill" onclick="fillCreds('judge','judge2026')">judge / judge2026</button>
           </div>
           <div class="demo-row">
-            <span>Support Specialist:</span>
-            <span class="demo-pill" onclick="fillCreds('agent','agent123')">agent / agent123</span>
-          </div>
-          <div class="demo-row">
-            <span>One-Click Guest:</span>
+            <span>Public Customer Portal:</span>
             <a class="demo-pill" href="/" style="text-decoration:none;">Browse public portal</a>
           </div>
+          {% if demo_mode %}
+          <div class="demo-row">
+            <span>Local Admin Testing:</span>
+            <button type="button" class="demo-pill" onclick="fillCreds('admin','admin123')">admin / admin123</button>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
 
       <!-- ────────────────────────────────

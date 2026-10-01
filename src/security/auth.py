@@ -96,6 +96,19 @@ DEFAULT_USERS = [
     }
 ]
 
+JUDGE_DEMO_USER = {
+    "user_id": "USR-JUDGE-DEMO-001",
+    "username": "judge",
+    "email": "judge@supportnova.demo",
+    "password": "judge2026",
+    "role": "judge",
+    "display_name": "Competition Judge",
+    "designation": "Read-only project review",
+    "auth_provider": "local",
+    "phone": "",
+    "created_at": "2026-10-01 00:00:00",
+}
+
 def generate_google_avatar(name: str, email: str) -> str:
     """Generates high quality Google profile avatar URL based on user name/email."""
     clean_name = (name or email or "User").strip().replace(" ", "+")
@@ -120,7 +133,24 @@ class AuthManager:
                         users_col.insert_one(u_copy)
                     elif not existing.get("password"):
                         users_col.update_one({"username": u["username"]}, {"$set": {"password": get_password_hash(u["password"])}})
-            elif settings.ADMIN_EMAIL and settings.ADMIN_PASSWORD:
+            judge_copy = dict(JUDGE_DEMO_USER)
+            existing_judge = users_col.find_one({"user_id": judge_copy["user_id"]})
+            if not existing_judge:
+                judge_copy["password"] = get_password_hash(judge_copy["password"])
+                users_col.insert_one(judge_copy)
+            else:
+                users_col.update_one(
+                    {"user_id": judge_copy["user_id"]},
+                    {"$set": {
+                        "username": judge_copy["username"],
+                        "email": judge_copy["email"],
+                        "password": get_password_hash(judge_copy["password"]),
+                        "role": "judge",
+                        "display_name": judge_copy["display_name"],
+                    }},
+                )
+
+            if not settings.DEMO_MODE and settings.ADMIN_EMAIL and settings.ADMIN_PASSWORD:
                 username = settings.ADMIN_EMAIL.split("@", 1)[0].replace(".", "_")
                 existing = users_col.find_one({"email": settings.ADMIN_EMAIL})
                 user_id = (existing or {}).get("user_id")
@@ -258,10 +288,6 @@ class AuthManager:
         if not avatar:
             avatar = generate_google_avatar(display_name, clean_email)
 
-        # Allow role promotion if keyword matches
-        if "admin" in clean_email or "admin" in clean_user:
-            role = "admin"
-
         new_user = {
             "user_id": f"USR-{int(time.time())}",
             "username": clean_user,
@@ -286,6 +312,8 @@ class AuthManager:
         user = users_col.find_one({"user_id": user_id})
         if not user:
             raise ValueError("User not found.")
+        if user_id == JUDGE_DEMO_USER["user_id"]:
+            raise ValueError("Judge demo credentials are fixed and read-only.")
 
         updates = {}
         if username and username.strip():
@@ -330,6 +358,8 @@ class AuthManager:
 
     @staticmethod
     def update_user_role(user_id: str, new_role: str) -> bool:
+        if user_id == JUDGE_DEMO_USER["user_id"]:
+            return False
         users_col = get_users_col()
         res = users_col.update_one({"user_id": user_id}, {"$set": {"role": new_role}})
         return res.modified_count > 0

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Live WhatsApp Chat Hub & Communication Centre | SupportNova{% endblock %}
+{% block title %}SupportNova Live Chat & Communication Centre{% endblock %}
 
 {% block content %}
 
@@ -121,8 +121,8 @@
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
   <div>
     <h1 style="font-size:1.5rem;font-weight:900;color:var(--text-heading);display:flex;align-items:center;gap:10px;font-family:'Outfit',sans-serif;">
-      <i class="fa-brands fa-whatsapp" style="color:#25d366;filter:drop-shadow(0 0 8px rgba(37,211,102,0.5));"></i>
-      Live WhatsApp Chat Hub
+      <i class="fa-solid fa-comments" style="color:#25d366;filter:drop-shadow(0 0 8px rgba(37,211,102,0.5));"></i>
+      SupportNova Live Chat
     </h1>
     <p style="color:var(--text-muted);font-size:0.8rem;margin-top:3px;">Real-time client chats from chatbot Direct Support tab — all staff can view and reply</p>
   </div>
@@ -138,7 +138,7 @@
 
   <div class="wa-panel">
     <div class="wa-panel-head">
-      <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> Client Chat Queue
+      <i class="fa-solid fa-comments" style="color:#25d366;"></i> Customer Chat Queue
       <span id="queueBadge" style="margin-left:auto;background:#25d366;color:#fff;border-radius:9999px;font-size:0.66rem;padding:2px 8px;">0</span>
     </div>
     <div style="padding:10px;border-bottom:1px solid var(--glass-border);">
@@ -152,9 +152,9 @@
 
   <div class="wa-panel" id="chatPanel">
     <div id="chatEmptyState" class="wa-empty-state">
-      <i class="fa-brands fa-whatsapp" style="font-size:3rem;color:#25d366;opacity:0.35;"></i>
+      <i class="fa-solid fa-comments" style="font-size:3rem;color:#25d366;opacity:0.35;"></i>
       <div style="font-weight:700;font-size:1rem;color:var(--text-heading);">Select a conversation</div>
-      <div style="font-size:0.8rem;max-width:260px;">Click any client from the left panel to view and reply to their WhatsApp chat in real time.</div>
+      <div style="font-size:0.8rem;max-width:260px;">Choose a customer from the list to view and reply in SupportNova chat.</div>
     </div>
 
     <div id="chatActiveView" style="display:none;flex-direction:column;height:100%;">
@@ -163,12 +163,12 @@
         <div style="flex:1;min-width:0;">
           <div id="chatClientName" style="font-weight:800;font-size:0.92rem;color:var(--text-heading);"></div>
           <div style="font-size:0.70rem;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:2px;">
-            <span class="wa-online-dot"></span> Online via SupportNova Chatbot
+            <span class="wa-online-dot"></span> SupportNova in-app conversation
           </div>
         </div>
         <div style="display:flex;gap:6px;">
           <span id="chatClientIdBadge" style="background:rgba(238,240,208,0.12);border:1px solid rgba(238,240,208,0.3);color:var(--cream, #eef0d0);border-radius:6px;font-size:0.65rem;font-weight:800;padding:3px 8px;"></span>
-          <button onclick="startVoiceCallFromHub()" title="Start Voice Call" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:800;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,211,102,0.4);"><i class="fa-solid fa-phone"></i> Call Client</button> <button onclick="refreshCurrentChat()" title="Refresh" style="background:rgba(238,240,208,0.1);border:1px solid rgba(238,240,208,0.25);color:var(--cream, #eef0d0);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;">
+          <button onclick="refreshCurrentChat()" title="Refresh conversation" style="background:rgba(238,240,208,0.1);border:1px solid rgba(238,240,208,0.25);color:var(--cream, #eef0d0);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;">
             <i class="fa-solid fa-rotate"></i>
           </button>
         </div>
@@ -224,30 +224,14 @@
 
       <div style="background:rgba(238,240,208,0.05);border:1px solid rgba(238,240,208,0.16);border-radius:var(--radius-md);padding:14px;">
         <div style="font-size:0.73rem;font-weight:800;color:var(--cream, #eef0d0);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Monitoring Staff</div>
-        <div style="display:flex;flex-direction:column;gap:7px;">
-          <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);">
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&auto=format&fit=crop&q=80" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--cream, #eef0d0);">
-            <div><div style="font-size:0.78rem;font-weight:800;color:var(--text-heading);">Rayyan Ahmed Khan</div><div style="font-size:0.63rem;color:var(--cream, #eef0d0);">Super Admin</div></div>
-            <span style="margin-left:auto;width:8px;height:8px;background:#25d366;border-radius:50%;box-shadow:0 0 6px #25d366;"></span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--accent, #f59e0b);">
-            <div><div style="font-size:0.78rem;font-weight:800;color:var(--text-heading);">Marcus Chen</div><div style="font-size:0.63rem;color:var(--accent, #f59e0b);">Lead Triage</div></div>
-            <span style="margin-left:auto;width:8px;height:8px;background:#25d366;border-radius:50%;box-shadow:0 0 6px #25d366;"></span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);">
-            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&auto=format&fit=crop&q=80" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #10b981;">
-            <div><div style="font-size:0.78rem;font-weight:800;color:var(--text-heading);">Sarah Jenkins</div><div style="font-size:0.63rem;color:#10b981;">Warranty Officer</div></div>
-            <span style="margin-left:auto;width:8px;height:8px;background:#25d366;border-radius:50%;box-shadow:0 0 6px #25d366;"></span>
-          </div>
-        </div>
+        <div id="staffPresenceList" style="display:flex;flex-direction:column;gap:7px;" aria-live="polite"><div style="font-size:0.75rem;color:var(--text-muted);">Loading staff status…</div></div>
       </div>
 
       <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-md);padding:14px;">
         <div style="font-size:0.73rem;font-weight:800;color:#d97706;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Quick Actions</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <button onclick="broadcastAllClients()" style="width:100%;background:rgba(238,240,208,0.12);border:1px solid rgba(238,240,208,0.25);color:var(--cream, #eef0d0);border-radius:8px;padding:8px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s ease;">
-            <i class="fa-solid fa-bullhorn" style="margin-right:5px;"></i> Broadcast to All Clients
+            <i class="fa-solid fa-bullhorn" style="margin-right:5px;"></i> Broadcast to Listed Customers
           </button>
           <a href="/admin" style="width:100%;background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);color:var(--text-muted);border-radius:8px;padding:8px;font-size:0.76rem;font-weight:700;text-align:center;text-decoration:none;display:block;font-family:inherit;">
             <i class="fa-solid fa-arrow-left" style="margin-right:5px;"></i> Back to Admin Dashboard
@@ -263,6 +247,20 @@
     </div>
   </div>
 
+</div>
+
+<div id="broadcastModal" role="dialog" aria-modal="true" aria-labelledby="broadcastModalTitle" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(2,6,23,.72);align-items:center;justify-content:center;padding:20px;">
+  <div style="width:min(520px,100%);background:var(--bg-card,#102a24);color:var(--text-heading,#eef0d0);border:1px solid var(--glass-border,rgba(255,255,255,.2));border-radius:16px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.4);">
+    <h2 id="broadcastModalTitle" style="font-size:1.1rem;margin:0 0 8px;">Broadcast to listed customers</h2>
+    <p style="color:var(--text-muted);font-size:.85rem;margin:0 0 14px;">This sends the message to each customer currently shown in the chat list.</p>
+    <label for="broadcastMessage" style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Message</label>
+    <textarea id="broadcastMessage" maxlength="1000" rows="4" style="box-sizing:border-box;width:100%;resize:vertical;background:var(--bg-input,rgba(255,255,255,.08));color:var(--text-heading,#eef0d0);border:1px solid var(--glass-border,rgba(255,255,255,.25));border-radius:10px;padding:10px;font:inherit;" placeholder="Write your announcement…"></textarea>
+    <div id="broadcastStatus" role="status" style="min-height:1.2em;margin-top:8px;color:var(--text-muted);font-size:.8rem;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+      <button type="button" onclick="closeBroadcastModal()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--glass-border);background:transparent;color:var(--text-heading);cursor:pointer;">Cancel</button>
+      <button type="button" id="broadcastSendButton" onclick="sendClientBroadcast()" style="padding:8px 12px;border-radius:8px;border:0;background:var(--primary,#10b981);color:#06251b;font-weight:800;cursor:pointer;">Send message</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -295,7 +293,7 @@
     const list = document.getElementById('clientList');
     const keys = Object.keys(conversations);
     if (!keys.length) {
-      list.innerHTML = `<div class="wa-empty-state"><i class="fa-brands fa-whatsapp" style="font-size:2rem;color:#25d366;opacity:0.35;"></i><div>No active chats yet</div><div style="font-size:0.72rem;max-width:200px;">Chats appear here when customers use the Direct Support tab in the chatbot.</div></div>`;
+      list.innerHTML = `<div class="wa-empty-state"><i class="fa-solid fa-comments" style="font-size:2rem;color:#25d366;opacity:0.35;"></i><div>No active chats yet</div><div style="font-size:0.72rem;max-width:200px;">Conversations appear here when customers send a message through the SupportNova portal.</div></div>`;
       return;
     }
     list.innerHTML = '';
@@ -345,7 +343,7 @@
     document.getElementById('linkedCtxBox').innerHTML = `
       <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Client ID:</span><strong style="color:var(--text-heading);font-size:0.75rem;">${cid}</strong></div>
       <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Messages:</span><strong style="color:#25d366;">${msgs.length}</strong></div>
-      <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>From:</span><strong style="color:var(--cream, #eef0d0);">WhatsApp Chatbot</strong></div>`;
+      <div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Channel:</span><strong style="color:var(--cream, #eef0d0);">SupportNova chat</strong></div>`;
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(refreshCurrentChat, 4000);
   }
@@ -427,26 +425,83 @@
     inp.style.height = Math.min(inp.scrollHeight, 90) + 'px';
   }
 
-  async function broadcastAllClients() {
-    const msg = window.prompt('Broadcast message to all active clients:');
-    if (!msg || !msg.trim()) return;
+  function broadcastAllClients() {
+    const modal = document.getElementById('broadcastModal');
+    const message = document.getElementById('broadcastMessage');
+    const status = document.getElementById('broadcastStatus');
+    if (status) status.textContent = '';
+    if (message) message.value = '';
+    if (modal) modal.style.display = 'flex';
+    if (message) message.focus();
+  }
+
+  function closeBroadcastModal() {
+    const modal = document.getElementById('broadcastModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function sendClientBroadcast() {
+    const msg = document.getElementById('broadcastMessage').value.trim();
+    const status = document.getElementById('broadcastStatus');
+    const button = document.getElementById('broadcastSendButton');
+    if (!msg) {
+      status.textContent = 'Enter a message before sending.';
+      return;
+    }
     const keys = Object.keys(allConversations);
+    if (!keys.length) {
+      status.textContent = 'There are no customers in the current chat list.';
+      return;
+    }
+    button.disabled = true;
+    status.textContent = `Sending to ${keys.length} listed customer${keys.length === 1 ? '' : 's'}…`;
     let sent = 0;
     for (const cid of keys) {
       try {
-        await fetch('/api/chat/live/send', {
+        const response = await fetch('/api/chat/live/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg.trim(), client_id: cid, sender: 'agent', sender_name: 'SupportNova Team' })
         });
-        sent++;
+        const result = await response.json();
+        if (response.ok && result.success) sent++;
       } catch (e) {}
     }
-    const t = document.createElement('div');
-    t.className = 'toast toast-success';
-    t.innerHTML = `<i class="fa-solid fa-check-circle"></i> Broadcast sent to ${sent} client${sent !== 1 ? 's' : ''}`;
-    const c = document.getElementById('toastContainer');
-    if (c) { c.appendChild(t); setTimeout(() => t.remove(), 3500); }
+    button.disabled = false;
+    status.textContent = `Sent to ${sent} of ${keys.length} listed customer${keys.length === 1 ? '' : 's'}.`;
+    if (sent === keys.length) setTimeout(closeBroadcastModal, 1200);
+  }
+
+  async function loadStaffPresence() {
+    const container = document.getElementById('staffPresenceList');
+    if (!container) return;
+    try {
+      const response = await fetch('/api/staff/presence');
+      if (!response.ok) throw new Error('presence unavailable');
+      const data = await response.json();
+      container.replaceChildren();
+      Object.values(data.presence || {}).forEach(staff => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.07);';
+        const identity = document.createElement('div');
+        identity.style.cssText = 'min-width:0;';
+        const name = document.createElement('div');
+        name.textContent = staff.name || 'Support staff';
+        name.style.cssText = 'font-size:.78rem;font-weight:800;color:var(--text-heading);';
+        const role = document.createElement('div');
+        role.textContent = staff.role || 'Support';
+        role.style.cssText = 'font-size:.63rem;color:var(--text-muted);';
+        const dot = document.createElement('span');
+        dot.setAttribute('aria-label', staff.online ? 'Online' : 'Offline');
+        dot.title = staff.online ? 'Online' : 'Offline';
+        dot.style.cssText = `margin-left:auto;width:8px;height:8px;border-radius:50%;background:${staff.online ? '#25d366' : '#94a3b8'};`;
+        identity.append(name, role);
+        row.append(identity, dot);
+        container.append(row);
+      });
+    } catch (e) {
+      container.textContent = 'Staff status is currently unavailable.';
+    }
   }
 
   async function uploadAdminFile(input) {
@@ -491,22 +546,10 @@
     return d.innerHTML;
   }
 
-  function startVoiceCallFromHub() {
-    if (!selectedClientId) return;
-    fetch('/api/call/initiate', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ client_id: selectedClientId, client_name: 'Client ' + selectedClientId })
-    }).then(r=>r.json()).then(d=>{
-      if(d.status==='ringing'){
-        if(typeof showToast==='function') showToast('Call request created. Live audio is not integrated.', 'warning');
-      } else if(d.status==='unavailable') {
-        if(typeof showToast==='function') showToast('⚠️ ' + d.message, 'warning');
-      }
-    });
-  }
   loadLiveChats();
+  loadStaffPresence();
   setInterval(loadLiveChats, 5500);
+  setInterval(loadStaffPresence, 15000);
 </script>
 
 {% endblock %}

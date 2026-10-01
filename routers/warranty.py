@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException, Form, UploadFile, File, Depends, BackgroundTasks
+from fastapi import APIRouter, Request, HTTPException, Form, UploadFile, File, Depends, BackgroundTasks, Query
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from typing import Optional, List, Dict, Any
@@ -13,6 +13,7 @@ from src.python_validation.pipeline import python_validation_pipeline
 from src.comparison_engine.engine import ComparisonEngine
 from src.analytics.sentiment import SentimentTelemetryEngine
 from src.multimodal.vision_forensics import VisionForensicsEngine
+from src.multimodal.image_validation import detect_image_type
 from src.security.auth import AuthManager
 from routers.common import clean_doc, clean_docs, ws_manager
 
@@ -26,8 +27,12 @@ async def get_products():
 
 
 
-async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_data):
+async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_data, image_bytes=None, image_mime_type=None):
     def blocking_pipeline():
+        if image_bytes and image_mime_type:
+            complaint_dict["vision_analysis"] = VisionForensicsEngine.analyze_image(
+                image_bytes, image_mime_type, complaint_dict.get("complaint_description", "")
+            )
         try:
             genai_out = genai_pipeline.generate_intelligence(complaint_dict)
             ground_truth = python_validation_pipeline.validate_complaint(complaint_dict)
@@ -37,6 +42,8 @@ async def _process_complaint_bg(complaint_dict, new_id, total_count, sentiment_d
             complaint_dict["ground_truth"] = ground_truth.model_dump()
             complaint_dict["comparison"] = comp_result.model_dump()
             complaint_dict["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
+            if complaint_dict.get("vision_analysis", {}).get("manual_review_required"):
+                complaint_dict["status"] = "Manual Review Required"
             complaint_dict["category"] = ground_truth.expected_category
             complaint_dict["subcategory"] = ground_truth.expected_subcategory
             complaint_dict["department"] = ground_truth.expected_department
@@ -102,13 +109,27 @@ async def submit_complaint(
     complaint_description: str = Form(...),
     product_or_service: Optional[str] = Form(None),
     order_reference: Optional[str] = Form(None),
-    preferred_channel: str = Form("Web Form")
+    preferred_channel: str = Form("Web Form"),
+    evidence_image: Optional[UploadFile] = File(None),
+    evidence_processing_consent: bool = Form(False)
 ):
     current_user = AuthManager.get_current_user(request)
     
     is_valid, err_msg = ComplaintPreprocessor.validate_complaint_input(complaint_title, complaint_description)
     if not is_valid:
         raise HTTPException(status_code=400, detail=err_msg)
+
+    image_bytes = None
+    image_mime_type = None
+    if evidence_image:
+        if not evidence_processing_consent:
+            raise HTTPException(status_code=400, detail="Consent is required before processing an uploaded image.")
+        image_bytes = await evidence_image.read(10 * 1024 * 1024 + 1)
+        if len(image_bytes) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="Photo evidence must be 10 MB or less.")
+        image_mime_type = detect_image_type(image_bytes)
+        if not image_mime_type or image_mime_type != evidence_image.content_type:
+            raise HTTPException(status_code=415, detail="Use a valid JPEG, PNG, WebP, or GIF image.")
 
     complaints_col = get_complaints_col()
     content_hash = ComplaintPreprocessor.compute_content_hash(complaint_description)
@@ -156,13 +177,22 @@ async def submit_complaint(
         "duplicate_of_id": dup_id,
         "sentiment_telemetry": sentiment_data,
         "status": "AI Pipeline Processing",
+        "photo_evidence_attached": image_bytes is not None,
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
     # IMPORTANT: Insert synchronously first so it is immediately trackable by the user!
     complaints_col.insert_one(complaint_dict.copy())
 
-    background_tasks.add_task(_process_complaint_bg, complaint_dict, new_id, total_count, sentiment_data)
+    background_tasks.add_task(
+        _process_complaint_bg,
+        complaint_dict,
+        new_id,
+        total_count,
+        sentiment_data,
+        image_bytes,
+        image_mime_type,
+    )
 
     return {
         "success": True,
@@ -195,24 +225,32 @@ async def get_my_complaints(request: Request):
     return {"complaints": docs, "total": len(docs), "user_email": clean_email}
 
 @router.get("/complaints/track/{complaint_id}")
-async def track_complaint(complaint_id: str):
+async def track_complaint(complaint_id: str, email: str = Query("", max_length=254)):
     col = get_complaints_col()
     doc = col.find_one({"complaint_id": complaint_id.strip()})
     if not doc:
         raise HTTPException(status_code=404, detail="Complaint reference ID not found.")
-    
+
+    clean_email = (email or "").strip().lower()
+    if not clean_email or clean_email != (doc.get("customer_email") or "").strip().lower():
+        raise HTTPException(status_code=404, detail="Complaint reference ID or customer email was not recognized.")
+
+    status = doc.get("status", "Under Review")
+    status_updates = {
+        "New": "Your complaint was received and is waiting for review.",
+        "AI Pipeline Processing": "Your complaint is being checked and will be reviewed by support staff.",
+        "Analyzed": "Initial checks are complete; support staff may still need to review your case.",
+        "Resolved": "Your complaint has been marked resolved. Contact support if you still need help.",
+        "Closed": "This complaint has been closed. Contact support if you need further assistance.",
+    }
     customer_view = {
         "complaint_id": doc.get("complaint_id"),
-        "customer_name": doc.get("customer_name"),
         "complaint_title": doc.get("complaint_title"),
-        "complaint_description": doc.get("complaint_description"),
         "product_or_service": doc.get("product_or_service"),
-        "status": doc.get("status"),
-        "created_at": doc.get("created_at"),
-        "last_modified": doc.get("last_modified") or doc.get("created_at"),
-        "estimated_resolution": "Within 24 Hours",
-        "category": doc.get("category", "General Support"),
-        "urgency": doc.get("urgency", "Medium")
+        "status": status,
+        "submitted_at": doc.get("created_at") or "Not available",
+        "assigned_department": doc.get("department") or "Support team",
+        "official_update": status_updates.get(status, "Your case is being reviewed by the support team."),
     }
     return customer_view
 
@@ -220,19 +258,26 @@ async def track_complaint(complaint_id: str):
 async def inspect_hardware_image(
     file: Optional[UploadFile] = File(None),
     complaint_text: str = Form(""),
-    sample_defect: Optional[str] = Form(None)
+    sample_defect: Optional[str] = Form(None),
+    evidence_processing_consent: bool = Form(False)
 ):
     if not file:
         raise HTTPException(status_code=400, detail="Attach an image for manual review.")
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=415, detail="Only image files are accepted.")
+    if not evidence_processing_consent:
+        raise HTTPException(status_code=400, detail="Consent is required before processing an uploaded image.")
     content_bytes = await file.read(10 * 1024 * 1024 + 1)
     if len(content_bytes) > 10 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="Image size must be 10 MB or less.")
-    fname = file.filename or "uploaded-image"
-    
-    analysis = VisionForensicsEngine.analyze_image(fname, content_bytes, complaint_text)
-    raise HTTPException(status_code=503, detail=analysis["reason"])
+    image_mime_type = detect_image_type(content_bytes)
+    if not image_mime_type or image_mime_type != file.content_type:
+        raise HTTPException(status_code=415, detail="Use a valid JPEG, PNG, WebP, or GIF image.")
+    analysis = await run_in_threadpool(
+        VisionForensicsEngine.analyze_image,
+        content_bytes,
+        image_mime_type,
+        complaint_text,
+    )
+    return analysis
 
 @router.post("/complaints/pre-check")
 async def pre_check_complaint(

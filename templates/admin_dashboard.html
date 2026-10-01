@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Super Admin Operations - Rayyan Ahmed Khan | SupportNova{% endblock %}
+{% block title %}{% if current_user.role == 'judge' %}Competition Review{% else %}Super Admin Operations - Rayyan Ahmed Khan{% endif %} | SupportNova{% endblock %}
 
 {% block content %}
 <div class="customer-hero-card" id="heroCustomerCard" style="border-left: 5px solid var(--cream, #eef0d0);">
   <div class="hero-customer-profile">
-    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80" alt="Rayyan Ahmed Khan" class="hero-avatar" id="heroAvatar" style="border-color: var(--cream, #eef0d0);">
+    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80" alt="{% if current_user.role == 'judge' %}Competition Judge{% else %}Rayyan Ahmed Khan{% endif %}" class="hero-avatar" id="heroAvatar" style="border-color: var(--cream, #eef0d0);">
     <div class="hero-info">
-      <h2>Rayyan Ahmed Khan <span class="badge badge-primary" style="font-size: 0.78rem; margin-left: 8px; background: var(--cream, #eef0d0); color: #101010;">CEO &amp; Operations Director</span></h2>
+      <h2>{% if current_user.role == 'judge' %}SupportNova Project Review{% else %}Rayyan Ahmed Khan{% endif %} <span class="badge badge-primary" style="font-size: 0.78rem; margin-left: 8px; background: var(--cream, #eef0d0); color: #101010;">{% if current_user.role == 'judge' %}Read-only Judge{% else %}CEO &amp; Operations Director{% endif %}</span></h2>
       <div class="hero-meta-grid">
         <div class="hero-meta-item">
           <i class="fa-solid fa-shield-halved" style="color: var(--cream, #eef0d0);"></i>
-          <span>Super Admin Operations &amp; RBAC Oversight</span>
+          <span>{% if current_user.role == 'judge' %}Competition evaluation dashboard{% else %}Super Admin Operations &amp; RBAC Oversight{% endif %}</span>
         </div>
         <div class="hero-meta-item">
           <i class="fa-regular fa-envelope"></i>
-          <span>admin@supportnova.io</span>
+          <span>{% if current_user.role == 'judge' %}Judge demo access{% else %}admin@supportnova.io{% endif %}</span>
         </div>
         <div class="hero-meta-item">
           <i class="fa-solid fa-server" style="color: #10b981;"></i>
@@ -131,7 +131,8 @@
           <i class="fa-solid fa-fire-flame-curved"></i>
         </div>
         <div>
-          <div style="font-size: 0.74rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">Customer Emotion Telemetry</div>
+          <div style="font-size: 0.74rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">Complaint Text Sentiment Estimate</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">Keyword-based heuristic; not audio analysis</div>
           <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-heading);" id="modalEmotionState">Frustrated & Dissatisfied</div>
         </div>
       </div>
@@ -158,6 +159,15 @@
     <div class="triage-subcard" style="padding: 20px; margin-bottom: 22px;">
       <div style="font-weight: 800; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px;">Customer Submitted Grievance (Untrusted Input)</div>
       <p id="modalRawDescription" style="font-size: 0.94rem; color: var(--text-heading); font-weight: 500; white-space: pre-wrap; line-height: 1.6; margin: 0;"></p>
+      <section id="modalVisionAssessment" aria-live="polite" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--glass-border);border-radius:12px;color:var(--text-body);">
+        <div style="font-weight:800;color:var(--text-heading);margin-bottom:8px;">AI-assisted photo notes — verify manually</div>
+        <div>Visible issue: <span id="modalVisionIssue">Not assessed</span></div>
+        <div>Severity suggestion: <span id="modalVisionSeverity">Not assessed</span></div>
+        <div>Possible safety concern: <span id="modalVisionSafety">Not assessed</span></div>
+        <div>Next step: <span id="modalVisionNextStep">Not assessed</span></div>
+        <ul id="modalVisionObservations" style="margin:8px 0 0;padding-left:20px;"></ul>
+        <div id="modalVisionReviewNote" style="margin-top:8px;font-size:0.82rem;"></div>
+      </section>
       <div id="modalAdversarialBanner" style="display: none; margin-top: 12px; background: rgba(244, 63, 94, 0.15); border-left: 4px solid #f43f5e; padding: 12px 16px; font-size: 0.88rem; color: #f43f5e; font-weight: 700; border-radius: 8px;"></div>
     </div>
 
@@ -179,7 +189,7 @@
           <div style="font-weight: 800; color: var(--cream, #eef0d0); display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
             <i class="fa-solid fa-brain"></i> Pipeline 1: GenAI Intelligence
           </div>
-          <span class="badge badge-primary">Gemini 1.5 Flash</span>
+          <span class="badge badge-primary">GenAI provider status depends on configuration</span>
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; font-size: 0.85rem; color: var(--text-heading);">

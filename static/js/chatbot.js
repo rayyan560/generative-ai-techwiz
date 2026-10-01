@@ -1465,7 +1465,7 @@ html[data-theme="dark"] .sn-ibtn {
         <i class="fa-solid fa-robot"></i> NovaBot AI
       </button>
       <button class="sn-wa-tab" id="snTabLive" onclick="SNC.switchTab('live')">
-        <i class="fa-brands fa-whatsapp"></i> Direct Support
+        <i class="fa-solid fa-comments"></i> Direct Support
       </button>
     </div>
   </div>

@@ -97,7 +97,7 @@ ESCALATION_CONDITIONS = [
         "pattern": r"\b(package was cut open|driver stole contents|empty box delivered|tampered seal)\b",
         "required_tier": "Tier 2 - Senior Specialist",
         "reason": "Carrier supply chain theft investigation",
-        "mandatory": False
+        "mandatory": True
     },
     {
         "esc_id": "ESC-013",
@@ -125,17 +125,27 @@ ESCALATION_CONDITIONS = [
     }
 ]
 
-# Add more structured escalation tiers to reach 30+ conditions
-for idx in range(16, 35):
-    subcat_name = f"Specialist Escalation Condition #{idx}"
-    ESCALATION_CONDITIONS.append({
-        "esc_id": f"ESC-{idx:03d}",
-        "name": f"Specific Regulatory / Operational Escalation Protocol {idx}",
-        "pattern": rf"\b(escalate-{idx}|protocol-{idx}|condition-{idx})\b",
-        "required_tier": "Tier 3 - Department Manager" if idx % 2 == 0 else "Tier 2 - Senior Specialist",
-        "reason": f"Operational policy clause {idx} triggered",
-        "mandatory": idx % 3 == 0
-    })
+ESCALATION_CONDITIONS.extend([
+    {"esc_id": "ESC-016", "name": "Emergency Medical Treatment", "pattern": r"\b(emergency room|hospitalized|hospitalised|medical treatment|permanent injury)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Reported injury requires urgent safety and compliance review", "mandatory": True},
+    {"esc_id": "ESC-017", "name": "Product Recall or Safety Notice", "pattern": r"\b(product recall|safety recall|recall notice|cpsc investigation)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Potential recall or regulator-directed product action", "mandatory": True},
+    {"esc_id": "ESC-018", "name": "Property Fire or Evacuation", "pattern": r"\b(house fire|apartment fire|evacuated|property caught fire|fire department responded)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Potential property damage or immediate life-safety event", "mandatory": True},
+    {"esc_id": "ESC-019", "name": "Toxic Fumes or Chemical Exposure", "pattern": r"\b(toxic fumes|chemical exposure|poisonous vapou?r|inhaled fumes|chemical burn)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Potential exposure requiring safety escalation", "mandatory": True},
+    {"esc_id": "ESC-020", "name": "Suspected Child Product Injury", "pattern": r"\b(child was injured|injured my child|child safety injury|infant was hurt)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Reported child injury needs immediate safety review", "mandatory": True},
+    {"esc_id": "ESC-021", "name": "Ransomware or Extortion", "pattern": r"\b(ransomware|ransom demand|encrypted our files|extortion demand)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Possible cyber extortion or business data compromise", "mandatory": True},
+    {"esc_id": "ESC-022", "name": "Unauthorized Financial Transfer", "pattern": r"\b(unauthorized transfer|money transferred without permission|bank transfer fraud|funds stolen from)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Possible financial fraud requiring payment and security review", "mandatory": True},
+    {"esc_id": "ESC-023", "name": "Regulator Data-Access or Deletion Deadline", "pattern": r"\b(data subject request|gdpr deadline|ccpa deadline|regulator ordered deletion|privacy regulator)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Potential statutory response deadline", "mandatory": True},
+    {"esc_id": "ESC-024", "name": "Court Order or Evidence Preservation", "pattern": r"\b(court order|preserve evidence|litigation hold|subpoena|discovery request)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Potential legal preservation or court-directed obligation", "mandatory": True},
+    {"esc_id": "ESC-025", "name": "Accessibility Discrimination Allegation", "pattern": r"\b(denied reasonable accommodation|accessibility discrimination|ada violation|discriminated due to disability)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Potential accessibility or civil-rights compliance matter", "mandatory": True},
+    {"esc_id": "ESC-026", "name": "Protected-Class Discrimination Allegation", "pattern": r"\b(racial discrimination|discrimination based on|sexual harassment|religious discrimination|discriminated against me)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Sensitive discrimination or harassment allegation", "mandatory": True},
+    {"esc_id": "ESC-027", "name": "Credential or Payment-Card Exposure", "pattern": r"\b(passwords exposed|credit card data leaked|payment card exposed|credentials leaked|card number disclosed)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Possible credential or payment data exposure", "mandatory": True},
+    {"esc_id": "ESC-028", "name": "Multi-Customer Safety Pattern", "pattern": r"\b(other customers.{0,30}(same issue|same defect)|multiple units.{0,30}(overheat|catch fire)|same defect reported by)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Possible systemic product hazard affecting multiple customers", "mandatory": True},
+    {"esc_id": "ESC-029", "name": "Tampered Safety Evidence", "pattern": r"\b(altered safety report|destroyed test results|evidence was tampered|falsified inspection)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Potential evidence integrity concern", "mandatory": True},
+    {"esc_id": "ESC-030", "name": "Threat to Public or Staff Safety", "pattern": r"\b(threatened to hurt|threat to kill|weapon at (the )?(store|office)|going to attack)\b", "required_tier": "Tier 5 - Executive Management Escalation", "reason": "Credible threat requires immediate safety escalation", "mandatory": True},
+    {"esc_id": "ESC-031", "name": "Coordinated Account Takeover", "pattern": r"\b(accounts were taken over|mass account takeover|multiple accounts compromised|credential stuffing)\b", "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Possible coordinated security incident", "mandatory": True},
+    {"esc_id": "ESC-032", "name": "High-Value Shipment Theft", "condition_fn": lambda c: c.get("category") == "Delivery & Shipping" and float((c.get("genai_analysis") or {}).get("extracted_entities", {}).get("amount") or 0) >= 5000, "required_tier": "Tier 3 - Department Manager", "reason": "High-value shipment loss needs management and carrier review", "mandatory": True},
+    {"esc_id": "ESC-033", "name": "Time-Sensitive Payment Dispute", "pattern": r"\b(chargeback deadline|bank dispute deadline|fraud claim deadline|payment dispute deadline)\b", "required_tier": "Tier 3 - Department Manager", "reason": "Potential time-limited payment dispute response", "mandatory": True},
+    {"esc_id": "ESC-034", "name": "Journalist or National Media Inquiry", "pattern": r"\b(journalist contacted|national news contacted|reporter requested comment|media inquiry)\b", "required_tier": "Tier 3 - Department Manager", "reason": "External media inquiry requires communications review", "mandatory": True},
+])
 
 class EscalationManager:
     @staticmethod

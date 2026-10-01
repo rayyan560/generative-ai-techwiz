@@ -31,6 +31,15 @@ logger = logging.getLogger("SupportNova.App")
 app = FastAPI(title=settings.APP_NAME, version=settings.VERSION)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
+@app.middleware("http")
+async def enforce_judge_read_only(request: Request, call_next):
+    """Prevent the public judge account from changing any application data."""
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        user = AuthManager.get_current_user(request)
+        if user and user.get("role") == "judge":
+            return JSONResponse({"detail": "Judge access is read-only."}, status_code=403)
+    return await call_next(request)
+
 BASE_DIR = os.path.dirname(__file__)
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
@@ -41,6 +50,8 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 def require_page_role(user: Dict[str, Any], *allowed_roles: str) -> None:
+    if user.get("role") == "judge" and set(allowed_roles).intersection({"admin", "agent", "warranty_manager"}):
+        return
     if user.get("role") not in allowed_roles:
         raise HTTPException(status_code=403, detail="Your role cannot access this page.")
 
@@ -137,7 +148,7 @@ async def customer_portal(request: Request):
 async def login_page(request: Request):
     user = AuthManager.get_current_user(request)
     if user:
-        target = {"admin": "/admin", "agent": "/agent", "warranty_manager": "/warranty"}.get(user.get("role"), "/")
+        target = {"admin": "/admin", "judge": "/admin", "agent": "/agent", "warranty_manager": "/warranty"}.get(user.get("role"), "/")
         return RedirectResponse(url=target, status_code=302)
     return templates.TemplateResponse(request=request, name="login.html", context={
         "app_name": settings.APP_NAME,
@@ -171,6 +182,7 @@ async def handle_login(request: Request, username: str = Form(...), password: st
     token = AuthManager.create_session_token(user)
     target_url = {
         "admin": "/admin",
+        "judge": "/admin",
         "agent": "/agent",
         "warranty_manager": "/warranty",
     }.get(user.get("role"), "/")
@@ -618,47 +630,49 @@ def _get_complaints_summary_for_admin() -> str:
         resolved = col.count_documents({"status": {"$in": ["Resolved", "Closed", "Analyzed"]}})
         escalated = col.count_documents({"genai_analysis.escalation_required": True})
 
-        critical_complaints = list(col.find(
-            {"urgency": "Critical"},
-            {"complaint_id": 1, "complaint_title": 1, "customer_name": 1, "category": 1}
-        ).limit(3))
-        critical_list = "\n".join([
-            f"  - {c.get('complaint_id','N/A')}: {c.get('complaint_title','')[:60]} ({c.get('customer_name','')})"
-            for c in critical_complaints
-        ])
-
         return f"""
 - Total Complaints: {total}
 - P0 Critical: {p0} | Safety Hazards: {safety}
 - Urgency Breakdown: Critical={critical}, High={high}
 - Pending/In-Review: {pending} | Resolved: {resolved}
 - Escalated Cases: {escalated}
-- Sample Critical Cases:
-{critical_list if critical_list else '  None currently'}
 """
     except Exception as e:
         return f"(Live data unavailable: {e})"
 
 
 def _call_gemini_chat(api_key: str, model_name: str, system_prompt: str, history: list, user_message: str) -> str:
-    import google.generativeai as genai
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        system_instruction=system_prompt,
-        generation_config={"temperature": 0.7, "max_output_tokens": 600}
-    )
-    chat_history = []
+    from google import genai
+    from google.genai import types
+
+    contents = []
     for turn in history:
-        chat_history.append({"role": turn["role"], "parts": [turn["content"]]})
-    
-    chat = model.start_chat(history=chat_history)
-    response = chat.send_message(user_message)
+        role = "model" if turn.get("role") == "assistant" else "user"
+        contents.append({"role": role, "parts": [{"text": turn.get("content", "")}]})
+    contents.append({"role": "user", "parts": [{"text": user_message}]})
+    with genai.Client(api_key=api_key) as client:
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                max_output_tokens=600,
+            ),
+        )
     return response.text.strip()
 
 
 @app.websocket("/ws/chat")
 async def chatbot_websocket(websocket: WebSocket, mode: str = "customer"):
+    if mode not in {"customer", "admin"}:
+        await websocket.close(code=1008)
+        return
+    if mode == "admin":
+        token = websocket.cookies.get("supportnova_session")
+        user = AuthManager.verify_session_token(token) if token else None
+        if not user or user.get("role") not in {"admin", "agent", "warranty_manager"}:
+            await websocket.close(code=1008)
+            return
     await websocket.accept()
     logger.info(f"Chatbot WebSocket connected - mode: {mode}")
 
@@ -732,7 +746,7 @@ async def chatbot_websocket(websocket: WebSocket, mode: str = "customer"):
                     if any(w in u_lower for w in ["urgent", "critical", "p0", "safety"]):
                         col = get_complaints_col()
                         count = col.count_documents({"urgency": "Critical"})
-                        bot_response = f"🚨 There are currently **{count} Critical (P0)** complaints requiring immediate attention. These include Safety Hazard and escalated billing cases. I recommend reviewing the P0 Critical filter in your dashboard immediately."
+                        bot_response = f"There are currently **{count} critical complaints**. Please review their individual details and applicable policy before taking action."
                     elif any(w in u_lower for w in ["total", "count", "how many", "statistics", "stats"]):
                         col = get_complaints_col()
                         total = col.count_documents({})
@@ -741,11 +755,11 @@ async def chatbot_websocket(websocket: WebSocket, mode: str = "customer"):
                         bot_response = "I'm having trouble connecting to the AI service right now. Please use the dashboard filters directly or check back in a moment. Your complaint data is still fully accessible via the table above."
                 else:
                     if any(w in u_lower for w in ["refund", "money back"]):
-                        bot_response = "💰 For refund requests, approved refunds are processed within **5-7 business days** back to your original payment method. You can track your refund status in the 'My Complaints' section of your portal."
+                        bot_response = "Refund eligibility and timing depend on the case and applicable policy. You can review the latest status in 'My Complaints' or contact support for help."
                     elif any(w in u_lower for w in ["delivery", "shipping", "package", "late"]):
-                        bot_response = "📦 For delivery issues, please provide your **order number** and I'll help you track it. Typical delivery windows are 3-5 business days. If your package is significantly delayed, our logistics team will investigate within 24 hours."
+                        bot_response = "Please include your order number when submitting a delivery concern so the support team can review its status. You can also track updates in 'My Complaints'."
                     elif any(w in u_lower for w in ["battery", "fire", "smoke", "spark", "swollen"]):
-                        bot_response = "🚨 **IMPORTANT SAFETY ALERT:** If your device is showing signs of battery issues (swelling, sparking, smoke, or heat), please **immediately stop using it and power it off**. Do NOT charge it. This is a Priority 0 safety case — our team will contact you within 1 hour."
+                        bot_response = "If a device is smoking, sparking, unusually hot, or has a swollen battery, stop using or charging it and move away if it is unsafe. Contact local emergency services if there is immediate danger, then submit a safety complaint for staff review."
                     else:
                         bot_response = "Thank you for reaching out! Our AI assistant is momentarily unavailable. Please submit your complaint using the form and our dedicated support team will respond within your SLA window. You can also check your existing complaints in the 'Track My Complaint' section."
 

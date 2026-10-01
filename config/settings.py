@@ -38,8 +38,7 @@ class AppSettings(BaseModel):
     DATABASE_NAME: str = "supportnova_db"
     
     GEMINI_API_KEYS: List[str] = [k.strip() for k in os.getenv("GEMINI_API_KEYS", os.getenv("GOOGLE_GENAI_API_KEY", "")).split(",") if k.strip()]
-    DEFAULT_MODEL: str = "gemini-1.5-flash"
-    FALLBACK_MODEL: str = "gemini-1.5-pro"
+    DEFAULT_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
     
     # Departments (10 distinct enterprise departments as required by SRS)
     DEPARTMENTS: List[str] = [

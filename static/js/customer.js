@@ -334,62 +334,51 @@ function stopVoiceDictation() {
 // 2. 👁️ MULTIMODAL VISION FORENSIC SCANNER
 // -------------------------------------------------------------
 async function handleVisionImageUpload(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-
-  const dropText = document.getElementById("dropzoneText");
-  const scanLine = document.getElementById("visionScanLine");
-  if (scanLine) scanLine.style.display = "block";
-
-  const statusStages = [
-    "Multimodal AI scanning optical defect patterns...",
-    "Verifying hardware fracture signatures...",
-    "Matching warranty policy and OCR serial..."
-  ];
-  let stageIdx = 0;
-  dropText.innerHTML = `<span style="color: var(--cream);"><i class="fa-solid fa-spinner fa-spin"></i> ${statusStages[0]}</span>`;
-  const stageTimer = setInterval(() => {
-    stageIdx = (stageIdx + 1) % statusStages.length;
-    dropText.innerHTML = `<span style="color: var(--cream);"><i class="fa-solid fa-spinner fa-spin"></i> ${statusStages[stageIdx]}</span>`;
-  }, 1200);
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("complaint_text", document.getElementById("complaintDescriptionInput").value);
-
-  try {
-    const res = await fetch("/api/vision/inspect", { method: "POST", body: formData });
-    const data = await res.json();
-    clearInterval(stageTimer);
-    if (scanLine) scanLine.style.display = "none";
-
-    if (!res.ok) throw new Error(data.detail || "Image analysis is unavailable; manual review is required.");
-    dropText.textContent = `Image attached: ${file.name}. Automated analysis is unavailable; a reviewer must inspect it.`;
-
-    const box = document.getElementById("visionAnalysisBox");
-    box.style.display = "block";
-    box.style.opacity = "0";
-    box.style.transform = "translateY(8px)";
-    box.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-    setTimeout(() => {
-      box.style.opacity = "1";
-      box.style.transform = "translateY(0)";
-    }, 50);
-
-    document.getElementById("visionDefectType").innerText = data.defect_type;
-    document.getElementById("visionConfidence").innerText = `${data.confidence_score}%`;
-    document.getElementById("visionSerial").innerText = data.ocr_extracted_serial;
-    document.getElementById("visionWarrantyImpact").innerText = data.warranty_policy_impact;
-
-    const badge = document.getElementById("visionSeverityBadge");
-    badge.innerText = data.severity;
-    badge.className = `badge ${data.safety_hazard ? 'badge-danger' : 'badge-primary'}`;
-  } catch (e) {
-    clearInterval(stageTimer);
-    if (scanLine) scanLine.style.display = "none";
-    if (dropText) dropText.textContent = e.message || "Automated image analysis failed; a reviewer must inspect the attachment.";
-    console.warn("Image analysis unavailable:", e);
+  if (!input.files || !input.files[0]) {
+    updateEvidenceConsent();
+    return;
   }
+  const file = input.files[0];
+  const status = document.getElementById("visionUploadStatus");
+  const preview = document.getElementById("visionAnalysisBox");
+  if (file.size > 10 * 1024 * 1024) {
+    input.value = "";
+    if (status) status.textContent = "That image exceeds the 10 MB limit.";
+    updateEvidenceConsent();
+    return;
+  }
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+    input.value = "";
+    if (status) status.textContent = "Choose a JPEG, PNG, WebP, or GIF image.";
+    updateEvidenceConsent();
+    return;
+  }
+  if (status) status.textContent = `${file.name} selected (${(file.size / 1024 / 1024).toFixed(1)} MB). It will be analyzed only when you submit the complaint.`;
+  const removeButton = document.getElementById("removeEvidenceImage");
+  if (removeButton) removeButton.style.display = "inline-flex";
+  if (preview) {
+    preview.textContent = "Visual notes will appear in the staff case record after submission. AI analysis is advisory and may require manual review.";
+    preview.style.display = "block";
+  }
+  updateEvidenceConsent();
+}
+
+function clearEvidenceImage() {
+  const input = document.getElementById("complaintEvidenceImage");
+  const status = document.getElementById("visionUploadStatus");
+  const preview = document.getElementById("visionAnalysisBox");
+  const removeButton = document.getElementById("removeEvidenceImage");
+  if (input) input.value = "";
+  if (status) status.textContent = "Optional; maximum 10 MB. The original photo is not retained.";
+  if (preview) { preview.style.display = "none"; preview.textContent = ""; }
+  if (removeButton) removeButton.style.display = "none";
+  updateEvidenceConsent();
+}
+
+function updateEvidenceConsent() {
+  const image = document.getElementById("complaintEvidenceImage");
+  const consent = document.getElementById("evidenceProcessingConsent");
+  if (consent) consent.required = Boolean(image?.files?.length);
 }
 
 // -------------------------------------------------------------
@@ -437,19 +426,19 @@ function changePortalLanguage(lang) {
   const dict = {
     "ur": {
       "title": "صارفین کی شکایات اور وارنٹی حل کا مرکز",
-      "sub": "اپنی شکایت درج کروائیں، تصویری ثبوت اپ لوڈ کریں یا آواز کے ذریعے شکایت ریکارڈ کروائیں۔"
+      "sub": "اپنی شکایت درج کریں، اس کی صورتِ حال دیکھیں، اور معاون براؤزر میں آواز سے متن لکھیں۔"
     },
     "ar": {
       "title": "مركز خدمة العملاء وحل النزاعات والضمان",
-      "sub": "قدم شكواك الرسمية، وقم بتحميل الأدلة المصورة للفحص الذكي الفوري."
+      "sub": "قدّم شكواك وتابع حالتها. يمكن استخدام الإملاء الصوتي إذا كان متاحاً في المتصفح."
     },
     "es": {
       "title": "Centro de Resolución de Garantías y Reclamaciones",
-      "sub": "Envíe su queja oficial, cargue fotos para inspección visual por IA o dicte por voz."
+      "sub": "Envíe su queja y consulte su estado. Use el dictado si su navegador lo admite."
     },
     "en": {
       "title": "Customer Complaint & Warranty Resolution Center",
-      "sub": "Submit hardware grievances, upload photo evidence for instant AI defect analysis, or dictate issues via voice."
+      "sub": "Submit and track hardware complaints, describe the issue, and use voice dictation where your browser supports it."
     }
   };
 
@@ -626,64 +615,60 @@ async function sendCustChatMessage() {
 }
 
 let clientCallId = null;
-let clientCallTimerInterval = null;
 let clientCallPollInterval = null;
-let clientMediaStream = null;
+
+function stopClientCallRequest(message = "Call request closed.") {
+  if (clientCallPollInterval) clearInterval(clientCallPollInterval);
+  clientCallPollInterval = null;
+  clientCallId = null;
+  const modal = document.getElementById("snVoiceCallBackdrop");
+  if (modal) modal.style.display = "none";
+  if (message) showToast(message, "info");
+}
 
 async function startClientVoiceCall() {
   try {
     const res = await fetch("/api/call/initiate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ client_id: "USR-CUSTOMER", client_name: "Valued Customer" })
+      body: JSON.stringify({})
     });
     const data = await res.json();
     if (data.status === "unavailable") {
-      showToast("⚠️ OWNER IS NOT AVAILABLE: No support officers are currently online", "error");
+      showToast("No support staff are online to receive a request right now.", "warning");
     } else if (data.status === "ringing") {
       clientCallId = data.call_id;
       const modal = document.getElementById("snVoiceCallBackdrop");
       if (modal) {
-        document.getElementById("snCallName").textContent = data.target_staff ? data.target_staff.name : "Rayyan Ahmed Khan";
-        document.getElementById("snCallSub").textContent = data.target_staff ? data.target_staff.role : "Super Admin & CEO";
-        document.getElementById("snCallStatusText").textContent = "CALLING...";
-        document.getElementById("snCallStatusText").style.color = "#25d366";
+        document.getElementById("snCallName").textContent = data.target_staff?.name || "Support team";
+        document.getElementById("snCallSub").textContent = data.target_staff?.role || "Customer support";
+        document.getElementById("snCallStatusText").textContent = "REQUEST SENT — AUDIO NOT CONNECTED";
+        document.getElementById("snCallStatusText").style.color = "#fbbf24";
+        const actions = document.getElementById("snCallActionRow");
+        if (actions) actions.innerHTML = '<button class="sn-call-btn-circle sn-call-btn-decline" onclick="stopClientCallRequest()" title="Close request"><i class="fa-solid fa-xmark"></i></button>';
         modal.style.display = "flex";
       }
-      showToast(`📞 Outgoing Voice Call placed to ${data.target_staff ? data.target_staff.name : "Support Team"}...`, "info");
-      
-      try {
-        clientMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch(e) {}
+      showToast("Call request sent. Live audio is not integrated.", "warning");
 
       if (clientCallPollInterval) clearInterval(clientCallPollInterval);
       clientCallPollInterval = setInterval(async () => {
         try {
           const r = await fetch("/api/call/status");
           const d = await r.json();
-          if (d.active && d.call) {
+          if (d.active && d.call && d.call.call_id === clientCallId) {
             if (d.call.status === "connected") {
-              document.getElementById("snCallStatusText").textContent = "CONNECTED (00:00)";
-              if (!clientCallTimerInterval) {
-                let sec = 0;
-                clientCallTimerInterval = setInterval(() => {
-                  sec++;
-                  const m = String(Math.floor(sec / 60)).padStart(2, "0");
-                  const s = String(sec % 60).padStart(2, "0");
-                  document.getElementById("snCallStatusText").textContent = `CONNECTED (${m}:${s})`;
-                }, 1000);
-              }
+              document.getElementById("snCallStatusText").textContent = "REQUEST ACCEPTED — AUDIO NOT CONNECTED";
             } else if (d.call.status === "declined" || d.call.status === "ended") {
-              endCurrentCall();
+              stopClientCallRequest("Support request closed.");
             }
           } else {
-            endCurrentCall();
+            stopClientCallRequest("Support request closed.");
           }
         } catch(e) {}
       }, 2000);
     }
   } catch (e) {
-    showToast("Unable to connect call", "error");
+    showToast("Could not send the support request. Please try again.", "error");
   }
 }
 
@@ -710,6 +695,7 @@ async function loadMyComplaints() {
     }
 
     const list = data.complaints || [];
+    if (data.user_email) window.supportNovaCustomerEmail = data.user_email;
     const badge = document.getElementById("myComplaintsBadge");
     if (badge) badge.innerText = list.length;
 
@@ -751,9 +737,8 @@ async function loadMyComplaints() {
 }
 
 function quickTrackTicket(id) {
-  document.getElementById("trackInput").value = id;
   switchPortalTab("track");
-  trackTicket();
+  window.supportNovaTrackTicket?.(id, window.supportNovaCustomerEmail || "");
 }
 
 async function handleComplaintSubmit(e) {
@@ -761,6 +746,13 @@ async function handleComplaintSubmit(e) {
   const form = document.getElementById("complaintForm");
   const submitBtn = document.getElementById("submitFormBtn");
   const formData = new FormData(form);
+  const evidenceImage = document.getElementById("complaintEvidenceImage");
+  const evidenceConsent = document.getElementById("evidenceProcessingConsent");
+  if (evidenceImage?.files?.length && !evidenceConsent?.checked) {
+    evidenceConsent?.focus();
+    showToast("Please consent to processing the attached photo, or remove it to continue.", "warning");
+    return;
+  }
 
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting to Official Support Operations...';
@@ -781,7 +773,13 @@ async function handleComplaintSubmit(e) {
       document.getElementById("submissionSuccessBox").style.display = "block";
       form.reset();
       document.getElementById("selectedProductBadge").style.display = "none";
-      document.getElementById("visionAnalysisBox").style.display = "none";
+      const visionBox = document.getElementById("visionAnalysisBox");
+      if (visionBox) { visionBox.style.display = "none"; visionBox.textContent = ""; }
+      const visionStatus = document.getElementById("visionUploadStatus");
+      if (visionStatus) visionStatus.textContent = "Optional; maximum 10 MB. The original photo is not retained.";
+      const removeImageButton = document.getElementById("removeEvidenceImage");
+      if (removeImageButton) removeImageButton.style.display = "none";
+      updateEvidenceConsent();
       document.getElementById("aiPreCheckBox").style.display = "none";
       
       document.querySelectorAll(".step-item").forEach(s => s.classList.add("active"));
@@ -801,53 +799,9 @@ async function handleComplaintSubmit(e) {
 
 function copyAndTrack() {
   const id = document.getElementById("registeredComplaintId").innerText;
-  document.getElementById("trackInput").value = id;
+  const complaintEmail = document.getElementById("formCustomerEmail")?.value.trim();
   switchPortalTab("track");
-  trackTicket();
-}
-
-async function trackTicket() {
-  const input = document.getElementById("trackInput").value.trim();
-  if (!input) {
-    showToast("Please enter a valid Ticket Reference ID (e.g. CMP-00001)", "warning");
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/complaints/track/${input}`);
-    const data = await res.json();
-
-    if (!res.ok) {
-      showToast(data.detail || "Ticket Reference ID not found.", "danger");
-      return;
-    }
-
-    const box = document.getElementById("trackResultBox");
-    box.style.display = "block";
-
-    document.getElementById("trackTitle").innerText = data.complaint_title;
-    document.getElementById("trackSub").innerText = `Ticket Ref: ${data.complaint_id} | Product/Service: ${data.product_or_service || 'Standard Order'}`;
-    document.getElementById("trackTimeSubmitted").innerText = `Received on: ${data.submitted_at}`;
-    document.getElementById("trackAssignedDept").innerText = data.assigned_department;
-    document.getElementById("trackCustomerMessage").innerText = data.official_update;
-
-    const badge = document.getElementById("trackStatusBadge");
-    badge.innerText = data.status;
-    badge.className = `badge ${data.status === 'Resolved' ? 'badge-success' : 'badge-primary'}`;
-
-    const step3 = document.getElementById("timelineStep3");
-    if (data.status === 'Resolved') {
-      step3.className = "timeline-icon completed";
-      step3.innerHTML = '<i class="fa-solid fa-check"></i>';
-    } else {
-      step3.className = "timeline-icon active-pulse";
-      step3.innerHTML = '<i class="fa-solid fa-clock"></i>';
-    }
-
-  } catch (e) {
-    console.error("Error tracking complaint:", e);
-    showToast("Error tracking complaint: " + e, "danger");
-  }
+  window.supportNovaTrackTicket?.(id, complaintEmail || "");
 }
 
 /* ==============================================================================

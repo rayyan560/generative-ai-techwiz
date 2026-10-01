@@ -6,14 +6,14 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
   <div>
     <h1 style="font-size: 1.6rem; color: var(--text-heading); font-weight: 900;">Knowledge Base & Policy Repository</h1>
-    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage 20+ Company Policies, SOPs, Version Controls & RAG Traceable Document Chunks</p>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage indexed policies, version controls, and traceable document chunks.</p>
   </div>
   <div style="display: flex; gap: 12px;">
-    <button class="pill-tab" style="background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%); color: white; border-color: transparent;" onclick="openPolicyConflictModal()">
+    <button class="pill-tab" style="background: linear-gradient(135deg, #9f1239 0%, #be123c 100%); color: #ffffff; border-color: transparent;" onclick="openPolicyConflictModal()">
       <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Run Policy Drift & Conflict Auditor (RAG)
     </button>
     <button class="pill-tab active" onclick="document.getElementById('uploadPolicyModal').style.display='flex'">
-      <i class="fa-solid fa-cloud-arrow-up" style="margin-right: 6px;"></i> Upload Policy (PDF / DOCX)
+      <i class="fa-solid fa-cloud-arrow-up" style="margin-right: 6px;"></i> Upload Policy
     </button>
   </div>
 </div>
@@ -22,25 +22,25 @@
 <div class="metrics-grid" id="policyCardsGrid">
   <div class="summary-card">
     <div class="summary-card-title">Active Company Policies</div>
-    <div class="summary-card-value" id="activePolicyCount" style="color: #10b981;">20 Active</div>
-    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Precedence: High (Active > SOP > FAQ)</div>
+    <div class="summary-card-value" id="activePolicyCount" style="color: var(--success);">Loading…</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Currently indexed with Active status</div>
   </div>
   <div class="summary-card">
     <div class="summary-card-title">Traceable Chunks Indexed</div>
-    <div class="summary-card-value" id="totalChunksCount" style="color: #3b82f6;">78 Chunks</div>
-    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Extracted via PyMuPDF & python-docx</div>
+    <div class="summary-card-value" id="totalChunksCount" style="color: var(--info);">Loading…</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Extracted from supported indexed files</div>
   </div>
   <div class="summary-card">
     <div class="summary-card-title">Version Control Status</div>
-    <div class="summary-card-value" style="color: var(--cream, #eef0d0);">v2.0 Standard</div>
-    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">1 Superseded Policy Archived</div>
+    <div class="summary-card-value" id="policyVersionSummary" style="color: var(--text-heading);">Loading…</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Latest versions found in indexed records</div>
   </div>
 </div>
 
 <!-- Knowledge Documents List Table -->
 <div class="table-container" style="margin-top: 24px;">
-  <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
-    <span>Indexed Knowledge Base Documents (20+ SRS Compliant)</span>
+  <div style="padding: 16px 20px; border-bottom: 1px solid var(--glass-border); font-weight: 600; color: var(--text-heading); display: flex; justify-content: space-between; align-items: center;">
+    <span>Indexed Knowledge Base Documents</span>
     <input type="text" id="policyFilterInput" placeholder="Filter policies..." onkeyup="filterPolicyTable()" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
   </div>
   <table class="data-table" id="knowledgeTable">
@@ -68,12 +68,12 @@
     <h3 style="margin-bottom: 18px; font-size: 1.3rem; color: var(--text-heading); font-weight: 800;">Upload New Company Policy / SOP</h3>
     <form id="uploadPolicyForm" onsubmit="handlePolicyUpload(event)">
       <div style="margin-bottom: 16px;">
-        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Policy Document File (PDF or DOCX) *</label>
-        <input type="file" name="file" accept=".pdf,.docx,.txt,.md" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9);">
+        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-body);">Policy document (PDF, DOCX, TXT, Markdown, CSV; max 10 MB) *</label>
+        <input type="file" name="file" accept=".pdf,.docx,.txt,.md,.csv" required style="width: 100%; border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; color: var(--text-body); background: var(--glass-bg-subtle);">
       </div>
       <div style="margin-bottom: 16px;">
-        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Category *</label>
-        <select name="category" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9);">
+        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-body);">Category *</label>
+        <select name="category" style="width: 100%; border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; color: var(--text-body); background: var(--glass-bg-subtle);">
           <option value="Customer Relations">Customer Relations</option>
           <option value="Refund Request">Refund Request</option>
           <option value="Delivery & Shipping">Delivery & Shipping</option>
@@ -83,9 +83,12 @@
           <option value="Billing & Charges">Billing & Charges</option>
         </select>
       </div>
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Version</label>
-        <input type="text" name="version" value="v2.0" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9);">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-body);">Document ID<input type="text" name="document_id" maxlength="64" placeholder="Derived from filename" style="display:block; width:100%; margin-top:6px; border:1px solid var(--glass-border); border-radius:12px; padding:10px; color:var(--text-body); background:var(--glass-bg-subtle);"></label>
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-body);">Version<input type="text" name="version" value="v2.0" maxlength="32" required style="display:block; width:100%; margin-top:6px; border:1px solid var(--glass-border); border-radius:12px; padding:10px; color:var(--text-body); background:var(--glass-bg-subtle);"></label>
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-body);">Status<select name="status" style="display:block; width:100%; margin-top:6px; border:1px solid var(--glass-border); border-radius:12px; padding:10px; color:var(--text-body); background:var(--glass-bg-subtle);"><option>Active</option><option>Draft</option><option>Superseded</option></select></label>
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-body);">Effective date<input type="date" name="effective_date" style="display:block; width:100%; margin-top:6px; border:1px solid var(--glass-border); border-radius:12px; padding:10px; color:var(--text-body); background:var(--glass-bg-subtle);"></label>
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-body);">Expiry date (optional)<input type="date" name="expiry_date" style="display:block; width:100%; margin-top:6px; border:1px solid var(--glass-border); border-radius:12px; padding:10px; color:var(--text-body); background:var(--glass-bg-subtle);"></label>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 12px;">
         <button type="button" class="pill-tab" onclick="document.getElementById('uploadPolicyModal').style.display='none'">Cancel</button>
@@ -103,7 +106,7 @@
       <div>
         <div style="display: flex; align-items: center; gap: 12px;">
           <h2 style="font-size: 1.4rem; color: var(--text-heading); font-weight: 800;" id="inspectDocTitle">Policy Document Inspection</h2>
-          <span class="badge badge-success" id="inspectDocStatus">Active</span>
+          <span class="badge badge-success" id="inspectDocStatus">—</span>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;" id="inspectDocSubtitle">Document ID: POL-WAR-07 | Version: v2.0</div>
       </div>
@@ -118,15 +121,15 @@
       </div>
       <div>
         <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Precedence Score</div>
-        <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary); margin-top: 2px;" id="inspectDocPrecedence">100 (Highest)</div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary); margin-top: 2px;" id="inspectDocPrecedence">Not calculated</div>
       </div>
       <div>
         <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Indexed Chunks</div>
-        <div style="font-size: 0.95rem; font-weight: 700; color: #10b981; margin-top: 2px;" id="inspectDocChunkCount">3 Traceable Chunks</div>
+        <div style="font-size: 0.95rem; font-weight: 700; color: var(--success); margin-top: 2px;" id="inspectDocChunkCount">—</div>
       </div>
       <div>
         <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">File Format</div>
-        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;" id="inspectDocFilename">policy_war_07.pdf</div>
+        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;" id="inspectDocFilename">—</div>
       </div>
     </div>
 
@@ -157,19 +160,19 @@
       <div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <h2 style="font-size: 1.5rem; color: var(--text-heading); font-weight: 900;">RAG Policy Drift & Rule Contradiction Auditor</h2>
-          <span class="badge badge-danger">3 Contradictions Detected</span>
+          <span class="badge badge-primary" id="policyAuditFindingCount">Audit not run</span>
         </div>
-        <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Automated Cross-Clause Verification against 105+ Ground-Truth Rule Matrix</div>
+        <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Rule-based checks against the 175-rule ground-truth matrix</div>
       </div>
       <button onclick="document.getElementById('policyConflictModal').style.display='none'" class="icon-glass-btn" style="font-size: 1.2rem;">&times;</button>
     </div>
 
     <!-- Governance Summary -->
     <div style="display: flex; gap: 20px; background: var(--glass-bg-subtle); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 24px; justify-content: space-between; flex-wrap: wrap;">
-      <div>Policies Evaluated: <strong>12 Active SOPs</strong></div>
-      <div>Chunks Evaluated: <strong>154 Traceable Chunks</strong></div>
-      <div>Governance Health Score: <strong style="color: #10b981;">96.4% Compliance</strong></div>
-      <div>Conflict Resolution Mode: <strong style="color: var(--primary);">Deterministic Precedence</strong></div>
+      <div>Documents evaluated: <strong id="auditPolicyCount">—</strong></div>
+      <div>Chunks evaluated: <strong id="auditChunkCount">—</strong></div>
+      <div>Rule references checked: <strong id="auditRuleCount">—</strong></div>
+      <div>Governance score: <strong id="auditScore">Not measured</strong></div>
     </div>
 
     <!-- Conflict Cards List -->

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Request, HTTPException, Form, UploadFile, File, Depends
+from fastapi import APIRouter, Request, HTTPException, Form, UploadFile, File, Depends, Response
 from fastapi.responses import JSONResponse
 from typing import Optional, List, Dict, Any
 import datetime
 import asyncio
 import os
 import logging
+import secrets
 
 from config.database import get_live_chats_col, get_complaints_col, get_audit_logs_col
 from src.security.auth import AuthManager
@@ -22,6 +23,29 @@ STAFF_PRESENCE = {
 }
 
 ACTIVE_CALLS: Dict[str, Dict[str, Any]] = {}
+
+def get_call_client_context(request: Request):
+    user = AuthManager.get_current_user(request)
+    if user:
+        return user.get("user_id", "guest"), user.get("display_name") or user.get("username") or "Customer", None
+    guest_id = request.cookies.get("supportnova_guest_id")
+    new_guest_id = None
+    if not guest_id or len(guest_id) > 80:
+        guest_id = secrets.token_urlsafe(24)
+        new_guest_id = guest_id
+    return f"guest:{guest_id}", "Guest customer", new_guest_id
+
+def set_guest_call_cookie(response: Response, guest_id: Optional[str], request: Request):
+    if guest_id:
+        response.set_cookie(
+            "supportnova_guest_id",
+            guest_id,
+            max_age=60 * 60 * 24 * 365,
+            httponly=True,
+            secure=request.url.scheme == "https",
+            samesite="lax",
+            path="/",
+        )
 
 @router.get("/chat/live/messages")
 async def get_live_chat_messages(request: Request, client_id: Optional[str] = None):
@@ -188,10 +212,7 @@ async def toggle_staff_presence(request: Request):
 
 @router.post("/call/initiate")
 async def initiate_voice_call(request: Request):
-    user = AuthManager.get_current_user(request)
-    body = await request.json()
-    client_id = body.get("client_id") or (user.get("user_id") if user else "guest_client_001")
-    client_name = body.get("client_name") or (user.get("display_name") if user else "Valued Customer")
+    client_id, client_name, new_guest_id = get_call_client_context(request)
     
     target_role = None
     target_staff = None
@@ -207,11 +228,12 @@ async def initiate_voice_call(request: Request):
         target_staff = STAFF_PRESENCE["warranty_manager"]
     
     if not target_role:
-        return {
+        response = JSONResponse({
             "status": "unavailable",
-            "message": "Owner is not available",
-            "detail": "No support staff members are currently online to receive internet calls."
-        }
+            "message": "No support staff are available to receive a call request right now."
+        })
+        set_guest_call_cookie(response, new_guest_id, request)
+        return response
     
     call_id = f"CALL-{int(datetime.datetime.now().timestamp()*1000)}"
     call_obj = {
@@ -236,12 +258,14 @@ async def initiate_voice_call(request: Request):
     except Exception as e:
         logger.warning(f"Error broadcasting incoming call: {e}")
         
-    return {
+    response = JSONResponse({
         "status": "ringing",
         "call_id": call_id,
         "target_staff": target_staff,
-        "message": f"Calling {target_staff['name']} ({target_staff['role']})..."
-    }
+        "message": "Call request sent; live audio is not connected."
+    })
+    set_guest_call_cookie(response, new_guest_id, request)
+    return response
 
 @router.post("/call/accept", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def accept_voice_call(request: Request):
@@ -307,11 +331,20 @@ async def end_voice_call(request: Request):
     return {"success": True, "message": "Call ended"}
 
 @router.get("/call/status")
-async def get_call_status(client_id: Optional[str] = None):
-    current = ACTIVE_CALLS.get("current")
+async def get_call_status(request: Request):
+    client_id, _, new_guest_id = get_call_client_context(request)
+    user = AuthManager.get_current_user(request)
+    is_staff = bool(user and user.get("role") in ["admin", "agent", "warranty_manager"])
+    current = ACTIVE_CALLS.get("current") if is_staff else next(
+        (call for call in reversed(list(ACTIVE_CALLS.values())) if isinstance(call, dict) and call.get("client_id") == client_id),
+        None,
+    )
     if not current:
-        return {"active": False, "status": "none"}
-    return {"active": True, "call": current}
+        response = JSONResponse({"active": False, "status": "none"})
+    else:
+        response = JSONResponse({"active": True, "call": current})
+    set_guest_call_cookie(response, new_guest_id, request)
+    return response
 
 @router.get("/communication/threads", dependencies=[Depends(require_roles("admin", "agent", "warranty_manager"))])
 async def get_communication_threads(limit: int = 50):

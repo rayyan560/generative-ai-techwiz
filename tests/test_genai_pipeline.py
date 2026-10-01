@@ -1,4 +1,5 @@
 import pytest
+from src.genai_pipeline import pipeline as pipeline_module
 from src.genai_pipeline.pipeline import GenAIPipeline, GenAIUnavailableError
 
 def test_genai_unavailable_requires_manual_review():
@@ -16,3 +17,29 @@ def test_genai_unavailable_requires_manual_review():
     pipeline.api_keys = []
     with pytest.raises(GenAIUnavailableError):
         pipeline.generate_intelligence(sample_complaint)
+
+
+def test_genai_pipeline_validates_provider_json(monkeypatch):
+    class ModelClient:
+        def __init__(self, **kwargs):
+            self.models = self
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def generate_content(self, **kwargs):
+            class Response:
+                text = '{"primary_issue":"display damage","category":"Product Defect","subcategory":"Physical Damage","sentiment":"Negative","urgency":"High","priority":"P1","recommended_department":"Returns & Replacements","customer_response":"We will review your case."}'
+            return Response()
+
+    monkeypatch.setattr(pipeline_module.genai, "Client", ModelClient)
+    monkeypatch.setattr(pipeline_module.KnowledgeBaseManager, "retrieve_relevant_policy_chunks", lambda **kwargs: [])
+    monkeypatch.setattr(pipeline_module.PromptDefense, "inspect_text_for_injections", lambda text: (False, []))
+    pipeline = GenAIPipeline()
+    pipeline.api_keys = ["test-key"]
+    result = pipeline.generate_intelligence({"complaint_id": "CMP-TEST-2", "complaint_title": "Screen broken"})
+    assert result.complaint_id == "CMP-TEST-2"
+    assert result.primary_issue == "display damage"
