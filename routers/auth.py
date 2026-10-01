@@ -33,7 +33,8 @@ async def api_login(request: Request):
             "display_name": user.get("display_name"),
             "avatar": user.get("avatar"),
             "role": user.get("role"),
-            "auth_provider": user.get("auth_provider")
+            "auth_provider": user.get("auth_provider"),
+            "demo_portal": user.get("demo_portal")
         },
         "token": token
     })

@@ -109,6 +109,41 @@ JUDGE_DEMO_USER = {
     "created_at": "2026-10-01 00:00:00",
 }
 
+# These public credentials are deliberately non-privileged: both identities are
+# judge/read-only users and are available only on an isolated preview service.
+PUBLIC_DEMO_USERS = [
+    {
+        "user_id": "USR-PUBLIC-DEMO-ADMIN",
+        "username": "demo_admin",
+        "email": "demo_admin@supportnova.demo",
+        "password": "AdminView2026!",
+        "role": "judge",
+        "demo_portal": "admin",
+        "display_name": "Admin Portal Preview",
+        "designation": "Public read-only demonstration",
+        "auth_provider": "local",
+        "phone": "",
+        "created_at": "2026-10-02 00:00:00",
+    },
+    {
+        "user_id": "USR-PUBLIC-DEMO-AGENT",
+        "username": "demo_agent",
+        "email": "demo_agent@supportnova.demo",
+        "password": "AgentView2026!",
+        "role": "judge",
+        "demo_portal": "agent",
+        "display_name": "Agent Dashboard Preview",
+        "designation": "Public read-only demonstration",
+        "auth_provider": "local",
+        "phone": "",
+        "created_at": "2026-10-02 00:00:00",
+    },
+]
+
+PUBLIC_DEMO_PORTALS = {
+    user["user_id"]: user["demo_portal"] for user in PUBLIC_DEMO_USERS
+}
+
 def generate_google_avatar(name: str, email: str) -> str:
     """Generates high quality Google profile avatar URL based on user name/email."""
     clean_name = (name or email or "User").strip().replace(" ", "+")
@@ -195,6 +230,19 @@ class AuthManager:
                     users_col.update_one({"email": settings.AGENT_EMAIL}, {"$set": profile})
                 else:
                     users_col.insert_one(profile)
+
+            if settings.PUBLIC_DEMO_MODE:
+                for demo_user in PUBLIC_DEMO_USERS:
+                    existing = users_col.find_one({"user_id": demo_user["user_id"]})
+                    username_owner = users_col.find_one({"username": demo_user["username"]})
+                    if username_owner and username_owner.get("user_id") != demo_user["user_id"]:
+                        raise RuntimeError(f"Reserved public demo username is already in use: {demo_user['username']}")
+                    profile = dict(demo_user)
+                    profile["password"] = get_password_hash(profile["password"])
+                    if existing:
+                        users_col.update_one({"user_id": demo_user["user_id"]}, {"$set": profile})
+                    else:
+                        users_col.insert_one(profile)
             _USERS_INITIALIZED = True
         except Exception as e:
             logger.error(f"Error initializing default users: {e}")
@@ -230,6 +278,15 @@ class AuthManager:
         demo_user_ids = {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}
         if user and not settings.DEMO_MODE and user.get("user_id") in demo_user_ids:
             return None
+        if settings.PUBLIC_DEMO_MODE and user and user.get("role") in {"admin", "agent", "warranty_manager"}:
+            return None
+        if user and user.get("user_id") in PUBLIC_DEMO_PORTALS:
+            if (
+                not settings.PUBLIC_DEMO_MODE
+                or user.get("role") != "judge"
+                or user.get("demo_portal") != PUBLIC_DEMO_PORTALS[user["user_id"]]
+            ):
+                return None
         if user and verify_password(password, user.get("password", "")):
             # Automatic seamless migration of legacy unhashed password to bcrypt hash
             if not user.get("password", "").startswith("$2b$") and not user.get("password", "").startswith("$2a$"):
@@ -398,6 +455,7 @@ class AuthManager:
             "display_name": user.get("display_name", user.get("username", "")),
             "avatar": user.get("avatar", ""),
             "auth_provider": user.get("auth_provider", "local"),
+            "demo_portal": user.get("demo_portal", ""),
             "exp": int(time.time()) + (7 * 24 * 3600)  # 7 days
         }
         data_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode()
@@ -422,6 +480,14 @@ class AuthManager:
             demo_user_ids = {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}
             if not settings.DEMO_MODE and user.get("user_id") in demo_user_ids:
                 return None
+            if settings.PUBLIC_DEMO_MODE and user.get("role") in {"admin", "agent", "warranty_manager"}:
+                return None
+            if user.get("user_id") in PUBLIC_DEMO_PORTALS and (
+                not settings.PUBLIC_DEMO_MODE
+                or user.get("role") != "judge"
+                or user.get("demo_portal") != PUBLIC_DEMO_PORTALS[user["user_id"]]
+            ):
+                return None
             return {
                 "sub": user.get("username", ""),
                 "username": user.get("username", ""),
@@ -431,6 +497,7 @@ class AuthManager:
                 "display_name": user.get("display_name", user.get("username", "")),
                 "avatar": user.get("avatar", ""),
                 "auth_provider": user.get("auth_provider", "local"),
+                "demo_portal": user.get("demo_portal", ""),
                 "phone": user.get("phone", "")
             }
         except Exception as e:

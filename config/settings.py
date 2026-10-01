@@ -26,6 +26,7 @@ class AppSettings(BaseModel):
         "DEMO_MODE",
         "false" if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER") else "true"
     ).lower() in ("true", "1", "yes")
+    PUBLIC_DEMO_MODE: bool = os.getenv("PUBLIC_DEMO_MODE", "false").lower() in ("true", "1", "yes")
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "").strip().lower()
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
     AGENT_EMAIL: str = os.getenv("AGENT_EMAIL", "").strip().lower()
@@ -37,7 +38,7 @@ class AppSettings(BaseModel):
     
     # MongoDB Atlas Connection
     MONGODB_URI: str = os.getenv("MONGODB_URI", "").strip()
-    DATABASE_NAME: str = "supportnova_db"
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "supportnova_db").strip()
     
     GEMINI_API_KEYS: List[str] = [k.strip() for k in os.getenv("GEMINI_API_KEYS", os.getenv("GOOGLE_GENAI_API_KEY", "")).split(",") if k.strip()]
     DEFAULT_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
@@ -108,4 +109,30 @@ class AppSettings(BaseModel):
         "Tier 5 - Executive Management Escalation"
     ]
 
+def validate_public_demo_settings(config: AppSettings) -> None:
+    """Require public preview deployments to be isolated and provider-free."""
+    if not config.PUBLIC_DEMO_MODE:
+        return
+
+    problems = []
+    if config.DEMO_MODE:
+        problems.append("DEMO_MODE must be false (local privileged seed accounts are not allowed).")
+    if not config.DATABASE_NAME.startswith("supportnova_demo_"):
+        problems.append("DATABASE_NAME must start with 'supportnova_demo_'.")
+    if not config.MONGODB_URI:
+        problems.append("MONGODB_URI must point to the isolated demo database account.")
+    if config.GEMINI_API_KEYS:
+        problems.append("Gemini API keys must not be configured for the public demo.")
+    if config.GOOGLE_CLIENT_ID or config.GOOGLE_CLIENT_SECRET:
+        problems.append("Google OAuth credentials must not be configured for the public demo.")
+    if config.ADMIN_EMAIL or config.ADMIN_PASSWORD or config.AGENT_EMAIL or config.AGENT_PASSWORD:
+        problems.append("Production admin/agent credentials must not be configured for the public demo.")
+    if len(os.getenv("SESSION_SECRET_KEY", "")) < 32:
+        problems.append("A unique SESSION_SECRET_KEY of at least 32 characters is required.")
+
+    if problems:
+        raise RuntimeError("Unsafe PUBLIC_DEMO_MODE configuration: " + " ".join(problems))
+
+
 settings = AppSettings()
+validate_public_demo_settings(settings)

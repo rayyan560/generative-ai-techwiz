@@ -92,7 +92,13 @@ npm ci
 npm run build
 ```
 
-For local-only demo accounts, copy `.env.example` to `.env` and set `DEMO_MODE=true`. Never enable demo mode on a public deployment. For hosted use, configure `MONGODB_URI`, `SESSION_SECRET_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `AGENT_EMAIL`, and `AGENT_PASSWORD` in the host's private variables. The admin and agent accounts are created or updated from these private variables at startup; their usernames are derived from the email local-part (for example, `admin@supportnova.io` signs in as `admin`). Configure `GEMINI_API_KEYS` and Google OAuth credentials only when those integrations are enabled. Hosted startup refuses to use the local JSON store when MongoDB is missing or unreachable.
+For local-only privileged demo accounts, copy `.env.example` to `.env` and set `DEMO_MODE=true`. Never enable `DEMO_MODE` on a public deployment. For the production service, configure `MONGODB_URI`, `SESSION_SECRET_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `AGENT_EMAIL`, and `AGENT_PASSWORD` in the host's private variables. The admin and agent accounts are created or updated from these private variables at startup; their usernames are derived from the email local-part (for example, `admin@supportnova.io` signs in as `admin`). Configure `GEMINI_API_KEYS` and Google OAuth credentials only when those integrations are enabled. Hosted startup refuses to use the local JSON store when MongoDB is missing or unreachable.
+
+### Isolated Public Review Demo
+
+If judges need visible login details for the Admin and Agent workspaces, deploy a **second Railway service** from this repository. Do not enable this mode on the production service. On the review service, set `PUBLIC_DEMO_MODE=true`, `DEMO_MODE=false`, and `DATABASE_NAME=supportnova_demo_public`; provide a MongoDB URI for a database user whose permissions are scoped only to that demo database, plus a unique `SESSION_SECRET_KEY` of at least 32 characters. Leave production `ADMIN_*`/`AGENT_*`, Gemini, and Google OAuth credentials empty. The app refuses to start in public-demo mode if these isolation checks fail or if MongoDB is unavailable, and it never falls back to the shared local JSON files.
+
+The review login page then shows `demo_admin / AdminView2026!` and `demo_agent / AgentView2026!`. Both accounts have the non-privileged `judge` role: they can preview the Admin and Agent pages but cannot modify records, send messages, make calls, or use live AI integrations. These are public preview credentials, not the production admin or agent passwords.
 
 ### 3. Generate Knowledge Base Documents & 500+ Dataset
 ```bash

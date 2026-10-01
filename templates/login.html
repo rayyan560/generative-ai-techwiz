@@ -593,6 +593,20 @@
             <button type="button" class="demo-pill" onclick="fillCreds('agent','agent123')">agent / agent123</button>
           </div>
           {% endif %}
+          {% if public_demo_mode %}
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color, rgba(100,116,139,.2));">
+            <div style="font-size: .82rem; font-weight: 800; color: var(--text-heading); margin-bottom: 4px;">Isolated public preview accounts · view-only</div>
+            <div style="font-size: .76rem; color: var(--text-muted); margin-bottom: 7px;">These let reviewers explore each workspace; they do not grant staff permissions.</div>
+            <div class="demo-row">
+              <span>Admin Portal Preview:</span>
+              <button type="button" class="demo-pill" onclick="fillCreds('demo_admin','AdminView2026!')">demo_admin / AdminView2026!</button>
+            </div>
+            <div class="demo-row">
+              <span>Agent Dashboard Preview:</span>
+              <button type="button" class="demo-pill" onclick="fillCreds('demo_agent','AgentView2026!')">demo_agent / AgentView2026!</button>
+            </div>
+          </div>
+          {% endif %}
         </div>
       </div>
 
@@ -772,7 +786,8 @@
       if (response && response.credential) executeGoogleAuthPayload({ credential: response.credential });
     }
 
-    function getRedirectUrlForRole(role) {
+    function getRedirectUrlForRole(role, demoPortal) {
+      if (role === "judge" && demoPortal === "agent") return "/agent";
       if (role === "admin") return "/admin";
       if (role === "judge") return "/admin";
       if (role === "agent") return "/agent";
@@ -787,7 +802,7 @@
         const data = await res.json();
         if (res.ok && data.success) {
           showStatus("Login successful! Redirecting...", true);
-          const target = getRedirectUrlForRole(data.user?.role);
+          const target = getRedirectUrlForRole(data.user?.role, data.user?.demo_portal);
           setTimeout(() => { window.location.href = target; }, 500);
         } else {
           showStatus(data.detail || "Authentication failed.");
@@ -808,7 +823,7 @@
         const data = await res.json();
         if (res.ok && data.success) {
           showStatus("Login successful! Redirecting...", true);
-          const target = getRedirectUrlForRole(data.user?.role);
+          const target = getRedirectUrlForRole(data.user?.role, data.user?.demo_portal);
           setTimeout(() => { window.location.href = target; }, 500);
         } else {
           showStatus(data.detail || "Invalid credentials.");
@@ -836,7 +851,7 @@
         const data = await res.json();
         if (res.ok && data.success) {
           showStatus("Account created! Welcome to SupportNova.", true);
-          const target = getRedirectUrlForRole(data.user?.role);
+          const target = getRedirectUrlForRole(data.user?.role, data.user?.demo_portal);
           setTimeout(() => { window.location.href = target; }, 600);
         } else {
           showStatus(data.detail || "Registration failed.");

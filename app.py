@@ -139,7 +139,8 @@ async def health_check():
 async def customer_portal(request: Request):
     user = AuthManager.get_current_user(request)
     if user and user.get("role") == "judge":
-        return RedirectResponse(url="/admin", status_code=302)
+        target = "/agent" if user.get("demo_portal") == "agent" else "/admin"
+        return RedirectResponse(url=target, status_code=302)
     return templates.TemplateResponse(request=request, name="customer_portal.html", context={
         "app_name": settings.APP_NAME,
         "current_user": user,
@@ -151,12 +152,15 @@ async def login_page(request: Request):
     user = AuthManager.get_current_user(request)
     if user:
         target = {"admin": "/admin", "judge": "/admin", "agent": "/agent", "warranty_manager": "/warranty"}.get(user.get("role"), "/")
+        if user.get("role") == "judge" and user.get("demo_portal") == "agent":
+            target = "/agent"
         return RedirectResponse(url=target, status_code=302)
     return templates.TemplateResponse(request=request, name="login.html", context={
         "app_name": settings.APP_NAME,
         "error": None,
         "mode": "login",
-        "demo_mode": settings.DEMO_MODE
+        "demo_mode": settings.DEMO_MODE,
+        "public_demo_mode": settings.PUBLIC_DEMO_MODE
     })
 
 @app.get("/register", response_class=HTMLResponse)
@@ -168,7 +172,8 @@ async def register_page(request: Request):
         "app_name": settings.APP_NAME,
         "error": None,
         "mode": "register",
-        "demo_mode": settings.DEMO_MODE
+        "demo_mode": settings.DEMO_MODE,
+        "public_demo_mode": settings.PUBLIC_DEMO_MODE
     })
 
 @app.post("/login", response_class=HTMLResponse)
@@ -179,7 +184,8 @@ async def handle_login(request: Request, username: str = Form(...), password: st
             "app_name": settings.APP_NAME,
             "error": "Invalid username or password. Please check your credentials.",
             "mode": "login",
-            "demo_mode": settings.DEMO_MODE
+            "demo_mode": settings.DEMO_MODE,
+            "public_demo_mode": settings.PUBLIC_DEMO_MODE
         })
     token = AuthManager.create_session_token(user)
     target_url = {
@@ -188,6 +194,8 @@ async def handle_login(request: Request, username: str = Form(...), password: st
         "agent": "/agent",
         "warranty_manager": "/warranty",
     }.get(user.get("role"), "/")
+    if user.get("role") == "judge" and user.get("demo_portal") == "agent":
+        target_url = "/agent"
     response = RedirectResponse(url=target_url, status_code=302)
     response.set_cookie(
         key="supportnova_session",

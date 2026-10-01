@@ -158,6 +158,8 @@ class DatabaseManager:
 
     def connect(self):
         if not settings.MONGODB_URI:
+            if settings.PUBLIC_DEMO_MODE:
+                raise RuntimeError("PUBLIC_DEMO_MODE requires its isolated MongoDB database; local JSON fallback is disabled.")
             if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER"):
                 raise RuntimeError("MONGODB_URI must be configured for hosted deployments to prevent ephemeral data loss.")
             logger.info("MONGODB_URI is not configured. Using the persistent local JSON database.")
@@ -182,9 +184,11 @@ class DatabaseManager:
             self.is_atlas_connected = True
             logger.info("Successfully connected to MongoDB Atlas!")
         except Exception as e:
-            logger.warning(f"MongoDB Atlas connection unvailable ({e}). Activating persistent JSON local database engine fallback.")
+            logger.warning(f"MongoDB Atlas connection unavailable ({e}).")
             self.is_atlas_connected = False
             self.db = None
+            if settings.PUBLIC_DEMO_MODE:
+                raise RuntimeError("MongoDB is unavailable for PUBLIC_DEMO_MODE; refusing to use any local or shared data store.") from e
             if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER"):
                 raise RuntimeError("MongoDB is unavailable in the hosted environment; refusing to start with an ephemeral database.") from e
 
