@@ -195,12 +195,14 @@
             <i class="fa-solid fa-volume-high"></i>
           </button>
 
+          {% if current_user.role != 'judge' %}
           <a class="call-btn" id="callRequestsLink" href="/communication" title="Open call and customer communication requests">
             <i class="fa-solid fa-phone"></i>
             <span>Call requests</span>
           </a>
+          {% endif %}
 
-          <div class="user-profile-pill" onclick="openProfileSettingsModal()" style="cursor: pointer;" title="Click to Edit Profile & Credentials">
+          <div class="user-profile-pill"{% if current_user.role != 'judge' %} onclick="openProfileSettingsModal()" style="cursor: pointer;" title="Click to Edit Profile & Credentials"{% endif %}>
             <img src="{{ (current_user.avatar if current_user and current_user.avatar else 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80') }}" alt="User Avatar" class="avatar-img" id="topbarAvatarImg">
             <div>
               <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-heading);" id="topbarUserName">
@@ -213,9 +215,9 @@
             </div>
           </div>
 
-          <button class="icon-glass-btn" onclick="openProfileSettingsModal()" title="Account & Password Settings">
+          {% if current_user.role != 'judge' %}<button class="icon-glass-btn" onclick="openProfileSettingsModal()" title="Account & Password Settings">
             <i class="fa-solid fa-gear"></i>
-          </button>
+          </button>{% endif %}
 
           <a href="/logout" title="Sign Out" class="icon-glass-btn" style="text-decoration: none; color: #e11d48;">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>

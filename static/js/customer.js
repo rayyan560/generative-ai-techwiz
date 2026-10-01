@@ -544,16 +544,34 @@ async function loadCustChatMessages() {
   }
 }
 
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>\"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+function safeChatAssetUrl(value) {
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.origin !== window.location.origin || !parsed.pathname.startsWith("/static/uploads/")) return "";
+    return parsed.pathname + parsed.search;
+  } catch (e) {
+    return "";
+  }
+}
+
 function formatChatText(text) {
+  text = String(text ?? "");
   if (text.startsWith("![image](")) {
     const url = text.substring(9, text.length - 1);
-    return `<img src="${url}" style="max-width:240px;max-height:240px;border-radius:12px;margin-top:4px;display:block;box-shadow:0 4px 12px rgba(0,0,0,0.15);">`;
+    const safeUrl = safeChatAssetUrl(url);
+    return safeUrl ? `<img src="${escapeHTML(safeUrl)}" alt="Attached image" style="max-width:240px;max-height:240px;border-radius:12px;margin-top:4px;display:block;box-shadow:0 4px 12px rgba(0,0,0,0.15);">` : escapeHTML(text);
   }
   if (text.startsWith("[file](")) {
     const parts = text.substring(7, text.length - 1).split("|");
-    const url = parts[0];
-    const name = parts[1] || "Document";
-    return `<a href="${url}" target="_blank" style="color:inherit;text-decoration:underline;display:inline-flex;align-items:center;gap:6px;font-weight:700;"><i class="fa-solid fa-file-arrow-down"></i> ${name}</a>`;
+    const url = safeChatAssetUrl(parts[0]);
+    const name = escapeHTML(parts[1] || "Document");
+    return url ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;display:inline-flex;align-items:center;gap:6px;font-weight:700;"><i class="fa-solid fa-file-arrow-down"></i> ${name}</a>` : escapeHTML(text);
   }
   return escapeHTML(text);
 }
@@ -569,9 +587,9 @@ function renderCustChatBubbles(msgs) {
     const wrap = document.createElement("div");
     wrap.style.cssText = `display: flex; flex-direction: column; ${isCust ? "align-self: flex-end; max-width: 78%;" : "align-self: flex-start; max-width: 78%;"}`;
     if (isCust) {
-      wrap.innerHTML = `<div style="background: var(--cream); color: var(--ink, #101010); font-weight: 500; padding: 10px 16px; border-radius: 16px 16px 3px 16px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">${contentHtml}</div><div style="font-size: 0.64rem; color: var(--text-muted); text-align: right; margin-top: 3px;">${m.timestamp || ""}</div>`;
+      wrap.innerHTML = `<div style="background: var(--cream); color: var(--ink, #101010); font-weight: 500; padding: 10px 16px; border-radius: 16px 16px 3px 16px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">${contentHtml}</div><div style="font-size: 0.64rem; color: var(--text-muted); text-align: right; margin-top: 3px;">${escapeHTML(m.timestamp || "")}</div>`;
     } else {
-      wrap.innerHTML = `<div style="background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); color: var(--text-heading); padding: 10px 16px; border-radius: 3px 16px 16px 16px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">${contentHtml}</div><div style="font-size: 0.64rem; color: var(--text-muted); margin-top: 3px;">${m.sender_name || "Support Officer"} &bull; ${m.timestamp || ""}</div>`;
+      wrap.innerHTML = `<div style="background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); color: var(--text-heading); padding: 10px 16px; border-radius: 3px 16px 16px 16px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">${contentHtml}</div><div style="font-size: 0.64rem; color: var(--text-muted); margin-top: 3px;">${escapeHTML(m.sender_name || "Support Officer")} &bull; ${escapeHTML(m.timestamp || "")}</div>`;
     }
     box.appendChild(wrap);
   });

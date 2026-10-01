@@ -770,6 +770,7 @@
 
     function getRedirectUrlForRole(role) {
       if (role === "admin") return "/admin";
+      if (role === "judge") return "/admin";
       if (role === "agent") return "/agent";
       if (role === "warranty_manager") return "/warranty";
       return "/";

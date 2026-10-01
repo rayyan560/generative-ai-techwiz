@@ -12,9 +12,9 @@
     <button class="pill-tab" style="background: linear-gradient(135deg, #9f1239 0%, #be123c 100%); color: #ffffff; border-color: transparent;" onclick="openPolicyConflictModal()">
       <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Run Policy Drift & Conflict Auditor (RAG)
     </button>
-    <button class="pill-tab active" onclick="document.getElementById('uploadPolicyModal').style.display='flex'">
+    {% if current_user.role != 'judge' %}<button class="pill-tab active" onclick="document.getElementById('uploadPolicyModal').style.display='flex'">
       <i class="fa-solid fa-cloud-arrow-up" style="margin-right: 6px;"></i> Upload Policy
-    </button>
+    </button>{% endif %}
   </div>
 </div>
 

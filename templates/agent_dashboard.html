@@ -165,21 +165,21 @@
         <div style="font-weight: 800; font-size: 0.92rem; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
           <i class="fa-solid fa-microphone-lines" style="color: var(--cream, #eef0d0);"></i> AI Response Tone Studio & Follow-up Generator
         </div>
-        <div style="display: flex; gap: 6px;">
+      {% if current_user.role != 'judge' %}<div style="display: flex; gap: 6px;">
           <button class="pill-tab active" onclick="changeResponseTone('Empathetic')" style="padding: 4px 12px; font-size: 0.75rem;">Empathetic</button>
           <button class="pill-tab" onclick="changeResponseTone('Professional')" style="padding: 4px 12px; font-size: 0.75rem;">Professional</button>
           <button class="pill-tab" onclick="changeResponseTone('Concise')" style="padding: 4px 12px; font-size: 0.75rem;">Concise</button>
           <button class="pill-tab" onclick="changeResponseTone('Formal')" style="padding: 4px 12px; font-size: 0.75rem;">Formal</button>
         </div>
-      </div>
-      <textarea id="modalCustomerResponseDraft" rows="4" class="triage-textarea" style="width: 100%; font-weight: 600; font-size: 0.92rem; line-height: 1.6; padding: 12px;"></textarea>
+      </div>{% endif %}
+      <textarea id="modalCustomerResponseDraft" rows="4" class="triage-textarea" style="width: 100%; font-weight: 600; font-size: 0.92rem; line-height: 1.6; padding: 12px;"{% if current_user.role == 'judge' %} readonly{% endif %}></textarea>
     </div>
 
     <div style="display: flex; justify-content: flex-end; gap: 12px;">
       <button class="pill-tab" onclick="closeTriageModal()" style="padding: 10px 22px;">Close Triage</button>
-      <button class="submit-btn" onclick="saveAgentResolution()" style="padding: 10px 26px;">
+      {% if current_user.role != 'judge' %}<button class="submit-btn" onclick="saveAgentResolution()" style="padding: 10px 26px;">
         <i class="fa-solid fa-check-double"></i> Record Agent Review
-      </button>
+      </button>{% endif %}
     </div>
   </div>
 </div>

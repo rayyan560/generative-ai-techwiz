@@ -130,7 +130,7 @@
       <div style="font-size: 0.78rem; color: var(--primary); font-weight: 700;" id="clvStrategyRec">Retention optimization is unavailable until verified history and an approved model are connected.</div>
     </div>
 
-    <form id="refundExecutionForm" onsubmit="event.preventDefault(); submitRefundExecution();">
+    {% if current_user.role != 'judge' %}<form id="refundExecutionForm" onsubmit="event.preventDefault(); submitRefundExecution();">
       <input type="hidden" id="refundModalComplaintId">
       <input type="hidden" id="refundModalAmount">
 
@@ -158,7 +158,7 @@
         <button type="button" class="pill-tab" onclick="closeRefundActionModal()">Cancel</button>
         <button type="submit" class="submit-btn" style="width: auto; padding: 12px 28px; font-size: 0.95rem;">Record Decision</button>
       </div>
-    </form>
+    </form>{% else %}<p style="color:var(--text-muted);line-height:1.6;">Judge access is read-only. Settlement decisions are hidden and cannot be recorded from this view.</p>{% endif %}
   </div>
 </div>
 {% endblock %}

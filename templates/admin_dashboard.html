@@ -210,7 +210,7 @@
             <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Draft Customer Response</span>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted);">Tone:</span>
-              <select id="responseToneSelect" class="triage-control-select" onchange="changeResponseTone(this.value)" style="font-size: 0.78rem; padding: 4px 10px; font-weight: 600;">
+              <select id="responseToneSelect" class="triage-control-select" onchange="changeResponseTone(this.value)" style="font-size: 0.78rem; padding: 4px 10px; font-weight: 600;"{% if current_user.role == 'judge' %} disabled{% endif %}>
                 <option value="Professional">Professional (Default)</option>
                 <option value="Empathetic">Empathetic & Caring</option>
                 <option value="Concise">Concise & Action-Oriented</option>
@@ -218,13 +218,13 @@
               </select>
             </div>
           </div>
-          <textarea id="genaiCustomerResponse" class="triage-textarea" style="width: 100%; height: 110px; font-size: 0.85rem; padding: 10px; font-family: inherit; font-weight: 500; resize: vertical; line-height: 1.5;"></textarea>
+          <textarea id="genaiCustomerResponse" class="triage-textarea" style="width: 100%; height: 110px; font-size: 0.85rem; padding: 10px; font-family: inherit; font-weight: 500; resize: vertical; line-height: 1.5;"{% if current_user.role == 'judge' %} readonly{% endif %}></textarea>
         </div>
 
         <div class="triage-subcard" style="margin-top: 14px; padding: 12px;">
           <div style="font-size: 0.78rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
             <span><i class="fa-solid fa-circle-question"></i> AI Clarification Questions (Missing Info Detection)</span>
-            <button class="pill-tab" style="padding: 2px 10px; font-size: 0.72rem; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary);" onclick="insertClarificationQuestions()">Insert to Response</button>
+            {% if current_user.role != 'judge' %}<button class="pill-tab" style="padding: 2px 10px; font-size: 0.72rem; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary);" onclick="insertClarificationQuestions()">Insert to Response</button>{% endif %}
           </div>
           <div id="clarificationQuestionsBox" style="font-size: 0.82rem; color: var(--text-body); line-height: 1.4; font-weight: 500;">
             No missing details detected. All mandatory complaint entities are present.
@@ -265,16 +265,16 @@
           </div>
           <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--text-body); font-weight: 600;">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="chkVerifyAccount" checked> <span>Verify customer account credentials & transaction ID</span>
+              <input type="checkbox" id="chkVerifyAccount" checked{% if current_user.role == 'judge' %} disabled{% endif %}> <span>Verify customer account credentials & transaction ID</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="chkCheckHardware" checked> <span>Cross-check hardware serial & warranty entitlement</span>
+              <input type="checkbox" id="chkCheckHardware" checked{% if current_user.role == 'judge' %} disabled{% endif %}> <span>Cross-check hardware serial & warranty entitlement</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="chkReviewEvidence"> <span>Inspect multimodal defect forensic evidence</span>
+              <input type="checkbox" id="chkReviewEvidence"{% if current_user.role == 'judge' %} disabled{% endif %}> <span>Inspect multimodal defect forensic evidence</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="chkPolicyPrecedence"> <span>Confirm active policy precedence (v2.0 > v1.0)</span>
+              <input type="checkbox" id="chkPolicyPrecedence"{% if current_user.role == 'judge' %} disabled{% endif %}> <span>Confirm active policy precedence (v2.0 > v1.0)</span>
             </label>
           </div>
         </div>
@@ -282,7 +282,7 @@
       </div>
     </div>
 
-    <div class="triage-subcard" style="margin-top: 18px; padding: 16px;">
+    {% if current_user.role != 'judge' %}<div class="triage-subcard" style="margin-top: 18px; padding: 16px;">
       <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-heading); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
         <i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> One-Click Follow-Up Communication Generator (SRS Step 40)
       </div>
@@ -293,9 +293,9 @@
         <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('replacement_eta')">Replacement Dispatch ETA</button>
         <button class="pill-tab" style="padding: 6px 14px; font-size: 0.78rem;" onclick="generateFollowUpTemplate('case_closure')">Closure & Satisfaction Survey</button>
       </div>
-    </div>
+    </div>{% endif %}
 
-    <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    {% if current_user.role != 'judge' %}<div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
       <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <input type="text" id="reviewerNoteInput" class="triage-control-input" placeholder="Add reviewer audit note..." style="padding: 9px 14px; font-size: 0.85rem; width: 260px; font-weight: 500;">
         
@@ -320,7 +320,7 @@
         <button class="pill-tab" style="background: #10b981; color: white; border-color: transparent;" onclick="executeTriageAction('override_refund')">💵 Authorize Refund</button>
         <button class="pill-tab" style="background: var(--cream); color: white; border-color: transparent;" onclick="executeTriageAction('approve')">✅ Approve & Send</button>
       </div>
-    </div>
+    </div>{% endif %}
 
   </div>
 </div>

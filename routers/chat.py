@@ -160,19 +160,27 @@ async def send_live_chat_message(request: Request):
 @router.post("/chat/upload-file")
 async def upload_chat_file(request: Request, file: UploadFile = File(...)):
     reject_read_only_judge(AuthManager.get_current_user(request))
+    content = await file.read(10 * 1024 * 1024 + 1)
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Chat attachments must be 10 MB or smaller.")
+    original_name = (file.filename or "attachment").replace("\\", "/")
+    safe_name = os.path.basename(original_name) or "attachment"
+    extension = os.path.splitext(safe_name)[1].lower()
+    allowed_extensions = {".csv", ".doc", ".docx", ".gif", ".jpeg", ".jpg", ".pdf", ".png", ".txt", ".webp"}
+    if extension not in allowed_extensions:
+        raise HTTPException(status_code=415, detail="Use a supported image or document attachment.")
     uploads_dir = os.path.join("static", "uploads")
     os.makedirs(uploads_dir, exist_ok=True)
-    filename = f"{int(datetime.datetime.now().timestamp()*1000)}_{file.filename}"
+    filename = f"{secrets.token_urlsafe(18)}{extension}"
     filepath = os.path.join(uploads_dir, filename)
     with open(filepath, "wb") as f:
-        content = await file.read()
         f.write(content)
     file_url = f"/static/uploads/{filename}"
     is_img = bool(file.content_type and file.content_type.startswith("image/"))
     return {
         "success": True,
         "file_url": file_url,
-        "filename": file.filename,
+        "filename": safe_name,
         "is_image": is_img
     }
 
@@ -422,7 +430,7 @@ async def get_communication_thread_details(complaint_id: str):
         "priority": doc.get("priority", "P2"),
         "status": doc.get("status", "New"),
         "messages": messages,
-        "ai_suggested_draft": doc.get("genai_analysis", {}).get("customer_response") or "",
+        "ai_recommended_draft": doc.get("genai_analysis", {}).get("customer_response") or "",
         "call_transcript": call_transcript,
         "sentiment": doc.get("genai_analysis", {}).get("sentiment", "Neutral")
     }

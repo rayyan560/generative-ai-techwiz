@@ -553,9 +553,7 @@ function renderComplaintsTable(list) {
       <td><strong style="color: var(--text-heading);">${escapeHtml(c.priority || 'Not assigned')}</strong></td>
       <td><span class="badge ${compClass}">${escapeHtml(compStatus)}</span></td>
       <td>
-        <button class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem;" onclick="event.stopPropagation(); openTriageModal('${c.complaint_id}')">
-          Triage &rarr;
-        </button>
+        ${document.getElementById("triageModal") ? `<button class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem;" onclick="event.stopPropagation(); openTriageModal('${escapeHtml(c.complaint_id)}')">${document.body?.dataset.userRole === "judge" ? "View" : "Triage"} &rarr;</button>` : `<a class="pill-tab" style="padding: 5px 14px; font-size: 0.78rem; text-decoration:none;" href="/refunds">Review Desk &rarr;</a>`}
       </td>
     `;
     tbody.appendChild(tr);
@@ -1170,11 +1168,11 @@ function renderCommunicationThreads(threads) {
 
     div.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-        <span style="font-weight: 800; font-size: 0.92rem; color: var(--text-heading);">${t.customer_name}</span>
-        <span style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">${t.complaint_id}</span>
+        <span style="font-weight: 800; font-size: 0.92rem; color: var(--text-heading);">${escapeHtml(t.customer_name)}</span>
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">${escapeHtml(t.complaint_id)}</span>
       </div>
-      <div style="font-size: 0.8rem; color: var(--primary); font-weight: 700; margin-bottom: 4px;">${t.complaint_title}</div>
-      <div style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.last_message}</div>
+      <div style="font-size: 0.8rem; color: var(--primary); font-weight: 700; margin-bottom: 4px;">${escapeHtml(t.complaint_title)}</div>
+      <div style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.last_message)}</div>
     `;
     cont.appendChild(div);
   });
@@ -1199,11 +1197,11 @@ async function selectCommunicationThread(cid) {
     const stream = document.getElementById("commMessagesStream");
     stream.innerHTML = (data.messages || []).map(m => `
       <div class="chat-bubble ${m.sender === 'agent' ? 'agent' : 'customer'}">
-        <div style="font-weight: 700; font-size: 0.76rem; margin-bottom: 3px;">${m.sender_name || (m.sender === 'agent' ? 'Support Specialist' : 'Customer')}</div>
-        <div>${m.text}</div>
+        <div style="font-weight: 700; font-size: 0.76rem; margin-bottom: 3px;">${escapeHtml(m.sender_name || (m.sender === 'agent' ? 'Support Specialist' : 'Customer'))}</div>
+        <div>${escapeHtml(m.text)}</div>
         <div class="chat-bubble-meta">
-          <span>${m.channel || 'Web Portal'}</span>
-          <span>${m.timestamp}</span>
+          <span>${escapeHtml(m.channel || 'Web Portal')}</span>
+          <span>${escapeHtml(m.timestamp)}</span>
         </div>
       </div>
     `).join("");
@@ -1215,10 +1213,10 @@ async function selectCommunicationThread(cid) {
       trans.innerHTML = (data.call_transcript || []).map(call => `
         <div style="margin-bottom: 12px; font-size: 0.84rem; line-height: 1.5;">
           <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); font-weight:700;">
-            <span style="color:${call.speaker === 'Agent' ? 'var(--primary)' : '#059669'};">${call.speaker}</span>
-            <span>${call.time}</span>
+            <span style="color:${call.speaker === 'Agent' ? 'var(--primary)' : '#059669'};">${escapeHtml(call.speaker)}</span>
+            <span>${escapeHtml(call.time)}</span>
           </div>
-          <div style="color:var(--text-heading); margin-top:2px;">${call.text}</div>
+          <div style="color:var(--text-heading); margin-top:2px;">${escapeHtml(call.text)}</div>
         </div>
       `).join("");
     }

@@ -138,6 +138,8 @@ async def health_check():
 @app.get("/", response_class=HTMLResponse)
 async def customer_portal(request: Request):
     user = AuthManager.get_current_user(request)
+    if user and user.get("role") == "judge":
+        return RedirectResponse(url="/admin", status_code=302)
     return templates.TemplateResponse(request=request, name="customer_portal.html", context={
         "app_name": settings.APP_NAME,
         "current_user": user,

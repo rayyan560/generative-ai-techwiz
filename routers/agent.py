@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException, Form, Depends
+from fastapi import APIRouter, Request, HTTPException, Form, Depends, Query
 from fastapi.responses import JSONResponse
 from typing import Optional, List, Dict, Any
 import datetime
@@ -80,7 +80,7 @@ async def list_complaints(
     department: Optional[str] = None,
     priority: Optional[str] = None,
     status: Optional[str] = None,
-    limit: int = 100
+    limit: int = Query(100, ge=1, le=200)
 ):
     col = get_complaints_col()
     filter_dict = {}
@@ -111,7 +111,7 @@ async def list_complaints(
     return {"complaints": docs, "total": len(docs)}
 
 @router.get("/complaints/{complaint_id}")
-async def get_complaint_details(complaint_id: str):
+async def get_complaint_details(request: Request, complaint_id: str):
     col = get_complaints_col()
     doc = col.find_one({"complaint_id": complaint_id.strip()})
     if not doc:
@@ -123,7 +123,8 @@ async def get_complaint_details(complaint_id: str):
             doc.get("complaint_description", ""),
             doc.get("customer_type", "Standard")
         )
-        col.update_one({"complaint_id": complaint_id}, {"$set": {"sentiment_telemetry": doc["sentiment_telemetry"]}})
+        if AuthManager.get_current_user(request).get("role") != "judge":
+            col.update_one({"complaint_id": complaint_id}, {"$set": {"sentiment_telemetry": doc["sentiment_telemetry"]}})
     
     if "genai_analysis" not in doc or "ground_truth" not in doc:
         ground_truth = python_validation_pipeline.validate_complaint(doc)
@@ -143,7 +144,8 @@ async def get_complaint_details(complaint_id: str):
             doc["genai_analysis"] = genai_out.model_dump()
             doc["comparison"] = comp_result.model_dump()
             doc["status"] = "Analyzed" if not comp_result.requires_manual_review else "Manual Review Required"
-        col.update_one({"complaint_id": complaint_id}, {"$set": doc})
+        if AuthManager.get_current_user(request).get("role") != "judge":
+            col.update_one({"complaint_id": complaint_id}, {"$set": doc})
 
     return clean_doc(doc)
 
