@@ -18,6 +18,10 @@ class InMemoryComplaintCollection:
         self.records.append(document)
 
 
+async def skip_background_processing(*args, **kwargs):
+    return None
+
+
 def _submission_data(**overrides):
     data = {
         "customer_name": "Demo Tester",
@@ -35,18 +39,15 @@ def test_customer_form_explains_validation_and_uses_fresh_script_asset():
     response = TestClient(app).get("/")
 
     assert response.status_code == 200
-    assert '/static/js/customer.js?v=5.2' in response.text
+    assert '/static/js/customer.js?v=5.3' in response.text
     assert 'id="complaintTitleInputError"' in response.text
     assert 'id="complaintDescriptionInputError"' in response.text
-    assert 'minlength="3"' in response.text
     assert 'minlength="10"' in response.text
+    assert "If blank or too short, a title will be created from your detailed description." in response.text
 
 
 def test_valid_complaint_submission_creates_a_ticket_without_external_storage(monkeypatch):
     collection = InMemoryComplaintCollection()
-
-    async def skip_background_processing(*args, **kwargs):
-        return None
 
     monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
     monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
@@ -60,18 +61,36 @@ def test_valid_complaint_submission_creates_a_ticket_without_external_storage(mo
     assert collection.records[0]["complaint_title"] == "Screen arrived cracked"
 
 
-def test_complaint_submission_explains_title_minimum(monkeypatch):
+def test_complaint_submission_generates_title_when_missing(monkeypatch):
     collection = InMemoryComplaintCollection()
     monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+    data = _submission_data(complaint_description="The screen arrived with a crack.")
+    data.pop("complaint_title")
 
     response = TestClient(app).post(
         "/api/complaints/submit",
-        data=_submission_data(complaint_title="ha", complaint_description="haha"),
+        data=data,
     )
 
-    assert response.status_code == 400
-    assert "title" in response.json()["detail"].lower()
-    assert collection.records == []
+    assert response.status_code == 200
+    assert response.json()["title_generated"] is True
+    assert collection.records[0]["complaint_title"] == "The screen arrived with a crack"
+
+
+def test_complaint_submission_replaces_too_short_title_from_description(monkeypatch):
+    collection = InMemoryComplaintCollection()
+    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+
+    response = TestClient(app).post(
+        "/api/complaints/submit",
+        data=_submission_data(complaint_title="ha", complaint_description="The screen arrived with a crack."),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["title_generated"] is True
+    assert collection.records[0]["complaint_title"] == "The screen arrived with a crack"
 
 
 def test_complaint_submission_explains_description_minimum(monkeypatch):

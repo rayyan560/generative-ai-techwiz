@@ -791,6 +791,14 @@ function setComplaintFieldError(input, message) {
   }
 }
 
+function deriveComplaintTitle(description) {
+  const normalized = (description || "").trim().replace(/\s+/g, " ");
+  const title = (normalized.split(/(?<=[.!?])\s+/, 1)[0] || normalized)
+    .replace(/^[\s.,!?;:\-–—]+|[\s.,!?;:\-–—]+$/g, "");
+  const candidate = title.length >= 3 ? title : normalized.replace(/^[\s.,!?;:\-–—]+|[\s.,!?;:\-–—]+$/g, "");
+  return candidate.length > 160 ? `${candidate.slice(0, 159).trimEnd()}…` : (candidate || "Customer complaint");
+}
+
 let complaintSubmitInProgress = false;
 
 async function handleComplaintSubmit(e) {
@@ -801,10 +809,15 @@ async function handleComplaintSubmit(e) {
   const submitBtn = document.getElementById("submitFormBtn");
   const titleInput = document.getElementById("complaintTitleInput");
   const descriptionInput = document.getElementById("complaintDescriptionInput");
-  const title = titleInput?.value.trim() || "";
+  let title = titleInput?.value.trim() || "";
   const description = descriptionInput?.value.trim() || "";
 
-  const titleError = title.length < 3 ? "Enter a complaint title with at least 3 characters." : "";
+  const titleWasGenerated = title.length < 3;
+  if (titleWasGenerated) {
+    title = deriveComplaintTitle(description);
+    if (titleInput) titleInput.value = title;
+  }
+  const titleError = title.length < 3 ? "Enter a short summary, or add at least 3 characters to the description so we can create one." : "";
   const descriptionError = description.length < 10 ? "Describe the issue using at least 10 characters." : "";
   setComplaintFieldError(titleInput, titleError);
   setComplaintFieldError(descriptionInput, descriptionError);
@@ -858,7 +871,8 @@ async function handleComplaintSubmit(e) {
       document.querySelectorAll(".step-item").forEach(s => s.classList.add("active"));
       
       checkCustomerAuthState();
-      showToast(`Complaint ${data.complaint_id} submitted successfully!`, "success");
+      const titleNotice = data.title_generated || titleWasGenerated ? " A title was created from your description." : "";
+      showToast(`Complaint ${data.complaint_id} submitted successfully!${titleNotice}`, "success");
     } else {
       const detail = data.detail || "Unable to submit complaint.";
       if (/title.*(short|missing)|minimum 3 characters/i.test(detail)) {

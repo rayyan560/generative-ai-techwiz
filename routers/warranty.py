@@ -106,7 +106,7 @@ async def submit_complaint(
     customer_email: str = Form(...),
     customer_phone: Optional[str] = Form(None),
     customer_type: str = Form("Standard"),
-    complaint_title: str = Form(...),
+    complaint_title: Optional[str] = Form(None),
     complaint_description: str = Form(...),
     product_or_service: Optional[str] = Form(None),
     order_reference: Optional[str] = Form(None),
@@ -116,6 +116,10 @@ async def submit_complaint(
 ):
     current_user = AuthManager.get_current_user(request)
     
+    title_was_generated = not complaint_title or len(complaint_title.strip()) < 3
+    if title_was_generated:
+        complaint_title = ComplaintPreprocessor.derive_complaint_title(complaint_description)
+
     is_valid, err_msg = ComplaintPreprocessor.validate_complaint_input(complaint_title, complaint_description)
     if not is_valid:
         raise HTTPException(status_code=400, detail=err_msg)
@@ -202,6 +206,7 @@ async def submit_complaint(
     return {
         "success": True,
         "complaint_id": new_id,
+        "title_generated": title_was_generated,
         "message": "Your complaint has been registered. Triage is processing; if an automated analysis is unavailable, the case will be queued for human review.",
         "status": "AI Pipeline Processing",
         "submitted_at": complaint_dict["created_at"]

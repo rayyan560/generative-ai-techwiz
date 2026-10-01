@@ -997,9 +997,9 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label"><span>Complaint Title / Summary *</span></label>
-          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" required minlength="3" maxlength="160" aria-describedby="complaintTitleHint complaintTitleInputError" placeholder="e.g., Screen arrived cracked" oninput="setComplaintFieldError(this, ''); triggerRulePreview()">
-          <small class="field-requirement" id="complaintTitleHint">At least 3 characters. Summarize the issue, for example: “Screen arrived cracked.”</small>
+          <label class="form-label"><span>Complaint Title / Summary (optional)</span></label>
+          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" maxlength="160" aria-describedby="complaintTitleHint complaintTitleInputError" placeholder="e.g., Screen arrived cracked" oninput="setComplaintFieldError(this, ''); triggerRulePreview()">
+          <small class="field-requirement" id="complaintTitleHint">Optional. If blank or too short, a title will be created from your detailed description.</small>
           <small class="field-requirement" id="complaintTitleInputError" role="alert" style="display:none;color:#fda4af;"></small>
         </div>
 
@@ -1266,7 +1266,7 @@
   </div>
 
   <script src="/static/js/call-widget.js?v=5.0"></script>
-  <script src="/static/js/customer.js?v=5.2"></script>
+  <script src="/static/js/customer.js?v=5.3"></script>
   <script src="/static/js/chatbot.js?v=5.1"></script>
   <link rel="stylesheet" href="/static/react/complaint-tracker.css">
   <script type="module" src="/static/react/complaint-tracker.js"></script>

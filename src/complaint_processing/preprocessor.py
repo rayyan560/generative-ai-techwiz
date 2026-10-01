@@ -61,6 +61,19 @@ class ComplaintPreprocessor:
         return entities
 
     @staticmethod
+    def derive_complaint_title(description: str, max_length: int = 160) -> str:
+        """Create a readable title when the customer leaves the summary blank or too short."""
+        normalized = re.sub(r"\s+", " ", (description or "").strip())
+        first_sentence = re.split(r"(?<=[.!?])\s+", normalized, maxsplit=1)[0]
+        title = first_sentence.strip(" \t\r\n.,!?;:-–—")
+        if len(title) < 3:
+            title = normalized.strip(" \t\r\n.,!?;:-–—")
+        if len(title) > max_length:
+            shortened = title[:max_length - 1].rsplit(" ", 1)[0].strip()
+            title = f"{shortened or title[:max_length - 1].rstrip()}…"
+        return title or "Customer complaint"
+
+    @staticmethod
     def validate_complaint_input(title: str, description: str) -> Tuple[bool, Optional[str]]:
         """Validates complaint completeness and detects trivial or empty submissions."""
         if not title or len(title.strip()) < 3:
