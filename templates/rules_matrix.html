@@ -12,7 +12,7 @@
     <p style="color: var(--text-muted); font-size: 0.875rem;">175+ Structured Ground-Truth Rules &amp; configured mandatory escalation conditions</p>
   </div>
   <div style="display: flex; gap: 12px;">
-    <input type="text" id="ruleSearchInput" onkeyup="filterRuleTable()" placeholder="Search Rule ID, Category, Action..." class="form-control" style="padding: 10px 20px; border-radius: 9999px; font-size: 0.85rem; width: 320px; background: var(--glass-input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--text-heading) !important;">
+    <input type="search" id="ruleSearchInput" oninput="filterRuleTable()" aria-label="Search rules by ID, category, action, or policy" placeholder="Search Rule ID, Category, Action..." class="form-control" style="padding: 10px 20px; border-radius: 9999px; font-size: 0.85rem; width: 320px; background: var(--glass-input-bg) !important; border: 1px solid var(--glass-border) !important; color: var(--text-heading) !important;">
   </div>
 </div>
 
@@ -20,7 +20,7 @@
 <div class="table-container">
   <div style="padding: 18px 24px; background: var(--glass-bg-subtle); border-bottom: 1px solid var(--glass-border); font-weight: 800; color: var(--text-heading); display: flex; justify-content: space-between; align-items: center;">
     <span>Ground-Truth Resolution Rules Matrix (Enforced by Deterministic Engine)</span>
-    <span id="rulesCountBadge" class="badge badge-primary" style="font-size: 0.8rem; padding: 6px 14px;">Loading rules…</span>
+    <span id="rulesCountBadge" class="badge badge-primary" role="status" aria-live="polite" style="font-size: 0.8rem; padding: 6px 14px;">Loading rules…</span>
   </div>
   <table class="data-table" id="rulesTable">
     <thead>

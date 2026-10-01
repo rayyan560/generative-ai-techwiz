@@ -772,6 +772,25 @@ function quickTrackTicket(id) {
   window.supportNovaTrackTicket?.(id, window.supportNovaCustomerEmail || "");
 }
 
+function setComplaintFieldError(input, message) {
+  if (!input) return;
+  const error = document.getElementById(`${input.id}Error`);
+  input.setCustomValidity(message);
+  if (message) {
+    input.setAttribute("aria-invalid", "true");
+    if (error) {
+      error.textContent = message;
+      error.style.display = "block";
+    }
+  } else {
+    input.removeAttribute("aria-invalid");
+    if (error) {
+      error.textContent = "";
+      error.style.display = "none";
+    }
+  }
+}
+
 let complaintSubmitInProgress = false;
 
 async function handleComplaintSubmit(e) {
@@ -785,23 +804,18 @@ async function handleComplaintSubmit(e) {
   const title = titleInput?.value.trim() || "";
   const description = descriptionInput?.value.trim() || "";
 
-  if (title.length < 3) {
-    titleInput?.setCustomValidity("Enter a complaint title with at least 3 characters.");
-    titleInput?.reportValidity();
-    titleInput?.scrollIntoView({ behavior: "smooth", block: "center" });
-    titleInput?.focus({ preventScroll: true });
-    return;
-  }
-  titleInput?.setCustomValidity("");
+  const titleError = title.length < 3 ? "Enter a complaint title with at least 3 characters." : "";
+  const descriptionError = description.length < 10 ? "Describe the issue using at least 10 characters." : "";
+  setComplaintFieldError(titleInput, titleError);
+  setComplaintFieldError(descriptionInput, descriptionError);
 
-  if (description.length < 10) {
-    descriptionInput?.setCustomValidity("Describe the issue using at least 10 characters.");
-    descriptionInput?.reportValidity();
-    descriptionInput?.scrollIntoView({ behavior: "smooth", block: "center" });
-    descriptionInput?.focus({ preventScroll: true });
+  if (titleError || descriptionError) {
+    const firstInvalid = titleError ? titleInput : descriptionInput;
+    firstInvalid?.reportValidity();
+    firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    firstInvalid?.focus({ preventScroll: true });
     return;
   }
-  descriptionInput?.setCustomValidity("");
 
   const evidenceImage = document.getElementById("complaintEvidenceImage");
   const evidenceConsent = document.getElementById("evidenceProcessingConsent");
@@ -846,7 +860,17 @@ async function handleComplaintSubmit(e) {
       checkCustomerAuthState();
       showToast(`Complaint ${data.complaint_id} submitted successfully!`, "success");
     } else {
-      showToast("Submission Error: " + (data.detail || "Unable to submit complaint."), "danger");
+      const detail = data.detail || "Unable to submit complaint.";
+      if (/title.*(short|missing)|minimum 3 characters/i.test(detail)) {
+        setComplaintFieldError(titleInput, detail);
+        titleInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+        titleInput?.focus({ preventScroll: true });
+      } else if (/description.*(short|empty)|minimum 10 characters/i.test(detail)) {
+        setComplaintFieldError(descriptionInput, detail);
+        descriptionInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+        descriptionInput?.focus({ preventScroll: true });
+      }
+      showToast("Submission Error: " + detail, "danger");
     }
   } catch (err) {
     showToast("Network or Server error: " + err, "danger");

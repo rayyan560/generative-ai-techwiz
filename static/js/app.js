@@ -1132,6 +1132,7 @@ async function loadRulesList() {
       `;
       tbody.appendChild(tr);
     });
+    filterRuleTable();
     init3DCardTilt();
   } catch (e) {
     console.error("Error loading rules matrix:", e);
@@ -1139,6 +1140,39 @@ async function loadRulesList() {
     if (tbody) {
       tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error loading rules matrix feed.</td></tr>`;
     }
+  }
+}
+
+function filterRuleTable() {
+  const input = document.getElementById("ruleSearchInput");
+  const tbody = document.getElementById("rulesTableBody");
+  if (!input || !tbody) return;
+
+  tbody.querySelector("[data-rule-empty-state]")?.remove();
+  if (tbody.innerText.includes("Loading resolution rules")) return;
+
+  const query = input.value.trim().toLocaleLowerCase();
+  const rows = Array.from(tbody.querySelectorAll("tr")).filter(row => row.cells.length === 9);
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const matches = row.innerText.toLocaleLowerCase().includes(query);
+    row.hidden = !matches;
+    if (matches) visibleCount += 1;
+  });
+
+  if (query && rows.length && visibleCount === 0) {
+    const emptyRow = document.createElement("tr");
+    emptyRow.dataset.ruleEmptyState = "true";
+    emptyRow.innerHTML = '<td colspan="9" role="status" style="text-align:center;padding:24px;color:var(--text-muted);">No rules match this search.</td>';
+    tbody.appendChild(emptyRow);
+  }
+
+  const countBadge = document.getElementById("rulesCountBadge");
+  if (countBadge) {
+    countBadge.textContent = query
+      ? `${visibleCount} of ${rows.length} Rules`
+      : `${rows.length} Rules Active`;
   }
 }
 

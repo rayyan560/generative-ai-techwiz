@@ -31,6 +31,17 @@ def _submission_data(**overrides):
     return data
 
 
+def test_customer_form_explains_validation_and_uses_fresh_script_asset():
+    response = TestClient(app).get("/")
+
+    assert response.status_code == 200
+    assert '/static/js/customer.js?v=5.2' in response.text
+    assert 'id="complaintTitleInputError"' in response.text
+    assert 'id="complaintDescriptionInputError"' in response.text
+    assert 'minlength="3"' in response.text
+    assert 'minlength="10"' in response.text
+
+
 def test_valid_complaint_submission_creates_a_ticket_without_external_storage(monkeypatch):
     collection = InMemoryComplaintCollection()
 
