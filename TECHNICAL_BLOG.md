@@ -52,8 +52,8 @@ To implement this principle, SupportNova operates two parallel, independent proc
                      ▼                                               ▼
      ┌───────────────────────────────┐               ┌───────────────────────────────┐
      │ Pipeline 1: GenAI Pipeline    │               │ Pipeline 2: Ground-Truth Rule │
-     │ • Multi-Key Gemini Rotation   │               │ • 105+ Rules Matrix Engine    │
-     │ • Sentiment & Entity Parsing  │               │ • 34+ Mandatory Escalations   │
+     │ • Configured Gemini SDK       │               │ • 175 Rules Matrix Engine     │
+     │ • Sentiment & Entity Parsing  │               │ • 34 Named Escalations       │
      │ • Draft Customer Reply        │               │ • Active Policy Precedence    │
      │ • Agent Guidance Synthesis    │               │ • Prohibited Action Filter    │
      └───────────────┬───────────────┘               └───────────────┬───────────────┘
@@ -74,7 +74,7 @@ To implement this principle, SupportNova operates two parallel, independent proc
 
 ## 3. Deep Dive into Pipeline 1: Python GenAI Complaint Intelligence
 
-Pipeline 1 acts as the linguistic and cognitive engine of SupportNova. Developed in Python using Google Gemini models (`gemini-1.5-flash` / `gemini-1.5-pro`), Pipeline 1 processes unstructured complaints into structured JSON intelligence.
+Pipeline 1 uses the supported Google GenAI Python SDK and the model configured through `GEMINI_MODEL` (default `gemini-3.8-flash`). Provider responses are validated against the application's structured schema; if analysis is unavailable, the case is routed for human review.
 
 ### Multi-Key Load Balancer & High-Availability Rotation
 Enterprise systems cannot afford downtime due to rate limits or API key quotas. SupportNova implements an automated multi-key rotation pool:
@@ -107,8 +107,8 @@ Unlike unstructured conversational bots, Pipeline 1 enforces a strict, typed sch
 
 Pipeline 2 is completely independent of Generative AI. It executes pure, deterministic Python code to enforce organizational policies, business rules, and legal mandates.
 
-### The 105+ Complaint Resolution Rules Matrix
-Pipeline 2 maintains a structured database of over 105 domain-specific rules covering all permutations of categories, customer tiers (Standard, VIP, Corporate), and issue types. Each rule defines:
+### The 175 Complaint Resolution Rules Matrix
+Pipeline 2 builds 175 deterministic rules from explicit entries and configured category/subcategory/customer-type variants. This is finite rule coverage, not proof that every real-world case is covered. Each rule defines:
 1. `Assigned Department` and `Supporting Department`.
 2. `Target Urgency` and `Priority SLA`.
 3. `Mandatory Actions Required` (e.g. "Request serial number", "Check warehouse RMA reception log").
@@ -116,8 +116,8 @@ Pipeline 2 maintains a structured database of over 105 domain-specific rules cov
 5. `Refund & Replacement Eligibility`.
 6. `Maximum Authorized Goodwill Credit Limit`.
 
-### Mandatory Escalation Manager (34+ Conditions)
-Safety and legal compliance cannot depend on model whims. Pipeline 2 contains a specialized `EscalationManager` evaluating 34+ deterministic triggers:
+### Mandatory Escalation Manager (34 Conditions)
+The escalation manager evaluates 34 named deterministic triggers; staff must still verify the result:
 - **Tier 5 (Executive Management)**: Swollen batteries, fire/smoke sparks, electrocution, child safety choking hazards.
 - **Tier 4 (Legal & Compliance)**: Formal attorney threats, litigation notices, GDPR erasure requests, FTC regulatory complaints, account credential theft.
 - **Tier 3 (Department Manager)**: Abusive staff behavior, transaction disputes exceeding $1,000, repeat complaints unresolved after 3 attempts.
@@ -203,16 +203,16 @@ On the customer-facing intake portal, customers experience an official, reassuri
 ### Admin & Agent Intelligence Workspace
 Support agents and supervisors access a high-density, modern SaaS dashboard inspired by top-tier enterprise platforms. The dashboard presents:
 - Slate Hero Card with customer account details and transaction history.
-- Live Call & Audio Recording Simulation toggles.
+- Call requests are signaled to available staff; live audio and recording are not integrated.
 - Side-by-side Dual-Pipeline view comparing GenAI proposals with Ground-Truth rules.
-- 1-Click Triage Actions: *Approve & Send*, *Authorize Refund*, *Escalate Tier*, *Regenerate Analysis*.
+- Triage actions record review decisions; outbound email and payment execution require configured integrations and are not performed by the current app.
 - Full immutable audit log tracking every automated recommendation and reviewer override.
 
 ---
 
 ## 9. Comprehensive Testing, Performance & Evaluation
 
-SupportNova underwent rigorous end-to-end evaluation across 525+ pre-seeded complaints and 21 company policy documents:
+The repository includes a 528-record sample complaint dataset and 21 policy documents. The current local automated test suite has 36 passing tests (with four dependency/framework deprecation warnings); this is not an end-to-end evaluation across every sample or proof of live-provider behavior.
 
 The test transcript previously included in this report is historical and is not a current verification result. In particular, its GenAI test exercised a synthetic fallback rather than a live provider. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. Execute `pytest -q` in the target environment and record the actual output before using test results as submission evidence. Live model quality, rate limits, and integration credentials require separate provider-backed tests.
 
@@ -225,7 +225,7 @@ The test transcript previously included in this report is historical and is not 
 
 ## 10. Conclusion & Future Roadmap
 
-SupportNova illustrates the next frontier of applied enterprise Generative AI. By harmonizing the contextual fluency of Large Language Models with the deterministic rigidity of Python Ground-Truth rule engines, SupportNova achieves unprecedented complaint resolution velocity without compromising compliance, security, or customer trust.
+SupportNova demonstrates a prototype workflow for combining configured language-model assistance with deterministic review controls. It does not certify compliance, security, or production reliability.
 
 Future planned enhancements include:
 - Real-time voice stream transcription for live phone triage.

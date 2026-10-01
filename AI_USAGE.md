@@ -3,7 +3,7 @@
 **Project Name:** SupportNova - ResponseX Intelligence  
 **Competition:** Techwiz 7 - Aptech World Tech Championship  
 **Category:** Generative AI PowerPlay  
-**Date:** September 2026  
+**Date:** October 1, 2026
 
 ---
 
@@ -13,10 +13,12 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
 
 | Field | Description |
 | :--- | :--- |
-| **Primary GenAI Provider** | Google Gemini API (`gemini-1.5-flash` / `gemini-1.5-pro`) |
+| **Primary GenAI Provider** | Google GenAI SDK; model configured with `GEMINI_MODEL` (`gemini-3.8-flash` by default) |
 | **API Architecture** | Environment-configured key rotation; no API keys are stored in source control |
 | **Independent Validation Pipeline** | 100% Deterministic Python Ground-Truth Rule Engine (No AI in Pipeline 2) |
-| **Ground-Truth Rules Enforced** | 105+ Rules in Complaint Resolution Matrix & 32+ Escalation Conditions |
+| **Ground-Truth Rules Enforced** | 175 Complaint Resolution Rules & 34 Named Escalation Conditions |
+
+OpenAI Codex was used for code review, implementation assistance, documentation corrections, and test authoring. Human project owners remain responsible for reviewing changes and the competition submission.
 
 ---
 
@@ -35,7 +37,7 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
   - Strict Pydantic JSON schema parser, bounded key rotation, and JSON fence extraction.
   - Provider failures now result in manual review; no synthetic response is represented as GenAI output.
 - **Tests Performed**: `tests/test_genai_pipeline.py` (provider-unavailable/manual-review behavior). This is not a live provider integration test.
-- **Verified By**: SupportNova Engineering Team.
+- **Verification Status**: Automated provider-unavailable behavior is covered locally; live Gemini quality, credentials, rate limits, and production behavior were not tested.
 
 ---
 
@@ -47,8 +49,8 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
   - `src/complaint_rules/matrix.py`
   - `src/escalation_rules/manager.py`
   - `src/routing_rules/router.py`
-- **Tests Present**: `tests/test_python_validation.py`. A separate SLA/routing test module is not currently present.
-- **Verified By**: SupportNova QA Directorate.
+- **Tests Present**: `tests/test_python_validation.py` and `tests/test_srs_dataset_coverage.py`. The latter checks configured routing coverage and sample ground-truth mappings; exhaustive SLA behavior is not covered.
+- **Verification Status**: Local automated checks only; no independent QA sign-off is claimed.
 
 ---
 
@@ -60,7 +62,7 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
   - `src/hallucination_checks/detector.py`
   - `src/security/prompt_defense.py`
 - **Tests Performed**: `tests/test_comparison_engine.py`, `tests/test_security_injection.py`.
-- **Verified By**: SupportNova Security Team.
+- **Verification Status**: Local automated tests cover selected comparison and prompt-injection cases; no independent security audit is claimed.
 
 ---
 
@@ -71,8 +73,8 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
   - `src/document_processing/parser.py`
   - `src/knowledge_base/manager.py`
   - `sample_documents/generate_docs.py`
-- **Dataset**: 21 generated policy documents are present as PDF/DOCX artifacts. A repeatable parser test is not currently present in `tests/`.
-- **Verified By**: SupportNova Architecture Review Board.
+- **Dataset**: 21 policy documents are present as PDF/DOCX artifacts. Tests cover upload validation and persistence with a mocked parser; extracted PDF/DOCX content still needs parser-fixture integration tests.
+- **Verification Status**: Local unit and route-function checks only; no architecture-board sign-off is claimed.
 
 ---
 

@@ -1492,50 +1492,54 @@ async function loadAnalyticsDashboard() {
 async function loadDefectRadar() {
   try {
     const res = await fetch("/api/analytics/defect-radar");
+    if (!res.ok) throw new Error(`Product complaint summary failed (${res.status}).`);
     const data = await res.json();
-
-    // Recall Advisory Banner
-    if (data.recall_advisory && data.recall_advisory.advisory_active) {
-      const banner = document.getElementById("aiRecallAdvisoryBanner");
-      if (banner) {
-        banner.style.display = "block";
-        document.getElementById("recallAdvisoryTitle").innerText = `Executive QA Advisory: ${data.recall_advisory.affected_models.join(", ")} Defect Alert`;
-        document.getElementById("recallAdvisoryDesc").innerText = data.recall_advisory.recommended_action;
-      }
-    }
-
-    // Defect Radar Table
     const tbody = document.getElementById("defectRadarTableBody");
     if (!tbody) return;
-    tbody.innerHTML = "";
+    tbody.replaceChildren();
+    const catalogCount = document.getElementById("radarCatalogCount");
+    const matchedCount = document.getElementById("radarMatchedCount");
+    const unmatchedCount = document.getElementById("radarUnmatchedCount");
+    if (catalogCount) catalogCount.textContent = `${Number(data.catalog_product_count) || 0} catalog products`;
+    if (matchedCount) matchedCount.textContent = String(Number(data.complaints_matched_to_catalog) || 0);
+    if (unmatchedCount) unmatchedCount.textContent = String(Number(data.complaints_without_catalog_match) || 0);
 
     const products = data.monitored_products || [];
-    products.forEach(p => {
+    if (!products.length) {
+      const row = tbody.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 6;
+      cell.textContent = "No product catalog records are available.";
+      return;
+    }
+    products.forEach(product => {
       const tr = document.createElement("tr");
-      const statusClass = p.failure_count > 10 ? "badge-danger" : (p.failure_count > 5 ? "badge-warning" : "badge-success");
-      const statusText = p.failure_count > 10 ? "Critical QA" : (p.failure_count > 5 ? "Elevated" : "Nominal");
-
-      tr.innerHTML = `
-        <td style="font-weight:800; font-family:'JetBrains Mono', monospace; color:var(--primary);">${p.product_id}</td>
-        <td><strong style="color:var(--text-heading);">${p.name}</strong></td>
-        <td><span class="badge badge-primary">${p.category}</span></td>
-        <td><strong>$ ${p.price.toFixed(2)}</strong></td>
-        <td><span style="font-weight:800; color:${p.failure_count > 8 ? '#e11d48' : 'var(--text-heading)'};">${p.failure_count} Reports</span></td>
-        <td style="color:var(--text-body); font-size:0.85rem;">${p.primary_failure_mode}</td>
-        <td>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <div class="progress-bar-container" style="width:70px; margin-bottom:0;">
-              <div class="progress-bar-fill" style="width:${p.quality_index}%; background:${p.quality_index > 80 ? '#10b981' : '#f59e0b'};"></div>
-            </div>
-            <span style="font-size:0.8rem; font-weight:700;">${p.quality_index}%</span>
-          </div>
-        </td>
-        <td><span class="badge ${statusClass}">${statusText}</span></td>
-      `;
+      const values = [
+        product.product_id,
+        product.name,
+        product.category,
+        Number.isFinite(Number(product.price)) ? `$${Number(product.price).toFixed(2)}` : "Not recorded",
+        `${Number(product.complaint_count) || 0}`,
+        product.primary_mention_type || "Unspecified",
+      ];
+      values.forEach((value, index) => {
+        const cell = tr.insertCell();
+        cell.textContent = value == null || value === "" ? "Not recorded" : String(value);
+        if (index === 0) cell.style.cssText = "font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--primary);";
+        if (index === 1) cell.style.fontWeight = "700";
+      });
       tbody.appendChild(tr);
     });
   } catch (e) {
     console.error("Error loading defect radar:", e);
+    const tbody = document.getElementById("defectRadarTableBody");
+    if (tbody) {
+      tbody.replaceChildren();
+      const row = tbody.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 6;
+      cell.textContent = "Product complaint summary could not be loaded.";
+    }
   }
 }
 
@@ -1759,4 +1763,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-

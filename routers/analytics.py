@@ -232,8 +232,8 @@ async def export_csv():
             r.get("priority"),
             r.get("status"),
             comp.get("verification_status", "Pending"),
-            comp.get("mandatory_coverage_score", 100),
-            comp.get("source_traceability_score", 100),
+            comp.get("mandatory_coverage_score", "Not evaluated"),
+            comp.get("source_traceability_score", "Not evaluated"),
             gt.get("refund_eligible", False),
             gt.get("mandatory_escalation", False),
             r.get("created_at")
@@ -269,11 +269,4 @@ async def translate_text(
     text: str = Form(...),
     target_lang: str = Form("en")
 ):
-    lang_names = {"ur": "Urdu", "ar": "Arabic", "es": "Spanish", "zh": "Chinese", "en": "English"}
-    return {
-        "source_text": text,
-        "target_lang": target_lang,
-        "target_lang_name": lang_names.get(target_lang, "English"),
-        "translated_text": text,
-        "status": "Synchronized"
-    }
+    raise HTTPException(status_code=503, detail="Translation service is not configured.")

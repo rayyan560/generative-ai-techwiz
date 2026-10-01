@@ -9,28 +9,12 @@
       <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
       Complaint Intelligence & Executive Defect Analytics
     </h1>
-    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time SLA Tracking, 50-Product Defect Radar, and RAG Verification Index</p>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Complaint analytics, rule-check coverage, and catalog-linked product mentions</p>
   </div>
   <div style="display: flex; gap: 12px;">
     <a href="/api/reports/export/csv" class="pill-tab active" style="text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 700;">
       <i class="fa-solid fa-file-csv"></i> Export Full CSV Report
     </a>
-  </div>
-</div>
-
-<!-- 🚨 Automated AI Product Quality Recall Advisory Banner -->
-<div id="aiRecallAdvisoryBanner" style="display: none; background: linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(244, 63, 94, 0.15) 100%); border: 1px solid rgba(225, 29, 72, 0.4); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 26px; backdrop-filter: blur(16px);">
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <div style="width: 44px; height: 44px; border-radius: 12px; background: #e11d48; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-      </div>
-      <div>
-        <div style="font-weight: 800; font-size: 1.05rem; color: #be123c;" id="recallAdvisoryTitle">Executive QA Advisory: Defect Spike Detected</div>
-        <div style="font-size: 0.86rem; color: var(--text-heading); margin-top: 2px;" id="recallAdvisoryDesc">Model NovaBook Pro 16 shows elevated battery swelling reports. Recommended: Engineering batch recall.</div>
-      </div>
-    </div>
-    <span class="badge badge-danger" style="padding: 8px 18px; font-size: 0.85rem;">Action Recommended</span>
   </div>
 </div>
 
@@ -55,14 +39,18 @@
   </div>
 </div>
 
-<!-- 50 Products Defect Radar & Geo-Spatial Quality Table -->
+<!-- Product Catalog Complaint Reference Table -->
 <div class="table-container" style="margin-top: 24px;">
   <div style="padding: 18px 24px; border-bottom: 1px solid var(--glass-border-subtle); display: flex; justify-content: space-between; align-items: center;">
     <div>
-      <h3 style="font-size: 1.1rem; color: var(--text-heading); font-weight: 800;">50-Product Hardware Defect Radar & QA Failure Mode Ranking</h3>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time failure frequency monitoring across all official NovaTech hardware lines</div>
+      <h3 style="font-size: 1.1rem; color: var(--text-heading); font-weight: 800;">Catalog Product Complaint References</h3>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Complaint matches only—not a defect rate, reliability score, or product recall decision.</div>
     </div>
-    <span class="badge badge-primary">50 Monitored Models</span>
+    <span class="badge badge-primary" id="radarCatalogCount">Loading catalog…</span>
+  </div>
+  <div style="display:flex; gap:24px; flex-wrap:wrap; padding:12px 24px; color:var(--text-muted); font-size:0.85rem;">
+    <span>Matched complaints: <strong id="radarMatchedCount">—</strong></span>
+    <span>Unmatched complaints: <strong id="radarUnmatchedCount">—</strong></span>
   </div>
   <table class="data-table" id="defectRadarTable">
     <thead>
@@ -71,10 +59,8 @@
         <th>Product Model</th>
         <th>Category</th>
         <th>Price</th>
-        <th>Failure Count</th>
-        <th>Primary Failure Mode</th>
-        <th>Quality Index</th>
-        <th>Status</th>
+        <th>Matched Complaint References</th>
+        <th>Most Common Mention</th>
       </tr>
     </thead>
     <tbody id="defectRadarTableBody">
@@ -96,4 +82,3 @@
   </div>
 </div>
 {% endblock %}
-
