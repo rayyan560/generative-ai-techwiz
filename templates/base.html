@@ -174,7 +174,7 @@
           <!-- Real-time Live Connection Pill -->
           <div id="liveStreamPill" style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 800; color: #059669; background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 9999px;">
             <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
-            <span id="liveStatusText">Connecting…</span>
+            <span id="liveStatusText">{% if current_user.role == 'judge' %}Read-only mode{% else %}Connecting…{% endif %}</span>
           </div>
 
           <!-- Staff Online / Offline Presence Toggle Button -->
