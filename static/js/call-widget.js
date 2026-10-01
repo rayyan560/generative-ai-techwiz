@@ -182,37 +182,6 @@ function quickCallMessage() {
   declineIncomingCall();
 }
 
-function initLiveHeartbeat() {
-  const pill = document.getElementById('liveStreamPill');
-  const txt = document.getElementById('liveStatusText');
-  if (!pill || !txt) return;
-
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}/ws/triage`;
-  
-  function connect() {
-    const ws = new WebSocket(wsUrl);
-    ws.onopen = () => {
-      pill.style.background = 'rgba(16, 185, 129, 0.16)';
-      pill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-      pill.style.color = '#059669';
-      txt.textContent = 'Live Feed Active';
-    };
-    ws.onclose = () => {
-      pill.style.background = 'rgba(245, 158, 11, 0.16)';
-      pill.style.borderColor = 'rgba(245, 158, 11, 0.4)';
-      pill.style.color = '#d97706';
-      txt.textContent = 'Reconnecting...';
-      setTimeout(connect, 3000);
-    };
-    ws.onerror = () => {
-      ws.close();
-    };
-  }
-  connect();
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   setInterval(pollActiveCall, 2500);
-  initLiveHeartbeat();
 });
