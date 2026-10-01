@@ -70,7 +70,7 @@ ESCALATION_CONDITIONS = [
     {
         "esc_id": "ESC-009",
         "name": "Repeated Unresolved Complaint (3+ attempts)",
-        "condition_fn": lambda c: c.get("is_repeat_complaint", False) or c.get("repeat_count", 0) >= 2,
+        "condition_fn": lambda c: c.get("repeat_count", 0) >= 2,
         "required_tier": "Tier 3 - Department Manager",
         "reason": "Chronic customer dissatisfaction and resolution failure",
         "mandatory": True

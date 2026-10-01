@@ -14,7 +14,7 @@ def test_safety_preview_does_not_mislabel_other_escalation_as_battery_hazard():
     preview = get_preview("Unauthorized account access", "Someone accessed my account without permission.")
 
     assert preview["estimated_category"] == "Account Security"
-    assert preview["estimated_priority"] == "P0"
+    assert preview["estimated_priority"] == "P1"
     assert "security or privacy" in preview["safety_advisory"].lower()
     assert "battery" not in preview["safety_advisory"].lower()
     assert "warranty coverage" not in preview["safety_advisory"].lower()

@@ -34,6 +34,36 @@ def test_ground_truth_double_charge():
     assert gt.expected_department == "Billing & Payments"
     assert gt.refund_eligible is True
 
+
+def test_repeated_unresolved_complaint_gets_independent_priority_escalation():
+    result = python_validation_pipeline.validate_complaint({
+        "complaint_id": "CMP-TEST-REPEAT",
+        "complaint_title": "Wi-Fi disconnects repeatedly",
+        "complaint_description": "My router loses Wi-Fi connectivity during calls.",
+        "customer_type": "Standard",
+        "is_repeat_complaint": True,
+        "repeat_count": 2,
+    })
+
+    assert result.mandatory_escalation is True
+    assert "Tier 3" in result.escalation_tier
+    assert result.expected_urgency == "High"
+    assert result.expected_priority == "P1"
+
+
+def test_repeat_escalation_threshold_requires_three_total_attempts():
+    result = python_validation_pipeline.validate_complaint({
+        "complaint_id": "CMP-TEST-REPEAT-2",
+        "complaint_title": "Wi-Fi disconnects repeatedly",
+        "complaint_description": "My router loses Wi-Fi connectivity during calls.",
+        "customer_type": "Standard",
+        "is_repeat_complaint": True,
+        "repeat_count": 1,
+    })
+
+    assert result.mandatory_escalation is False
+    assert result.expected_priority == "P2"
+
 def test_rule_matrix_covers_all_configured_categories():
     rules = RuleMatrixManager.get_all_rules()
     assert len(rules) >= 100

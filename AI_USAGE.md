@@ -51,7 +51,8 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
   - `src/complaint_rules/matrix.py`
   - `src/escalation_rules/manager.py`
   - `src/routing_rules/router.py`
-- **Tests Present**: `tests/test_python_validation.py` and `tests/test_srs_dataset_coverage.py`. The latter checks configured routing coverage and sample ground-truth mappings; exhaustive SLA behavior is not covered.
+  - `src/complaint_processing/duplicates.py`
+- **Tests Present**: `tests/test_python_validation.py` and `tests/test_srs_dataset_coverage.py`. They cover configured routing, current policy status, repeat attempts, and selected sample mappings; exhaustive SLA behavior is not covered.
 - **Verification Status**: Local automated checks only; no independent QA sign-off is claimed.
 
 ---

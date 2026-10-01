@@ -5,6 +5,7 @@ from src.complaint_rules.matrix import ALL_RULES
 from src.escalation_rules.manager import ESCALATION_CONDITIONS
 from src.python_validation.pipeline import PythonGroundTruthPipeline
 from src.routing_rules.router import ROUTING_MAP
+from src.complaint_processing.duplicates import identify_related_complaints
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,3 +43,44 @@ def test_new_subcategories_match_ground_truth_and_approved_policy_ids():
         })
         assert result.expected_subcategory == expected_subcategory
         assert result.applicable_policy_id == expected_policy
+
+
+def test_near_duplicate_and_repeat_detection_is_limited_to_same_customer_history():
+    current = {
+        "user_id": "user-1",
+        "customer_email": "customer@example.com",
+        "complaint_id": "CMP-NEW",
+        "complaint_title": "Laptop keeps shutting down",
+        "complaint_description": "My laptop randomly shuts down during video calls.",
+        "order_reference": "ORD-23456",
+        "content_hash": "new-hash",
+    }
+    history = [
+        {
+            "user_id": "user-1",
+            "customer_email": "customer@example.com",
+            "complaint_id": "CMP-OLD",
+            "complaint_title": "Laptop shuts off during calls",
+            "complaint_description": "The laptop powers down in the middle of video meetings.",
+            "order_reference": "ORD-23456",
+            "content_hash": "old-hash",
+            "status": "In Progress",
+        },
+        {
+            "user_id": "user-2",
+            "customer_email": "other@example.com",
+            "complaint_id": "CMP-OTHER",
+            "complaint_title": current["complaint_title"],
+            "complaint_description": current["complaint_description"],
+            "order_reference": "ORD-23456",
+            "content_hash": current["content_hash"],
+            "status": "New",
+        },
+    ]
+
+    result = identify_related_complaints(current, history)
+
+    assert result["is_duplicate"] is False
+    assert result["is_repeat_complaint"] is True
+    assert result["repeat_count"] == 1
+    assert result["related_complaint_id"] == "CMP-OLD"

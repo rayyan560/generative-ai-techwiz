@@ -212,7 +212,7 @@ Support agents and supervisors access a high-density, modern SaaS dashboard insp
 
 ## 9. Comprehensive Testing, Performance & Evaluation
 
-The repository includes a 528-record sample complaint dataset and 21 policy documents. The current local automated test suite has 55 passing tests (with four dependency/framework deprecation warnings); this is not an end-to-end evaluation across every sample or proof of live-provider behavior.
+The repository includes a 528-record sample complaint dataset and 21 policy documents. The current local automated test suite has 58 passing tests (with four dependency/framework deprecation warnings); this is not an end-to-end evaluation across every sample or proof of live-provider behavior.
 
 The test transcript previously included in this report is historical and is not a current verification result. In particular, its GenAI test exercised a synthetic fallback rather than a live provider. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. Execute `pytest -q` in the target environment and record the actual output before using test results as submission evidence. Live model quality, rate limits, and integration credentials require separate provider-backed tests.
 

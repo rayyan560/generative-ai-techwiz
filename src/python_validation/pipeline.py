@@ -84,6 +84,10 @@ class PythonGroundTruthPipeline:
         is_escalated, esc_tier, esc_reason, esc_id = EscalationManager.evaluate_escalation(complaint_dict)
         policy_id = matched_rule.get("policy_id", "POL-CMP-01")
         policy_version, policy_status = resolve_policy_metadata(policy_id)
+        tier_match = re.search(r"Tier\s+(\d+)", str(esc_tier or ""))
+        escalation_level = int(tier_match.group(1)) if tier_match else 0
+        expected_urgency = "Critical" if escalation_level >= 5 else "High" if is_escalated and escalation_level >= 3 else matched_rule.get("urgency", "Medium")
+        expected_priority = "P0" if escalation_level >= 5 else "P1" if is_escalated and escalation_level >= 3 else matched_rule.get("priority", "P2")
         
         # 5. Missing Mandatory Fields Check
         missing_fields = []
@@ -99,8 +103,8 @@ class PythonGroundTruthPipeline:
             expected_subcategory=subcategory,
             expected_department=primary_dept,
             expected_supporting_department=supp_dept,
-            expected_urgency="Critical" if is_escalated and "Tier 5" in esc_tier else matched_rule.get("urgency", "Medium"),
-            expected_priority="P0" if is_escalated and ("Tier 5" in esc_tier or "Tier 4" in esc_tier) else matched_rule.get("priority", "P2"),
+            expected_urgency=expected_urgency,
+            expected_priority=expected_priority,
             mandatory_escalation=is_escalated or matched_rule.get("mandatory_escalation", False),
             escalation_tier=esc_tier,
             escalation_reason=esc_reason if is_escalated else None,

@@ -8,6 +8,7 @@ import logging
 from config.database import get_complaints_col, get_audit_logs_col
 from src.products.catalog import ProductCatalog
 from src.complaint_processing.preprocessor import ComplaintPreprocessor
+from src.complaint_processing.duplicates import identify_related_complaints
 from src.genai_pipeline.pipeline import GenAIUnavailableError, genai_pipeline
 from src.python_validation.pipeline import python_validation_pipeline
 from src.comparison_engine.engine import ComparisonEngine
@@ -133,13 +134,19 @@ async def submit_complaint(
 
     complaints_col = get_complaints_col()
     content_hash = ComplaintPreprocessor.compute_content_hash(complaint_description)
-    
-    is_dup = False
-    dup_id = None
-    existing = complaints_col.find_one({"content_hash": content_hash})
-    if existing:
-        is_dup = True
-        dup_id = existing.get("complaint_id")
+    user_id = current_user.get("user_id") if current_user else None
+    normalized_email = customer_email.strip().lower()
+    identity_filter = {"$or": [{"user_id": user_id}, {"customer_email": normalized_email}]} if user_id else {"customer_email": normalized_email}
+    complaint_identity = {
+        "user_id": user_id,
+        "customer_email": normalized_email,
+        "complaint_title": complaint_title.strip(),
+        "complaint_description": complaint_description.strip(),
+        "content_hash": content_hash,
+        "order_reference": order_reference.strip() if order_reference else None,
+    }
+    complaint_history = list(complaints_col.find(identity_filter, sort=[("created_at", -1)], limit=500))
+    relationship = identify_related_complaints(complaint_identity, complaint_history)
 
     total_count = complaints_col.count_documents({})
     new_id = f"CMP-{total_count + 1:05d}"
@@ -154,7 +161,6 @@ async def submit_complaint(
         customer_type
     )
 
-    user_id = current_user.get("user_id") if current_user else None
     user_avatar = current_user.get("avatar") if current_user else None
 
     complaint_dict = {
@@ -173,8 +179,7 @@ async def submit_complaint(
         "order_reference": order_reference.strip() if order_reference else None,
         "preferred_channel": preferred_channel,
         "content_hash": content_hash,
-        "is_duplicate": is_dup,
-        "duplicate_of_id": dup_id,
+        **relationship,
         "sentiment_telemetry": sentiment_data,
         "status": "AI Pipeline Processing",
         "photo_evidence_attached": image_bytes is not None,

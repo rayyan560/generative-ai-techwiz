@@ -533,7 +533,7 @@ function renderComplaintsTable(list) {
       </td>
       <td style="max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text-heading);">
         ${c.is_adversarial ? '<span style="color:#e11d48; font-weight:800;">🛡️ [Adversarial] </span>' : ''}
-        ${c.is_duplicate ? '<span style="color:#d97706; font-weight:800;">🔁 [Repeat] </span>' : ''}
+        ${(c.is_duplicate || c.is_repeat_complaint) ? '<span style="color:#d97706; font-weight:800;">🔁 [Repeat] </span>' : ''}
         ${escapeHtml(c.complaint_title)}
       </td>
       <td><span class="badge badge-secondary">${escapeHtml(c.genai_analysis?.category || 'Not analyzed')}</span></td>
