@@ -77,21 +77,18 @@ def test_public_demo_credentials_are_only_rendered_when_enabled(monkeypatch):
 
     production_login = client.get("/login")
     assert production_login.status_code == 200
-    assert "demo_admin / AdminView2026!" not in production_login.text
-    assert "demo_agent / AgentView2026!" not in production_login.text
     assert "admin / admin123" not in production_login.text
+    assert "agent / agent123" not in production_login.text
 
     monkeypatch.setattr(settings, "PUBLIC_DEMO_MODE", True)
     preview_login = client.get("/login")
     assert preview_login.status_code == 200
-    assert "Admin Portal Preview" in preview_login.text
-    assert "demo_admin / AdminView2026!" in preview_login.text
-    assert "Agent Dashboard Preview" in preview_login.text
-    assert "demo_agent / AgentView2026!" in preview_login.text
-    assert "do not grant staff permissions" in preview_login.text
+    assert "Competition Demo Logins" in preview_login.text
+    assert "admin / admin123" in preview_login.text
+    assert "agent / agent123" in preview_login.text
 
 
-def test_public_demo_accounts_are_read_only_and_redirect_to_their_preview(monkeypatch):
+def test_public_demo_accounts_use_builtin_credentials_and_open_their_portals(monkeypatch):
     users = MemoryUsersCollection()
     monkeypatch.setattr(auth_module, "get_users_col", lambda: users)
     monkeypatch.setattr(auth_module, "_USERS_INITIALIZED", False)
@@ -102,45 +99,47 @@ def test_public_demo_accounts_are_read_only_and_redirect_to_their_preview(monkey
     monkeypatch.setattr(settings, "AGENT_EMAIL", "")
     monkeypatch.setattr(settings, "AGENT_PASSWORD", "")
 
-    admin_preview = AuthManager.authenticate_user("demo_admin", "AdminView2026!")
-    agent_preview = AuthManager.authenticate_user("demo_agent", "AgentView2026!")
+    admin_preview = AuthManager.authenticate_user("admin", "admin123")
+    agent_preview = AuthManager.authenticate_user("agent", "agent123")
 
-    assert admin_preview["role"] == "judge"
+    assert admin_preview["role"] == "admin"
     assert admin_preview["demo_portal"] == "admin"
-    assert agent_preview["role"] == "judge"
+    assert agent_preview["role"] == "agent"
     assert agent_preview["demo_portal"] == "agent"
 
     verified = AuthManager.verify_session_token(AuthManager.create_session_token(agent_preview))
-    assert verified["role"] == "judge"
+    assert verified["role"] == "agent"
     assert verified["demo_portal"] == "agent"
 
     client = TestClient(app)
     login_response = client.post(
         "/api/auth/login",
-        json={"identifier": "demo_agent", "password": "AgentView2026!"},
+        json={"identifier": "agent", "password": "agent123"},
     )
     assert login_response.status_code == 200
     assert login_response.json()["user"]["demo_portal"] == "agent"
-    preview_token = login_response.json()["token"]
-    preview_headers = {"Authorization": f"Bearer {preview_token}"}
-    assert client.get("/agent", headers=preview_headers).status_code == 200
-    blocked_write = client.post(
-        "/api/chat/live/send",
-        headers=preview_headers,
-        json={"message": "This must not be sent."},
+    agent_token = login_response.json()["token"]
+    agent_headers = {"Authorization": f"Bearer {agent_token}"}
+    assert client.get("/agent", headers=agent_headers).status_code == 200
+
+    admin_login = client.post(
+        "/api/auth/login",
+        json={"identifier": "admin", "password": "admin123"},
     )
-    assert blocked_write.status_code == 403
+    assert admin_login.status_code == 200
+    admin_headers = {"Authorization": f"Bearer {admin_login.json()['token']}"}
+    assert client.get("/admin", headers=admin_headers).status_code == 200
 
     monkeypatch.setattr(settings, "PUBLIC_DEMO_MODE", False)
-    assert AuthManager.authenticate_user("demo_admin", "AdminView2026!") is None
-    assert AuthManager.verify_session_token(preview_token) is None
+    assert AuthManager.authenticate_user("admin", "admin123") is None
+    assert AuthManager.verify_session_token(agent_token) is None
 
 
-def test_agent_demo_identity_redirects_to_agent_preview(monkeypatch):
+def test_agent_demo_identity_redirects_to_agent_dashboard(monkeypatch):
     agent_preview = {
         "user_id": "USR-PUBLIC-DEMO-AGENT",
-        "username": "demo_agent",
-        "role": "judge",
+        "username": "agent",
+        "role": "agent",
         "demo_portal": "agent",
     }
     monkeypatch.setattr(AuthManager, "get_current_user", staticmethod(lambda request: agent_preview))

@@ -109,31 +109,31 @@ JUDGE_DEMO_USER = {
     "created_at": "2026-10-01 00:00:00",
 }
 
-# These public credentials are deliberately non-privileged: both identities are
-# judge/read-only users and are available only on an isolated preview service.
+# These are the built-in competition/demo accounts. They are available publicly
+# only when the app is connected to its isolated preview database.
 PUBLIC_DEMO_USERS = [
     {
         "user_id": "USR-PUBLIC-DEMO-ADMIN",
-        "username": "demo_admin",
+        "username": "admin",
         "email": "demo_admin@supportnova.demo",
-        "password": "AdminView2026!",
-        "role": "judge",
+        "password": "admin123",
+        "role": "admin",
         "demo_portal": "admin",
-        "display_name": "Admin Portal Preview",
-        "designation": "Public read-only demonstration",
+        "display_name": "Competition Admin",
+        "designation": "Competition demonstration account",
         "auth_provider": "local",
         "phone": "",
         "created_at": "2026-10-02 00:00:00",
     },
     {
         "user_id": "USR-PUBLIC-DEMO-AGENT",
-        "username": "demo_agent",
+        "username": "agent",
         "email": "demo_agent@supportnova.demo",
-        "password": "AgentView2026!",
-        "role": "judge",
+        "password": "agent123",
+        "role": "agent",
         "demo_portal": "agent",
-        "display_name": "Agent Dashboard Preview",
-        "designation": "Public read-only demonstration",
+        "display_name": "Competition Agent",
+        "designation": "Competition demonstration account",
         "auth_provider": "local",
         "phone": "",
         "created_at": "2026-10-02 00:00:00",
@@ -141,8 +141,19 @@ PUBLIC_DEMO_USERS = [
 ]
 
 PUBLIC_DEMO_PORTALS = {
-    user["user_id"]: user["demo_portal"] for user in PUBLIC_DEMO_USERS
+    user["user_id"]: {"portal": user["demo_portal"], "role": user["role"]}
+    for user in PUBLIC_DEMO_USERS
 }
+
+
+def _is_valid_public_demo_user(user: Dict[str, Any]) -> bool:
+    expected = PUBLIC_DEMO_PORTALS.get(user.get("user_id"))
+    return bool(
+        settings.PUBLIC_DEMO_MODE
+        and expected
+        and user.get("role") == expected["role"]
+        and user.get("demo_portal") == expected["portal"]
+    )
 
 def generate_google_avatar(name: str, email: str) -> str:
     """Generates high quality Google profile avatar URL based on user name/email."""
@@ -278,14 +289,12 @@ class AuthManager:
         demo_user_ids = {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}
         if user and not settings.DEMO_MODE and user.get("user_id") in demo_user_ids:
             return None
-        if settings.PUBLIC_DEMO_MODE and user and user.get("role") in {"admin", "agent", "warranty_manager"}:
-            return None
         if user and user.get("user_id") in PUBLIC_DEMO_PORTALS:
-            if (
-                not settings.PUBLIC_DEMO_MODE
-                or user.get("role") != "judge"
-                or user.get("demo_portal") != PUBLIC_DEMO_PORTALS[user["user_id"]]
-            ):
+            if not _is_valid_public_demo_user(user):
+                return None
+        elif settings.PUBLIC_DEMO_MODE and user and user.get("role") in {"admin", "agent", "warranty_manager"}:
+            # Do not authenticate any unrelated privileged account in the public preview DB.
+            if not _is_valid_public_demo_user(user):
                 return None
         if user and verify_password(password, user.get("password", "")):
             # Automatic seamless migration of legacy unhashed password to bcrypt hash
@@ -480,13 +489,11 @@ class AuthManager:
             demo_user_ids = {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}
             if not settings.DEMO_MODE and user.get("user_id") in demo_user_ids:
                 return None
-            if settings.PUBLIC_DEMO_MODE and user.get("role") in {"admin", "agent", "warranty_manager"}:
-                return None
             if user.get("user_id") in PUBLIC_DEMO_PORTALS and (
-                not settings.PUBLIC_DEMO_MODE
-                or user.get("role") != "judge"
-                or user.get("demo_portal") != PUBLIC_DEMO_PORTALS[user["user_id"]]
+                not _is_valid_public_demo_user(user)
             ):
+                return None
+            if settings.PUBLIC_DEMO_MODE and user.get("role") in {"admin", "agent", "warranty_manager"} and not _is_valid_public_demo_user(user):
                 return None
             return {
                 "sub": user.get("username", ""),

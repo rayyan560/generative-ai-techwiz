@@ -595,15 +595,15 @@
           {% endif %}
           {% if public_demo_mode %}
           <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color, rgba(100,116,139,.2));">
-            <div style="font-size: .82rem; font-weight: 800; color: var(--text-heading); margin-bottom: 4px;">Isolated public preview accounts · view-only</div>
-            <div style="font-size: .76rem; color: var(--text-muted); margin-bottom: 7px;">These let reviewers explore each workspace; they do not grant staff permissions.</div>
+            <div style="font-size: .82rem; font-weight: 800; color: var(--text-heading); margin-bottom: 4px;">Competition Demo Logins</div>
+            <div style="font-size: .76rem; color: var(--text-muted); margin-bottom: 7px;">Use these built-in accounts to enter the demo workspaces.</div>
             <div class="demo-row">
-              <span>Admin Portal Preview:</span>
-              <button type="button" class="demo-pill" onclick="fillCreds('demo_admin','AdminView2026!')">demo_admin / AdminView2026!</button>
+              <span>Admin Portal:</span>
+              <button type="button" class="demo-pill" onclick="fillCreds('admin','admin123')">admin / admin123</button>
             </div>
             <div class="demo-row">
-              <span>Agent Dashboard Preview:</span>
-              <button type="button" class="demo-pill" onclick="fillCreds('demo_agent','AgentView2026!')">demo_agent / AgentView2026!</button>
+              <span>Agent Dashboard:</span>
+              <button type="button" class="demo-pill" onclick="fillCreds('agent','agent123')">agent / agent123</button>
             </div>
           </div>
           {% endif %}

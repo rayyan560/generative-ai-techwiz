@@ -96,9 +96,9 @@ For local-only privileged demo accounts, copy `.env.example` to `.env` and set `
 
 ### Isolated Public Review Demo
 
-If judges need visible login details for the Admin and Agent workspaces, deploy a **second Railway service** from this repository. Do not enable this mode on the production service. On the review service, set `PUBLIC_DEMO_MODE=true`, `DEMO_MODE=false`, and `DATABASE_NAME=supportnova_demo_public`; provide a MongoDB URI for a database user whose permissions are scoped only to that demo database, plus a unique `SESSION_SECRET_KEY` of at least 32 characters. Leave production `ADMIN_*`/`AGENT_*`, Gemini, and Google OAuth credentials empty. The app refuses to start in public-demo mode if these isolation checks fail or if MongoDB is unavailable, and it never falls back to the shared local JSON files.
+If judges need public Admin and Agent logins, deploy a **second Railway service** from this repository. Do not enable this mode on the production service. On the review service, set `PUBLIC_DEMO_MODE=true`, `DEMO_MODE=false`, and `DATABASE_NAME=supportnova_demo_public`; provide a MongoDB URI for a database user whose permissions are scoped only to that demo database, plus a unique `SESSION_SECRET_KEY` of at least 32 characters. Leave production `ADMIN_*`/`AGENT_*`, Gemini, and Google OAuth credentials empty. The app refuses to start in public-demo mode if these isolation checks fail or if MongoDB is unavailable, and it never falls back to the shared local JSON files.
 
-The review login page then shows `demo_admin / AdminView2026!` and `demo_agent / AgentView2026!`. Both accounts have the non-privileged `judge` role: they can preview the Admin and Agent pages but cannot modify records, send messages, make calls, or use live AI integrations. These are public preview credentials, not the production admin or agent passwords.
+The review login page then shows the built-in competition accounts `admin / admin123` and `agent / agent123`. These have Admin and Agent permissions **inside the isolated demo database only**. Keep all records in that database fictitious and do not configure paid/live integrations there; never enable the public demo mode on the production service.
 
 ### 3. Generate Knowledge Base Documents & 500+ Dataset
 ```bash
