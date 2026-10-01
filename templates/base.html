@@ -24,9 +24,6 @@
   </script>
 </head>
 <body data-user-role="{{ current_user.role if current_user else 'guest' }}">
-  {% if current_user and current_user.role == 'judge' %}
-  <div role="status" style="position:fixed;z-index:1200;top:8px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:999px;background:#0f766e;color:#fff;font-size:.8rem;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.2);white-space:nowrap;">Judge review mode · read-only</div>
-  {% endif %}
   <!-- TemplateMo 3D Glassmorphism Background & Floating Luxury Orbs -->
   <div class="background"></div>
   <div class="orb orb-1"></div>
@@ -378,8 +375,8 @@
     </div>
   </div>
 
-  <script src="/static/js/app.js?v=5.1"></script>
-  <script src="/static/js/chatbot.js?v=5.0"></script>
+  <script src="/static/js/app.js?v=5.2"></script>
+  <script src="/static/js/chatbot.js?v=5.1"></script>
   <script src="/static/js/call-widget.js?v=5.1"></script>
   <script>
     (function initTiltEffect() {

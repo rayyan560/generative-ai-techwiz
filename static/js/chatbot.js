@@ -1501,7 +1501,7 @@ html[data-theme="dark"] .sn-ibtn {
         <div class="sn-wa-officer-name">${officerName}</div>
         <div class="sn-wa-officer-role">
           <span class="sn-wa-online-dot"></span>
-          ${officerRole} â€¢ Online
+          ${officerRole} | Online
         </div>
       </div>
       <button onclick="SNC.initiateCall()" style="margin-left: auto; background: linear-gradient(135deg, #25d366, #128c7e); border: none; color: #ffffff; padding: 6px 14px; border-radius: 20px; font-size: 0.76rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37,211,102,0.4);" title="Start Internet Call"><i class="fa-solid fa-phone"></i> Call</button> <a href="/communication" target="_blank" style="margin-left: 6px; background: rgba(37,211,102,0.2); border: 1px solid rgba(37,211,102,0.4); color: #25d366; padding: 4px 10px; border-radius: 8px; font-size: 0.70rem; font-weight: 800; text-decoration: none; transition: all 0.2s ease;">Open Hub</a>
@@ -1686,7 +1686,8 @@ html[data-theme="dark"] .sn-ibtn {
       .replace(/\*(.+?)\*/g, '$1')
       .replace(/`(.+?)`/g, '$1')
       .replace(/<[^>]+>/g, '')
-      .replace(/[â€¢\-] /g, '');
+      .replace(/\s*\|\s*/g, ' ')
+      .replace(/ - /g, ' ');
     const u = new SpeechSynthesisUtterance(clean);
     u.rate = 1.05;
     u.pitch = 1.04;
@@ -2083,6 +2084,5 @@ html[data-theme="dark"] .sn-ibtn {
   }
 
 })();
-
 
 

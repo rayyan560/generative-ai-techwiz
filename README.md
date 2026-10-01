@@ -122,6 +122,11 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 
 ---
 
+## 🎬 Voice-Over Project Walkthroughs
+
+- [Full SupportNova project walkthrough (voice-over)](video_assets/SupportNova_Project_Walkthrough_VoiceOver.mp4)
+- [Authentication and project documents walkthrough (voice-over)](video_assets/SupportNova_Authentication_Documents_VoiceOver.mp4)
+
 ## 📊 Evaluation & Verification Summary
 
 | Requirement | Target | Achieved | Status |
@@ -134,4 +139,4 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Structured Resolution Rules | >= 100 | **175 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **34 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **60 passed** | ✅ Verified locally on October 1, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **62 passed** | ✅ Verified locally on October 1, 2026; browser interactions and live-provider behavior need separate verification |

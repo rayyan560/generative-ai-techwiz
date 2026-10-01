@@ -8,6 +8,10 @@ let selectedComplaintId = null;
 let selectedCommComplaintId = null;
 let currentCommThreads = [];
 let currentRefundRecords = [];
+let currentRefundViewRecords = [];
+let currentRefundPage = 1;
+let currentRefundTab = "All";
+const REFUND_PAGE_SIZE = 25;
 let soundEnabled = true;
 let wsConnection = null;
 
@@ -1284,7 +1288,7 @@ async function loadRefundsDashboard() {
     const res = await fetch("/api/refunds/summary");
     if (!res.ok) throw new Error(`Refund records unavailable (${res.status})`);
     const data = await res.json();
-    currentRefundRecords = data.records || [];
+    currentRefundRecords = Array.isArray(data.records) ? data.records : [];
 
     const m = data.metrics || {};
     [["kpiTotalClaims", m.total_claims_val], ["kpiEscrowHeld", m.escrow_held_val], ["kpiApprovedPayouts", m.approved_payout_val], ["kpiDisputedClaims", m.disputed_val]].forEach(([id, value]) => {
@@ -1292,7 +1296,8 @@ async function loadRefundsDashboard() {
       if (el) el.innerText = Number.isFinite(Number(value)) ? `$ ${Number(value).toLocaleString()}` : "Not recorded";
     });
 
-    renderRefundsTable(currentRefundRecords);
+    currentRefundPage = 1;
+    refreshRefundsTable();
     init3DCardTilt();
   } catch (e) {
     console.error("Error loading refunds:", e);
@@ -1303,36 +1308,77 @@ async function loadRefundsDashboard() {
   }
 }
 
-function renderRefundsTable(records) {
+function renderRefundsTable(records, resetPage = true) {
+  currentRefundViewRecords = records;
+  if (resetPage) currentRefundPage = 1;
+  renderRefundsPage();
+}
+
+function renderRefundsPage() {
   const tbody = document.getElementById("refundsTableBody");
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  if (records.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No refund records matching current filter.</td></tr>`;
+  const totalRecords = currentRefundViewRecords.length;
+  const pageCount = Math.max(1, Math.ceil(totalRecords / REFUND_PAGE_SIZE));
+  currentRefundPage = Math.min(Math.max(1, currentRefundPage), pageCount);
+  const start = (currentRefundPage - 1) * REFUND_PAGE_SIZE;
+  const pageRecords = currentRefundViewRecords.slice(start, start + REFUND_PAGE_SIZE);
+
+  if (totalRecords === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No refund records matching current filter.</td></tr>`;
+    updateRefundPagination(0, 1);
     return;
   }
 
-  records.forEach(r => {
+  pageRecords.forEach(r => {
     const tr = document.createElement("tr");
+    const amountIsVerified = r.amount !== null && r.amount !== "" && Number.isFinite(Number(r.amount));
+    const escrowStatus = String(r.escrow_status ?? "Not recorded");
     tr.innerHTML = `
       <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--cream, #eef0d0);">${escapeHtml(r.complaint_id)}</td>
-      <td>
-        <div style="font-weight: 800; color: var(--text-heading);">${escapeHtml(r.customer_name)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.order_reference)}</div>
-      </td>
-      <td><strong style="color: var(--text-heading); font-size: 1rem;">${r.amount !== null && r.amount !== "" && Number.isFinite(Number(r.amount)) ? `$ ${Number(r.amount).toFixed(2)}` : "Not verified"}</strong></td>
-      <td><span class="badge ${r.escrow_status.includes('Paid') ? 'badge-success' : (r.escrow_status.includes('Held') ? 'badge-primary' : 'badge-secondary')}">${escapeHtml(r.escrow_status)}</span></td>
-      <td><span class="badge ${r.refund_eligible ? 'badge-success' : 'badge-secondary'}">${r.refund_eligible ? 'Eligible' : 'Ineligible'}</span></td>
+      <td><div style="font-weight: 800; color: var(--text-heading);">${escapeHtml(r.customer_name)}</div></td>
+      <td><div>${escapeHtml(r.product_or_service)}</div><div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.order_reference)}</div></td>
+      <td>${escapeHtml(r.complaint_title)}</td>
+      <td><strong style="color: var(--text-heading); font-size: 1rem;">${amountIsVerified ? `$ ${Number(r.amount).toFixed(2)}` : "Not verified"}</strong></td>
       <td><span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem;">${escapeHtml(r.policy_matched)}</span></td>
+      <td><span class="badge ${escrowStatus.includes('Paid') ? 'badge-success' : (escrowStatus.includes('Held') ? 'badge-primary' : 'badge-secondary')}">${escapeHtml(escrowStatus)}</span></td>
+      <td><span class="badge ${r.refund_eligible ? 'badge-success' : 'badge-secondary'}">${r.refund_eligible ? 'Eligible' : 'Ineligible'}</span></td>
       <td>
-        <button class="pill-tab active" style="padding: 5px 14px; font-size: 0.78rem;" ${r.amount !== null && r.amount !== "" && Number.isFinite(Number(r.amount)) && r.refund_eligible ? `onclick="openRefundActionModal('${escapeHtml(r.complaint_id)}', ${Number(r.amount)})"` : "disabled title=\"Verified amount and eligibility are required\""}>
+        <button class="pill-tab active js-refund-review" style="padding: 5px 14px; font-size: 0.78rem;" ${amountIsVerified && r.refund_eligible ? "" : "disabled title=\"Verified amount and eligibility are required\""}>
           Review &rarr;
         </button>
       </td>
     `;
+    const reviewButton = tr.querySelector(".js-refund-review");
+    if (reviewButton && !reviewButton.disabled) {
+      reviewButton.addEventListener("click", () => openRefundActionModal(String(r.complaint_id ?? ""), Number(r.amount)));
+    }
     tbody.appendChild(tr);
   });
+
+  updateRefundPagination(totalRecords, pageCount);
+}
+
+function updateRefundPagination(totalRecords, pageCount) {
+  const container = document.getElementById("refundsPagination");
+  const status = document.getElementById("refundsPaginationStatus");
+  const previous = document.getElementById("refundsPreviousPage");
+  const next = document.getElementById("refundsNextPage");
+  if (!container || !status || !previous || !next) return;
+
+  container.style.display = totalRecords === 0 ? "none" : "flex";
+  status.textContent = totalRecords === 0
+    ? "No records"
+    : `Showing ${((currentRefundPage - 1) * REFUND_PAGE_SIZE) + 1}–${Math.min(currentRefundPage * REFUND_PAGE_SIZE, totalRecords)} of ${totalRecords} · Page ${currentRefundPage} of ${pageCount}`;
+  previous.disabled = currentRefundPage <= 1;
+  next.disabled = currentRefundPage >= pageCount;
+}
+
+function changeRefundPage(direction) {
+  const pageCount = Math.max(1, Math.ceil(currentRefundViewRecords.length / REFUND_PAGE_SIZE));
+  currentRefundPage = Math.min(Math.max(1, currentRefundPage + direction), pageCount);
+  renderRefundsPage();
 }
 
 function filterRefundTable(tab, clickEvent) {
@@ -1341,27 +1387,27 @@ function filterRefundTable(tab, clickEvent) {
   const activeTab = clickEvent?.currentTarget || document.querySelector(`.tab-pills-row .pill-tab[onclick*="'${tab}'"]`);
   if (activeTab) activeTab.classList.add("active");
 
-  if (tab === "All") {
-    renderRefundsTable(currentRefundRecords);
-  } else if (tab === "Held in Escrow") {
-    renderRefundsTable(currentRefundRecords.filter(r => r.escrow_status.includes("Held")));
-  } else if (tab === "Released / Paid") {
-    renderRefundsTable(currentRefundRecords.filter(r => r.escrow_status.includes("Paid") || r.escrow_status.includes("Released")));
-  } else if (tab === "Disputed") {
-    renderRefundsTable(currentRefundRecords.filter(r => r.escrow_status.includes("Dispute") || !r.refund_eligible));
-  }
+  currentRefundTab = tab;
+  refreshRefundsTable();
 }
 
 function filterRefundSearch() {
+  refreshRefundsTable();
+}
+
+function refreshRefundsTable() {
   const input = document.getElementById("refundSearchInput");
-  if (!input) return;
-  const q = input.value.toLowerCase();
-  const filtered = currentRefundRecords.filter(r => 
-    r.complaint_id.toLowerCase().includes(q) ||
-    r.customer_name.toLowerCase().includes(q) ||
-    r.order_reference.toLowerCase().includes(q) ||
-    r.policy_matched.toLowerCase().includes(q)
-  );
+  const q = String(input?.value ?? "").trim().toLowerCase();
+  const filtered = currentRefundRecords.filter(r => {
+    const status = String(r.escrow_status ?? "");
+    const eligible = r.refund_eligible === true;
+    const matchesTab = currentRefundTab === "All" ||
+      (currentRefundTab === "Held in Escrow" && status.includes("Held")) ||
+      (currentRefundTab === "Released / Paid" && (status.includes("Paid") || status.includes("Released"))) ||
+      (currentRefundTab === "Disputed" && (status.includes("Dispute") || !eligible));
+    const searchableFields = [r.complaint_id, r.customer_name, r.order_reference, r.policy_matched, r.product_or_service, r.complaint_title];
+    return matchesTab && searchableFields.some(value => String(value ?? "").toLowerCase().includes(q));
+  });
   renderRefundsTable(filtered);
 }
 

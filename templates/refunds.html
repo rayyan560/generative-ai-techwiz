@@ -82,18 +82,26 @@
         <th>Amount</th>
         <th>Policy Rule</th>
         <th>Escrow Status</th>
+        <th>Eligibility</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody id="refundsTableBody">
       <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
           <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem;"></i><br>
           Loading Financial & Escrow Records...
         </td>
       </tr>
     </tbody>
   </table>
+  <div id="refundsPagination" style="display: none; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border-top: 1px solid var(--glass-border-subtle);">
+    <span id="refundsPaginationStatus" aria-live="polite" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+    <div style="display: flex; gap: 8px;">
+      <button id="refundsPreviousPage" type="button" class="pill-tab" onclick="changeRefundPage(-1)" aria-label="Previous refund records page">Previous</button>
+      <button id="refundsNextPage" type="button" class="pill-tab" onclick="changeRefundPage(1)" aria-label="Next refund records page">Next</button>
+    </div>
+  </div>
 </div>
 
 <!-- Refund / Escrow Settlement Action Modal with AI Smart CLV Optimization -->

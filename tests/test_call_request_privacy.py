@@ -59,3 +59,32 @@ def test_judge_communication_page_hides_customer_messages_and_actions(monkeypatc
     assert 'id="adminReplyInput"' not in response.text
     assert "/api/chat/live/conversations" not in response.text
     assert "Loading chats..." not in response.text
+
+
+def test_judge_page_has_single_read_only_status_without_floating_banner(monkeypatch):
+    judge = {"user_id": "judge-test", "username": "judge", "role": "judge"}
+    monkeypatch.setattr(AuthManager, "get_current_user", staticmethod(lambda request: judge))
+
+    response = TestClient(app).get("/admin")
+
+    assert response.status_code == 200
+    assert response.text.count("Read-only mode") == 1
+    assert "Judge review mode · read-only" not in response.text
+    assert "Prompt Injection / Traps" in response.text
+    assert "Manual Review Queue" in response.text
+    assert "ï¸" not in response.text
+
+
+def test_refunds_page_has_aligned_columns_and_accessible_pagination(monkeypatch):
+    admin = {"user_id": "admin-test", "username": "admin", "role": "admin"}
+    monkeypatch.setattr(AuthManager, "get_current_user", staticmethod(lambda request: admin))
+
+    response = TestClient(app).get("/refunds")
+
+    assert response.status_code == 200
+    ledger_table = response.text.split('id="refundsTable"', 1)[1].split("</table>", 1)[0]
+    assert ledger_table.count("<th>") == 9
+    assert 'id="refundsPaginationStatus" aria-live="polite"' in response.text
+    assert 'aria-label="Previous refund records page"' in response.text
+    assert 'aria-label="Next refund records page"' in response.text
+    assert 'colspan="9"' in response.text
