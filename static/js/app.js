@@ -496,7 +496,7 @@ function updateHeroCustomerCard(c) {
   if (!nameEl) return;
   nameEl.innerText = c.customer_name || "Customer";
   document.getElementById("heroCustomerEmail").innerText = c.customer_email || "N/A";
-  document.getElementById("heroCustomerPhone").innerText = c.customer_phone || "+1 98567 45956";
+  document.getElementById("heroCustomerPhone").innerText = c.customer_phone || "Not recorded";
   document.getElementById("heroComplaintId").innerText = c.complaint_id;
   document.getElementById("heroCategory").innerText = c.category || "General";
   
@@ -607,7 +607,7 @@ async function openTriageModal(complaintId) {
 
     // 🧠 Customer Emotion & Frustration Heatmap Rendering
     const sent = data.sentiment_telemetry || {};
-    const frScore = Number.isFinite(Number(sent.frustration_score)) ? Math.max(0, Math.min(100, Number(sent.frustration_score))) : null;
+    const frScore = typeof sent.frustration_score === "number" && Number.isFinite(sent.frustration_score) ? Math.max(0, Math.min(100, sent.frustration_score)) : null;
     const emState = sent.emotion_state || "Not analyzed";
     const triggers = Array.isArray(sent.key_emotional_triggers) ? sent.key_emotional_triggers : [];
 

@@ -70,6 +70,14 @@ def test_upload_persists_document_once_with_traceable_metadata(monkeypatch):
         def insert_one(self, record):
             self.records.append(dict(record))
 
+        def find(self, criteria=None):
+            criteria = criteria or {}
+            return [record for record in self.records if all(record.get(key) == value for key, value in criteria.items())]
+
+        def update_one(self, criteria, update):
+            record = self.find(criteria)[0]
+            record.update(update.get("$set", {}))
+
     documents = Collection()
     chunks = Collection()
     monkeypatch.setattr(knowledge, "get_knowledge_col", lambda: documents)
@@ -99,6 +107,7 @@ def test_upload_persists_document_once_with_traceable_metadata(monkeypatch):
         assert len(documents.records) == 1
         assert len(chunks.records) == 1
         assert chunks.records[0]["content"] == "Refund policy text"
+        assert chunks.records[0]["version"] == "v1"
         assert chunks.records[0]["effective_date"] == "2025-01-01"
         with pytest.raises(HTTPException) as duplicate:
             await knowledge.upload_policy_document(
@@ -113,3 +122,61 @@ def test_upload_persists_document_once_with_traceable_metadata(monkeypatch):
         assert duplicate.value.status_code == 409
 
     asyncio.run(upload())
+
+
+def test_uploading_new_active_version_supersedes_old_document_and_chunks(monkeypatch):
+    from routers import knowledge
+
+    class Collection:
+        def __init__(self):
+            self.records = []
+
+        def find_one(self, criteria):
+            return next((record for record in self.records if all(record.get(key) == value for key, value in criteria.items())), None)
+
+        def find(self, criteria=None):
+            criteria = criteria or {}
+            return [record for record in self.records if all(record.get(key) == value for key, value in criteria.items())]
+
+        def insert_one(self, record):
+            self.records.append(dict(record))
+
+        def update_one(self, criteria, update):
+            record = self.find(criteria)[0]
+            record.update(update.get("$set", {}))
+
+    documents = Collection()
+    chunks = Collection()
+    monkeypatch.setattr(knowledge, "get_knowledge_col", lambda: documents)
+    monkeypatch.setattr(knowledge, "get_chunks_col", lambda: chunks)
+    monkeypatch.setattr(knowledge, "rebuild_vector_index", lambda: None)
+    monkeypatch.setattr(
+        knowledge.DocumentParser,
+        "parse_plain_text",
+        lambda text, filename, document_id, version: [{
+            "chunk_id": f"{document_id}-{version}-CHK-001",
+            "document_id": document_id,
+            "section_id": "1.0",
+            "content": text,
+        }],
+    )
+
+    async def upload(version, content):
+        return await knowledge.upload_policy_document(
+            file=UploadFile(filename="policy.txt", file=io.BytesIO(content.encode("utf-8"))),
+            category="Refund Request",
+            version=version,
+            status="Active",
+            document_id="POL-REF-UPDATE",
+            effective_date="2025-01-01",
+            expiry_date="",
+        )
+
+    async def run_uploads():
+        await upload("v1", "Original refund policy")
+        await upload("v2", "Updated refund policy")
+
+    asyncio.run(run_uploads())
+
+    assert [(doc["version"], doc["status"]) for doc in documents.records] == [("v1", "Superseded"), ("v2", "Active")]
+    assert [(chunk["version"], chunk["status"]) for chunk in chunks.records] == [("v1", "Superseded"), ("v2", "Active")]

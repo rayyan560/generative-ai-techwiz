@@ -91,11 +91,30 @@ async def upload_policy_document(
     }
     for chunk in chunks:
         chunk["status"] = metadata["status"]
+        chunk["version"] = metadata["version"]
         chunk["effective_date"] = metadata["effective_date"]
         chunk["expiry_date"] = metadata["expiry_date"]
         chunks_col.insert_one(chunk)
 
     knowledge_col.insert_one(doc_record)
+
+    if metadata["status"] == "Active":
+        active_versions = list(knowledge_col.find({"document_id": metadata["document_id"], "status": "Active"}))
+        for previous in active_versions:
+            if previous.get("version") == metadata["version"]:
+                continue
+            previous_version = previous.get("version")
+            knowledge_col.update_one(
+                {"document_id": metadata["document_id"], "version": previous_version},
+                {"$set": {"status": "Superseded"}},
+            )
+            previous_chunk_ids = set(previous.get("chunk_ids", []))
+            for previous_chunk in chunks_col.find({"document_id": metadata["document_id"]}):
+                if previous_chunk.get("version") == previous_version or previous_chunk.get("chunk_id") in previous_chunk_ids:
+                    chunks_col.update_one(
+                        {"chunk_id": previous_chunk.get("chunk_id")},
+                        {"$set": {"status": "Superseded"}},
+                    )
 
     # Rebuild FAISS index upon upload
     rebuild_vector_index()

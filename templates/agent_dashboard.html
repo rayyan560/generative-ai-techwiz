@@ -115,7 +115,7 @@
       </div>
       <div>
         <h2 id="modalComplaintTitle" style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); font-family: 'Outfit', sans-serif;">Incident Details</h2>
-        <div id="modalComplaintSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Reference: CMP-00001</div>
+        <div id="modalComplaintSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Complaint details will appear here.</div>
       </div>
     </div>
 
@@ -127,14 +127,14 @@
     <div class="emotion-gauge-card" id="modalEmotionCard">
       <div style="min-width: 220px;">
         <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;">Customer Emotion State</div>
-        <div id="modalEmotionState" style="font-weight: 900; font-size: 1.15rem; color: var(--text-heading); margin-top: 2px;">Frustrated & Upset</div>
+        <div id="modalEmotionState" style="font-weight: 900; font-size: 1.15rem; color: var(--text-heading); margin-top: 2px;">Not measured</div>
       </div>
       <div class="emotion-heat-bar" style="background: rgba(148, 163, 184, 0.25); height: 12px; border-radius: 99px; flex-grow: 1;">
-        <div class="emotion-heat-fill" id="modalEmotionBar" style="width: 78%; background: linear-gradient(90deg, #10b981, #f59e0b, #e11d48); height: 100%; border-radius: 99px;"></div>
+        <div class="emotion-heat-fill" id="modalEmotionBar" style="width: 0%; background: var(--text-muted); height: 100%; border-radius: 99px;"></div>
       </div>
       <div style="text-align: right; min-width: 140px;">
         <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 800;">Frustration Heat</div>
-        <div id="modalFrustrationScore" style="font-weight: 900; font-size: 1.3rem; color: #e11d48; font-family: monospace;">78%</div>
+        <div id="modalFrustrationScore" style="font-weight: 900; font-size: 1.3rem; color: var(--text-muted); font-family: monospace;">Not measured</div>
       </div>
     </div>
 
@@ -184,4 +184,3 @@
   </div>
 </div>
 {% endblock %}
-

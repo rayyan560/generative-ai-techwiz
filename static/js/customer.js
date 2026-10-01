@@ -218,7 +218,7 @@ function onProductSelectChange(e) {
     badge.style.display = "none";
   }
   updateStepIndicators();
-  triggerAiPreCheck();
+  triggerRulePreview();
 }
 
 function updateCharCount(el) {
@@ -253,7 +253,7 @@ function goToStep(stepNum) {
   } else if (stepNum === 3) {
     document.getElementById("complaintDescriptionInput")?.focus();
   } else if (stepNum === 4) {
-    triggerAiPreCheck();
+    triggerRulePreview();
     document.getElementById("submitFormBtn")?.scrollIntoView({ behavior: "smooth" });
   }
 }
@@ -284,7 +284,7 @@ function initSpeechRecognition() {
     if (desc) {
       if (finalTranscript) desc.value += finalTranscript;
       updateCharCount(desc);
-      triggerAiPreCheck();
+      triggerRulePreview();
     }
   };
 
@@ -381,40 +381,49 @@ function updateEvidenceConsent() {
   if (consent) consent.required = Boolean(image?.files?.length);
 }
 
-// -------------------------------------------------------------
-// 3. ⚡ LIVE AI SLA & ELIGIBILITY PRE-CHECK ESTIMATOR
-// -------------------------------------------------------------
 let preCheckTimer = null;
-function triggerAiPreCheck() {
+function triggerRulePreview() {
   clearTimeout(preCheckTimer);
   preCheckTimer = setTimeout(async () => {
-    const title = document.getElementById("complaintTitleInput").value;
-    const desc = document.getElementById("complaintDescriptionInput").value;
+    const title = document.getElementById("complaintTitleInput")?.value.trim() || "";
+    const desc = document.getElementById("complaintDescriptionInput")?.value.trim() || "";
     const tier = document.getElementById("customerTierSelect").value;
 
-    if (!title && !desc) return;
+    if (!title || !desc) {
+      const box = document.getElementById("aiPreCheckBox");
+      if (box) box.style.display = "none";
+      return;
+    }
 
     const formData = new FormData();
-    formData.append("complaint_title", title || "Hardware Issue");
-    formData.append("complaint_description", desc || "Support request");
+    formData.append("complaint_title", title);
+    formData.append("complaint_description", desc);
     formData.append("customer_type", tier);
 
     try {
       const res = await fetch("/api/complaints/pre-check", { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`Intake preview failed (${res.status}).`);
       const data = await res.json();
 
       const box = document.getElementById("aiPreCheckBox");
+      if (!box) return;
       box.style.display = "block";
 
-      document.getElementById("preCheckCategoryBadge").innerText = `${data.estimated_category} (${data.estimated_priority})`;
-      document.getElementById("preCheckSla").innerText = data.estimated_sla;
-      document.getElementById("preCheckRefund").innerText = data.refund_eligibility_preview ? "Potentially eligible — verification required" : "Inspection required";
+      const categoryBadge = document.getElementById("preCheckCategoryBadge");
+      const sla = document.getElementById("preCheckSla");
+      const refund = document.getElementById("preCheckRefund");
+      const advisory = document.getElementById("preCheckAdvisory");
+      if (categoryBadge) categoryBadge.textContent = `${data.estimated_category} (${data.estimated_priority})`;
+      if (sla) sla.textContent = data.estimated_sla;
+      if (refund) refund.textContent = data.refund_eligibility_preview ? "Potentially eligible — verification required" : "Eligibility not established; staff review required";
+      if (advisory) advisory.textContent = data.safety_advisory;
       
       const sent = data.sentiment || {};
-      document.getElementById("preCheckFrustration").innerText = Number.isFinite(sent.frustration_score) ? `${sent.frustration_score}% heuristic estimate (${sent.emotion_state || 'Unclassified'})` : "Not measured";
+      const frustration = document.getElementById("preCheckFrustration");
+      if (frustration) frustration.textContent = typeof sent.frustration_score === "number" && Number.isFinite(sent.frustration_score) ? `${sent.frustration_score}% heuristic estimate (${sent.emotion_state || 'Unclassified'})` : "Not measured";
 
     } catch (e) {
-      console.error("Error running AI pre-check:", e);
+      console.error("Error running rule-based intake preview:", e);
     }
   }, 400);
 }

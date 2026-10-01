@@ -45,6 +45,8 @@ class GenAIIntelligenceOutput(BaseModel):
     supporting_departments: List[str] = Field(default_factory=list)
     referenced_policy_id: Optional[str] = None
     referenced_policy_section: Optional[str] = None
+    referenced_policy_version: str
+    analysis_metadata: Dict[str, Any] = Field(default_factory=dict)
     resolution_steps: List[str] = Field(default_factory=list)
     escalation_required: bool = False
     escalation_tier: Optional[str] = None
@@ -94,9 +96,9 @@ class ComparisonResult(BaseModel):
     policy_match: bool
     
     # Quantitative Scores
-    mandatory_coverage_score: float = 100.0   # % of mandatory steps included
-    source_traceability_score: float = 100.0  # % of claims backed by active docs
-    consistency_score: float = 100.0          # Overall alignment index
+    mandatory_coverage_score: Optional[float] = None
+    source_traceability_score: Optional[float] = None
+    consistency_score: Optional[float] = None
     
     # Flags & Warnings
     unsupported_claims_flagged: List[str] = Field(default_factory=list)

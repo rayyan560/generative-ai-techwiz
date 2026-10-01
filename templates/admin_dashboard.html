@@ -27,9 +27,9 @@
 
   <div class="hero-account-summary">
     <div class="label">System Oversight Status</div>
-    <div class="value" style="color: var(--cream, #eef0d0);">LIVE</div>
+    <div class="value" style="color: var(--cream, #eef0d0);">CURRENT VIEW</div>
     <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
-      Active Cases: <strong id="heroComplaintId" style="color: #60a5fa;">CMP-00001</strong> | Priority: <span class="badge badge-warning" id="heroPriorityBadge">P1 - High</span>
+      Selected Case: <strong id="heroComplaintId" style="color: #60a5fa;">No case selected</strong> | Priority: <span class="badge badge-secondary" id="heroPriorityBadge">Not evaluated</span>
     </div>
   </div>
 </div>
@@ -120,7 +120,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 18px; margin-bottom: 22px;">
       <div>
         <h2 style="font-size: 1.5rem; color: var(--text-heading); font-weight: 900; font-family: 'Outfit', sans-serif;" id="modalComplaintTitle">Complaint Triage & Dual-Pipeline Verification</h2>
-        <div style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-top: 4px;" id="modalComplaintSubtitle">ID: CMP-00001 | Customer: John Smith</div>
+        <div style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin-top: 4px;" id="modalComplaintSubtitle">Complaint details will appear here.</div>
       </div>
       <button onclick="closeTriageModal()" class="icon-glass-btn" style="font-size: 1.3rem;">&times;</button>
     </div>
@@ -133,25 +133,24 @@
         <div>
           <div style="font-size: 0.74rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px;">Complaint Text Sentiment Estimate</div>
           <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">Keyword-based heuristic; not audio analysis</div>
-          <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-heading);" id="modalEmotionState">Frustrated & Dissatisfied</div>
+          <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-heading);" id="modalEmotionState">Not measured</div>
         </div>
       </div>
 
       <div style="flex-grow: 1; margin: 0 10px;">
         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text-body);">
           <span>Frustration Index</span>
-          <span id="modalFrustrationScore" style="color: #e11d48; font-weight: 800;">78% / 100</span>
+          <span id="modalFrustrationScore" style="color: var(--text-muted); font-weight: 800;">Not measured</span>
         </div>
         <div class="emotion-heat-bar" style="background: rgba(148, 163, 184, 0.25);">
-          <div class="emotion-heat-fill" id="modalFrustrationBar" style="width: 78%; background: linear-gradient(90deg, #10b981, #f59e0b, #e11d48);"></div>
+          <div class="emotion-heat-fill" id="modalFrustrationBar" style="width: 0%; background: var(--text-muted);"></div>
         </div>
       </div>
 
       <div style="min-width: 200px; text-align: right;">
         <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Detected Anger Triggers</div>
         <div id="modalTriggerChips" style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
-          <span class="trigger-chip" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">swelling</span>
-          <span class="trigger-chip" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">cracked</span>
+          <span class="text-muted">No triggers recorded</span>
         </div>
       </div>
     </div>
@@ -326,4 +325,3 @@
   </div>
 </div>
 {% endblock %}
-

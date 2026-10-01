@@ -38,7 +38,7 @@ ESCALATION_CONDITIONS = [
     {
         "esc_id": "ESC-005",
         "name": "Account Takeover / Stolen Identity",
-        "pattern": r"\b(hacked|stolen credentials|unauthorized access|someone logged into my account|identity theft)\b",
+        "pattern": r"\b(hacked|stolen credentials|unauthorized access|unauthorized account access|someone logged into my account|someone accessed my account|account accessed without permission|identity theft)\b",
         "required_tier": "Tier 4 - Compliance & Legal Team",
         "reason": "Account security compromise and data privacy risk",
         "mandatory": True

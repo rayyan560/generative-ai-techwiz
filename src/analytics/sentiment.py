@@ -42,25 +42,21 @@ class SentimentTelemetryEngine:
 
         # Classify Emotional State & Color Heat
         if frustration_index >= 75 or len(furious_hits) > 0:
-            emotion_state = "Irate / High Churn Risk"
+            emotion_state = "Strongly negative text signals"
             heat_level = "Critical Red"
             heat_color = "#e11d48"
-            urgency_flag = "Immediate Escalation Recommended"
         elif frustration_index >= 50 or len(high_hits) > 0:
-            emotion_state = "Frustrated & Dissatisfied"
+            emotion_state = "Negative text signals"
             heat_level = "High Amber"
             heat_color = "#f59e0b"
-            urgency_flag = "Priority Response Required"
         elif frustration_index >= 30:
-            emotion_state = "Concerned / Inconvenienced"
+            emotion_state = "Some negative text signals"
             heat_level = "Moderate Sky"
             heat_color = "#0ea5e9"
-            urgency_flag = "Standard SLA Monitoring"
         else:
-            emotion_state = "Calm / Constructive"
+            emotion_state = "No strong negative text signals"
             heat_level = "Low Emerald"
             heat_color = "#10b981"
-            urgency_flag = "Routine Inquiry"
 
         # Unique detected keywords
         all_keywords = list(set(furious_hits + high_hits + mod_hits))[:6]
@@ -73,7 +69,7 @@ class SentimentTelemetryEngine:
             "emotion_state": emotion_state,
             "heat_level": heat_level,
             "heat_color": heat_color,
-            "urgency_flag": urgency_flag,
+            "urgency_flag": "Sentiment estimate only; determine urgency from independent complaint rules.",
             "key_emotional_triggers": all_keywords,
             "text_tone_estimate": "Strongly negative" if frustration_index > 70 else "Negative or concerned" if frustration_index > 40 else "Neutral or positive"
         }

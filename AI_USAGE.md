@@ -32,11 +32,13 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
   - `src/genai_pipeline/pipeline.py`
   - `src/prompt_templates/templates.py`
   - `src/schemas/models.py`
+  - `src/knowledge_base/policy_versions.py`
 - **Modifications & Safety Controls Implemented**:
   - Untrusted data fencing (`<<<UNTRUSTED_TEXT_START>>>`) to mitigate prompt injection attacks.
   - Strict Pydantic JSON schema parser, bounded key rotation, and JSON fence extraction.
+  - Current policy version, source metadata, model/provider, prompt version, and UTC analysis time are stored with generated output; suspicious instructions inside retrieved policy text fail closed to manual review.
   - Provider failures now result in manual review; no synthetic response is represented as GenAI output.
-- **Tests Performed**: `tests/test_genai_pipeline.py` (provider-unavailable/manual-review behavior). This is not a live provider integration test.
+- **Tests Performed**: `tests/test_genai_pipeline.py` (provider-unavailable/manual-review and no-retrieved-policy behavior). The pipeline now requires retrieved policy chunks before sending a complaint to GenAI. This is not a live provider integration test.
 - **Verification Status**: Automated provider-unavailable behavior is covered locally; live Gemini quality, credentials, rate limits, and production behavior were not tested.
 
 ---
@@ -61,7 +63,7 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
   - `src/comparison_engine/engine.py`
   - `src/hallucination_checks/detector.py`
   - `src/security/prompt_defense.py`
-- **Tests Performed**: `tests/test_comparison_engine.py`, `tests/test_security_injection.py`.
+- **Tests Performed**: `tests/test_comparison_engine.py`, `tests/test_security_injection.py`, and `tests/test_policy_versions.py`. Coverage and traceability are not defaulted to perfect when required actions or retrieved source/version evidence is missing; missing mandatory information without a clarification question requires review.
 - **Verification Status**: Local automated tests cover selected comparison and prompt-injection cases; no independent security audit is claimed.
 
 ---
@@ -79,5 +81,7 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
 ---
 
 ## 3. Team Verification Sign-Off
+
+No independent team-member verification sign-off is recorded in this repository; local automated checks are listed above and should not be presented as a human reviewer signature.
 
 GenAI output must not be treated as available when the provider is unreachable. In that situation, the Python ground-truth result and human-review queue remain the supported path. The report CSV files in `reports/` are historical generated artifacts and are not verified evidence of a live Gemini evaluation; rerun them with configured credentials before submission.

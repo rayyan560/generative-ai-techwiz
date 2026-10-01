@@ -691,7 +691,7 @@
 
   <aside class="portal-hud-side portal-hud-left" aria-hidden="true">
     <div class="portal-hud-line"></div>
-    <div class="portal-hud-chip"><span class="cyber-dot"></span> NEURAL SLA CORE v4.8</div>
+    <div class="portal-hud-chip"><span class="cyber-dot"></span> CASE REVIEW WORKFLOW</div>
     <div class="portal-hud-metric">Location is not collected</div>
     <div class="portal-hud-metric">Review targets vary by case; no resolution rate is guaranteed.</div>
   </aside>
@@ -861,8 +861,8 @@
         </button>
       </div>
 
-      <button class="pill-tab" style="padding: 8px 18px; font-size: 0.82rem; font-weight: 800; border-color: rgba(238, 240, 208, 0.4); box-shadow: 0 0 16px rgba(238, 240, 208, 0.15);" onclick="triggerAiPreCheck()">
-        <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> Run Live AI SLA & Eligibility Pre-Check
+      <button class="pill-tab" style="padding: 8px 18px; font-size: 0.82rem; font-weight: 800; border-color: rgba(238, 240, 208, 0.4); box-shadow: 0 0 16px rgba(238, 240, 208, 0.15);" onclick="triggerRulePreview()">
+        <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Run Rule-Based Intake Preview
       </button>
     </div>
 
@@ -882,7 +882,7 @@
       </div>
       <div class="step-item" id="stepIndicator4" onclick="goToStep(4)" title="Review & Pre-Check SLA">
         <div class="step-badge">4</div>
-        <div class="step-label">Resolution SLA</div>
+        <div class="step-label">Review Estimate</div>
       </div>
     </div>
 
@@ -893,22 +893,22 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label"><i class="fa-solid fa-user-tag" style="color:#d4d9aa; font-size:0.85rem;"></i> <span>Full Name *</span></label>
-            <input type="text" name="customer_name" id="formCustomerName" class="form-control" required placeholder="e.g. John Smith" value="{{ current_user.display_name if current_user else 'John Smith' }}">
+            <input type="text" name="customer_name" id="formCustomerName" class="form-control" required placeholder="Enter your full name" value="{{ current_user.display_name if current_user else '' }}">
           </div>
           <div class="form-group">
             <label class="form-label"><i class="fa-solid fa-envelope" style="color:#d4d9aa; font-size:0.85rem;"></i> <span>Email Address *</span></label>
-            <input type="email" name="customer_email" id="formCustomerEmail" class="form-control" required placeholder="e.g. john.smith@example.com" value="{{ current_user.email if current_user else 'johnsmith@samplemail.com' }}">
+            <input type="email" name="customer_email" id="formCustomerEmail" class="form-control" required placeholder="Enter your email address" value="{{ current_user.email if current_user else '' }}">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label class="form-label"><i class="fa-solid fa-phone" style="color:#d4d9aa; font-size:0.85rem;"></i> <span>Contact Phone Number</span></label>
-            <input type="text" name="customer_phone" id="formCustomerPhone" class="form-control" placeholder="e.g. +1 98567 45956" value="{{ current_user.phone if current_user and current_user.phone else '+1 98567 45956' }}">
+            <input type="text" name="customer_phone" id="formCustomerPhone" class="form-control" placeholder="Optional phone number" value="{{ current_user.phone if current_user and current_user.phone else '' }}">
           </div>
           <div class="form-group">
             <label class="form-label"><i class="fa-solid fa-crown" style="color:#f59e0b; font-size:0.85rem;"></i> <span>Customer Account Tier</span></label>
-            <select name="customer_type" id="customerTierSelect" class="form-control" onchange="triggerAiPreCheck()">
+            <select name="customer_type" id="customerTierSelect" class="form-control" onchange="triggerRulePreview()">
               <option value="Standard">Standard Retail Member</option>
               <option value="Premium">NovaTech Plus Gold Member</option>
               <option value="VIP">Titanium VIP Executive</option>
@@ -921,7 +921,7 @@
         <div class="form-group">
           <label class="form-label">
             <span>Select Registered Hardware / Software Product (50 Official Product IDs) *</span>
-            <span style="font-size: 0.76rem; color: var(--primary); font-weight: 800;">Includes Active Warranty Lookup</span>
+            <span style="font-size: 0.76rem; color: var(--primary); font-weight: 800;">Displays the catalog warranty period; purchase coverage is not verified here</span>
           </label>
           <select id="productSelectDropdown" name="product_or_service" class="form-control" onchange="onProductSelectChange(event)" required>
             <option value="">-- Choose from 50 Official NovaTech Products or Type Below --</option>
@@ -952,7 +952,7 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label"><span>Order Reference #</span></label>
-            <input type="text" name="order_reference" class="form-control" placeholder="e.g. ORD-89421" value="ORD-84920">
+            <input type="text" name="order_reference" class="form-control" placeholder="Optional order reference">
           </div>
           <div class="form-group">
             <label class="form-label"><span>Preferred Contact Channel</span></label>
@@ -967,7 +967,7 @@
 
         <div class="form-group">
           <label class="form-label"><span>Complaint Title / Summary *</span></label>
-          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" required placeholder="Brief summary of your grievance..." value="Display screen cracked and battery swelling on arrival" oninput="triggerAiPreCheck()">
+          <input type="text" name="complaint_title" id="complaintTitleInput" class="form-control" required placeholder="Brief summary of your complaint" oninput="triggerRulePreview()">
         </div>
 
         <!-- Description with Voice Dictation Button -->
@@ -981,7 +981,7 @@
               <span id="charCountLabel" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">228 chars</span>
             </div>
           </div>
-          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required placeholder="Please provide relevant facts, dates, order reference, and requested resolution..." oninput="updateCharCount(this); triggerAiPreCheck()"></textarea>
+          <textarea name="complaint_description" id="complaintDescriptionInput" rows="5" class="form-control" required placeholder="Describe what happened, including relevant dates or details" oninput="updateCharCount(this); triggerRulePreview()"></textarea>
         </div>
 
         <div class="form-group">
@@ -1003,19 +1003,19 @@
           </div>
         </div>
 
-        <!-- ⚠️¡ Live AI SLA & Eligibility Pre-Check Result Card -->
         <div id="aiPreCheckBox" class="cream-highlight-card sn-floating-cream-card" style="display: none; padding: 18px 24px; margin-bottom: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <strong style="color: var(--ink); font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-bolt"></i> Rule-based intake estimate (not a guarantee):
+              <i class="fa-solid fa-list-check"></i> Preliminary rules-based estimate (not an AI result or approval):
             </strong>
             <span id="preCheckCategoryBadge" class="badge badge-primary">Product Defect</span>
           </div>
           <div style="display: flex; gap: 24px; font-size: 0.86rem; color: var(--ink); flex-wrap: wrap;">
-            <div>Predicted SLA: <strong id="preCheckSla" style="color: #065f46;">2 Hours</strong></div>
-            <div>Refund Eligibility: <strong id="preCheckRefund">Eligible</strong></div>
-            <div>Customer Frustration Heat: <strong id="preCheckFrustration" style="color: #991b1b;">78% (High)</strong></div>
+            <div>Review target: <strong id="preCheckSla" style="color: #065f46;">Not estimated</strong></div>
+            <div>Refund preview: <strong id="preCheckRefund">Not evaluated</strong></div>
+            <div>Text signal: <strong id="preCheckFrustration">Not measured</strong></div>
           </div>
+          <p id="preCheckAdvisory" role="status" aria-live="polite" style="font-size:0.82rem;color:var(--ink);margin:10px 0 0;">This preliminary preview does not replace staff review.</p>
         </div>
 
         <button type="submit" class="submit-btn" id="submitFormBtn">
@@ -1028,7 +1028,7 @@
         <i class="fa-solid fa-circle-check" style="font-size: 3.5rem; color: #047857; margin-bottom: 14px;"></i>
         <h3 style="color: var(--ink); font-size: 1.7rem; font-weight: 400; font-family: var(--font-serif);">Complaint Successfully Registered</h3>
         <p style="color: #1f2937; margin-top: 8px; font-size: 1.05rem;">Your official ticket reference number is: <strong id="registeredComplaintId" style="font-size: 1.35rem; color: var(--ink); letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.06); padding: 4px 14px; border-radius: 8px;">-</strong></p>
-        <p style="color: #374151; font-size: 0.92rem; margin-top: 8px;">Our specialized engineering support team has received your query and will process your case under corporate SLA guidelines.</p>
+        <p style="color: #374151; font-size: 0.92rem; margin-top: 8px;">Your ticket is registered. Use the tracking page for status updates; the review estimate is not a guaranteed resolution time.</p>
         <div style="display: flex; justify-content: center; gap: 14px; margin-top: 24px;">
           <button class="nav-pill-dark" style="padding: 12px 30px; font-weight: 600; font-size: 0.95rem;" onclick="copyAndTrack()">
             Track Your Ticket Now &rarr;
@@ -1391,4 +1391,3 @@
   </script>
 </body>
 </html>
-

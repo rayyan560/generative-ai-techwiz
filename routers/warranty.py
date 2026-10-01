@@ -285,6 +285,10 @@ async def pre_check_complaint(
     complaint_description: str = Form(...),
     customer_type: str = Form("Standard")
 ):
+    is_valid, error_message = ComplaintPreprocessor.validate_complaint_input(complaint_title, complaint_description)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_message)
+
     sim_complaint = {
         "complaint_title": complaint_title,
         "complaint_description": complaint_description,
@@ -293,12 +297,23 @@ async def pre_check_complaint(
     ground_truth = python_validation_pipeline.validate_complaint(sim_complaint)
     sentiment = SentimentTelemetryEngine.analyze(complaint_title, complaint_description, customer_type)
 
+    category = ground_truth.expected_category
+    if category == "Safety Hazard":
+        advisory = "A potential safety-related trigger was detected. Stop using the product if it is safe to do so and wait for staff guidance; this is not a diagnosis."
+    elif category in {"Account Security", "Data Privacy"}:
+        advisory = "A security or privacy-related trigger was detected and may require priority staff review."
+    elif ground_truth.mandatory_escalation:
+        advisory = "A configured escalation trigger was detected; staff review is required."
+    else:
+        advisory = "This preliminary check did not detect a mandatory escalation trigger. Staff review may still change the assessment."
+
     return {
-        "estimated_category": ground_truth.expected_category,
+        "estimated_category": category,
         "estimated_priority": ground_truth.expected_priority,
         "estimated_urgency": ground_truth.expected_urgency,
         "estimated_sla": "Priority review target — not a guarantee" if ground_truth.expected_urgency in ["Critical", "High"] else "Standard review target — not a guarantee",
         "refund_eligibility_preview": ground_truth.refund_eligible,
         "sentiment": sentiment,
-        "safety_advisory": "Hazardous battery issue detected — Keep device powered off" if ground_truth.mandatory_escalation else "Normal warranty coverage applicable"
+        "safety_advisory": advisory,
+        "preview_basis": "Preliminary Python rules and text heuristics only; no GenAI analysis, live policy lookup, or approval was performed."
     }

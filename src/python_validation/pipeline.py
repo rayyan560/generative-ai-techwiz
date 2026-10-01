@@ -4,6 +4,7 @@ from src.schemas.models import PythonGroundTruthResult
 from src.complaint_rules.matrix import RuleMatrixManager
 from src.escalation_rules.manager import EscalationManager
 from src.routing_rules.router import DepartmentRouter
+from src.knowledge_base.policy_versions import resolve_policy_metadata
 
 class PythonGroundTruthPipeline:
     @staticmethod
@@ -25,8 +26,8 @@ class PythonGroundTruthPipeline:
         if any(w in full_text for w in ["fire", "spark", "shock", "smoke", "swollen", "fume", "burn", "explosion"]):
             category = "Safety Hazard"
             subcategory = "Battery Overheating / Swelling" if "battery" in full_text or "swollen" in full_text else "Electrical Spark / Shock Hazard"
-        elif any(w in full_text for w in ["hacked", "stolen", "unauthorized login", "data breach", "privacy", "gdpr", "compromised"]):
-            category = "Account Security" if ("login" in full_text or "password" in full_text or "hacked" in full_text) else "Data Privacy"
+        elif any(w in full_text for w in ["hacked", "stolen", "unauthorized login", "unauthorized access", "accessed my account", "unknown login", "account takeover", "stolen credentials", "data breach", "privacy", "gdpr", "compromised"]):
+            category = "Account Security" if any(term in full_text for term in ("account", "login", "password", "hacked", "stolen credentials", "accessed my account")) else "Data Privacy"
             subcategory = "Suspicious Login" if category == "Account Security" else "Data Deletion Request"
         elif any(w in full_text for w in ["double charge", "charged twice", "overcharge", "unauthorized charge", "billing error", "subscription", "missing invoice", "invoice is missing"]):
             category = "Billing & Charges"
@@ -81,6 +82,8 @@ class PythonGroundTruthPipeline:
         
         # 4. Mandatory Escalation Evaluation (32+ conditions)
         is_escalated, esc_tier, esc_reason, esc_id = EscalationManager.evaluate_escalation(complaint_dict)
+        policy_id = matched_rule.get("policy_id", "POL-CMP-01")
+        policy_version, policy_status = resolve_policy_metadata(policy_id)
         
         # 5. Missing Mandatory Fields Check
         missing_fields = []
@@ -101,10 +104,10 @@ class PythonGroundTruthPipeline:
             mandatory_escalation=is_escalated or matched_rule.get("mandatory_escalation", False),
             escalation_tier=esc_tier,
             escalation_reason=esc_reason if is_escalated else None,
-            applicable_policy_id=matched_rule.get("policy_id", "POL-CMP-01"),
-            applicable_policy_name=matched_rule.get("policy_id", "").replace("POL-", "Policy "),
-            policy_version="v2.0",
-            policy_status="Active",
+            applicable_policy_id=policy_id,
+            applicable_policy_name=policy_id.replace("POL-", "Policy "),
+            policy_version=policy_version,
+            policy_status=policy_status,
             refund_eligible=matched_rule.get("refund_eligible", False),
             replacement_eligible=matched_rule.get("replacement_eligible", False),
             compensation_allowed=matched_rule.get("compensation_allowed", False),

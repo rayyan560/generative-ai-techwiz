@@ -89,7 +89,7 @@ class GenAIPipeline:
         self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
         return key
 ```
-If an API call experiences a rate-limit error (`429`) or quota exhaustion, the pipeline instantly catches the exception, switches to the next healthy key in the pool, and retries the request seamlessly. Furthermore, if all remote network gateways are temporarily offline, the pipeline seamlessly triggers a local high-precision synthesizer, guaranteeing zero system crashes.
+When a provider request fails, the pipeline tries the next configured API key up to its retry limit. If no request succeeds, it raises an unavailable result and the complaint is routed to human review; it does not synthesize a replacement GenAI answer. This preserves the distinction between model output and deterministic rule findings.
 
 ### Structured Output Enforcement with Strict Pydantic Schemas
 Unlike unstructured conversational bots, Pipeline 1 enforces a strict, typed schema using Pydantic:
@@ -169,7 +169,7 @@ class ComparisonEngine:
 ### Quantitative Scoring Metrics:
 1. **Mandatory Requirement Coverage Score ($\%$):**  
    $$\text{Coverage Score} = \frac{\text{Mandatory Steps Present in AI Resolution}}{\text{Total Mandatory Ground-Truth Steps}} \times 100$$
-2. **Source Traceability Score ($\%$):** Measures whether cited policy IDs belong to active, verified policy documents rather than obsolete or fabricated identifiers.
+2. **Source Traceability Score ($\%$):** Checks that the cited policy ID, version, and section match the active source chunks retrieved for that complaint; expired, future-dated, missing, or mismatched versions are not awarded a perfect score.
 3. **Consistency Score ($\%$):** Weighted alignment index across category, department, priority, and escalation.
 
 ---
@@ -212,7 +212,7 @@ Support agents and supervisors access a high-density, modern SaaS dashboard insp
 
 ## 9. Comprehensive Testing, Performance & Evaluation
 
-The repository includes a 528-record sample complaint dataset and 21 policy documents. The current local automated test suite has 36 passing tests (with four dependency/framework deprecation warnings); this is not an end-to-end evaluation across every sample or proof of live-provider behavior.
+The repository includes a 528-record sample complaint dataset and 21 policy documents. The current local automated test suite has 55 passing tests (with four dependency/framework deprecation warnings); this is not an end-to-end evaluation across every sample or proof of live-provider behavior.
 
 The test transcript previously included in this report is historical and is not a current verification result. In particular, its GenAI test exercised a synthetic fallback rather than a live provider. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. Execute `pytest -q` in the target environment and record the actual output before using test results as submission evidence. Live model quality, rate limits, and integration credentials require separate provider-backed tests.
 

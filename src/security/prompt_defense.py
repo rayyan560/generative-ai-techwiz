@@ -52,6 +52,13 @@ class PromptDefense:
         """Sanitizes text to avoid delimiter breakouts while keeping semantic content intact."""
         if not text:
             return ""
+        for marker in (
+            "<<<UNTRUSTED_TEXT_START>>>",
+            "<<<UNTRUSTED_TEXT_END>>>",
+            "<<<POLICY_SOURCE_START>>>",
+            "<<<POLICY_SOURCE_END>>>",
+        ):
+            text = re.sub(re.escape(marker), "[literal prompt boundary marker]", text, flags=re.IGNORECASE)
         # Neutralize markdown system prompt injection wrappers
         sanitized = text.replace("```system", "'''system")
         sanitized = sanitized.replace("```assistant", "'''assistant")
