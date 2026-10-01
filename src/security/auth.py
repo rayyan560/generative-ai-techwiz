@@ -158,7 +158,7 @@ class AuthManager:
                     user_id = None
                 profile = {
                     "user_id": user_id or f"USR-BOOTSTRAP-{int(time.time())}",
-                    "username": (existing or {}).get("username") or username,
+                    "username": username,
                     "email": settings.ADMIN_EMAIL,
                     "password": get_password_hash(settings.ADMIN_PASSWORD),
                     "role": "admin",
@@ -180,7 +180,7 @@ class AuthManager:
                     user_id = None
                 profile = {
                     "user_id": user_id or f"USR-AGENT-BOOTSTRAP-{int(time.time())}",
-                    "username": (existing or {}).get("username") or username,
+                    "username": username,
                     "email": settings.AGENT_EMAIL,
                     "password": get_password_hash(settings.AGENT_PASSWORD),
                     "role": "agent",
