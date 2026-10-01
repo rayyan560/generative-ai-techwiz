@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=9.0">
+  <link rel="stylesheet" href="/static/css/style.css?v=9.1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
@@ -23,7 +23,7 @@
     })();
   </script>
 </head>
-<body>
+<body data-user-role="{{ current_user.role if current_user else 'guest' }}">
   {% if current_user and current_user.role == 'judge' %}
   <div role="status" style="position:fixed;z-index:1200;top:8px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:999px;background:#0f766e;color:#fff;font-size:.8rem;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.2);white-space:nowrap;">Judge review mode · read-only</div>
   {% endif %}
@@ -178,10 +178,12 @@
           </div>
 
           <!-- Staff Online / Offline Presence Toggle Button -->
+          {% if current_user.role != 'judge' %}
           <button class="pill-tab" id="staffPresenceToggleBtn" onclick="toggleStaffPresence()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 800; border-color: rgba(16, 185, 129, 0.4); color: #059669; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; gap: 6px;" title="Toggle your availability for customer call requests">
             <span id="staffPresenceDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
             <span id="staffPresenceText">Staff Offline</span>
           </button>
+          {% endif %}
 
           <!-- Dark / Light Theme Toggle -->
           <button class="icon-glass-btn" onclick="toggleTheme()" title="Toggle dark or light theme" aria-label="Toggle dark or light theme" id="themeToggleBtn">
@@ -398,4 +400,3 @@
   </script>
 </body>
 </html>
-

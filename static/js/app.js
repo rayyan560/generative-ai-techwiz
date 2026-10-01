@@ -248,6 +248,17 @@ function navigateCommand(url) {
 // 4. REAL-TIME WEBSOCKET STREAMING & LIVE AGENT PRESENCE
 // -------------------------------------------------------------
 function initWebSocket() {
+  if (document.body?.dataset.userRole === "judge") {
+    const statusPill = document.getElementById("liveStreamPill");
+    const statusText = document.getElementById("liveStatusText");
+    if (statusText) statusText.innerText = "Read-only mode";
+    if (statusPill) {
+      statusPill.style.background = "rgba(148, 163, 184, 0.14)";
+      statusPill.style.color = "var(--text-secondary)";
+    }
+    return;
+  }
+
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const wsUrl = `${protocol}//${window.location.host}/ws/triage`;
 

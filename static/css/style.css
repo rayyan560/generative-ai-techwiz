@@ -2240,6 +2240,105 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+@media (max-width: 760px) {
+  .app-container {
+    width: 100%;
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex: 0 0 auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .sidebar-header { padding: 12px 16px !important; }
+
+  .sidebar-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    max-height: 240px;
+    padding: 8px;
+    flex-grow: 0;
+    overflow-y: auto;
+  }
+
+  .nav-item {
+    min-width: 0;
+    padding: 10px;
+    gap: 9px;
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .nav-item span { overflow-wrap: anywhere; }
+
+  .main-content {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  .topbar {
+    position: relative;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .search-pill-container { width: 100%; max-width: none; }
+
+  .topbar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .topbar-actions > * { min-width: 0; max-width: 100%; }
+  .user-profile-pill { max-width: 100%; overflow: hidden; }
+  .dashboard-view { min-width: 0; padding: 16px; }
+
+  .customer-hero-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    padding: 24px 20px;
+  }
+
+  .hero-customer-profile { min-width: 0; align-items: flex-start; gap: 14px; }
+  .hero-avatar { width: 64px; height: 64px; flex: 0 0 64px; }
+  .hero-info { min-width: 0; }
+  .hero-info h2 { font-size: clamp(1.15rem, 5vw, 1.55rem); line-height: 1.2; overflow-wrap: anywhere; }
+  .hero-meta-grid { flex-direction: column; gap: 10px; }
+  .hero-meta-item { min-width: 0; align-items: flex-start; }
+
+  .hero-account-summary {
+    border-left: 0;
+    border-top: 1px solid var(--glass-border-subtle);
+    padding: 16px 0 0;
+    text-align: left;
+  }
+
+  .hero-account-summary .value { font-size: 1.3rem; overflow-wrap: anywhere; }
+  .metrics-grid { grid-template-columns: 1fr; gap: 14px; }
+  .table-container { width: 100%; max-width: 100%; overflow: auto; }
+}
+
+@media (max-width: 420px) {
+  .sidebar-nav { grid-template-columns: 1fr; }
+  .dashboard-view { padding: 12px; }
+}
+
 /* ==============================================================================
  * CONSOLIDATED DESIGN SYSTEM MODAL UTILITIES (Issue 8 Fix)
  * ============================================================================== */
