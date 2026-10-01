@@ -47,6 +47,10 @@ def set_guest_call_cookie(response: Response, guest_id: Optional[str], request: 
             path="/",
         )
 
+def reject_read_only_judge(user):
+    if user and user.get("role") == "judge":
+        raise HTTPException(status_code=403, detail="Judge access is read-only.")
+
 @router.get("/chat/live/messages")
 async def get_live_chat_messages(request: Request, client_id: Optional[str] = None):
     user = AuthManager.get_current_user(request)
@@ -89,6 +93,7 @@ async def get_live_chat_messages(request: Request, client_id: Optional[str] = No
 @router.post("/chat/live/send")
 async def send_live_chat_message(request: Request):
     user = AuthManager.get_current_user(request)
+    reject_read_only_judge(user)
     body = await request.json()
     message_text = (body.get("message") or "").strip()
     is_staff = bool(user and user.get("role") in ["admin", "agent", "warranty_manager"])
@@ -153,7 +158,8 @@ async def send_live_chat_message(request: Request):
     return {"success": True, "message": clean_doc(msg_doc)}
 
 @router.post("/chat/upload-file")
-async def upload_chat_file(file: UploadFile = File(...)):
+async def upload_chat_file(request: Request, file: UploadFile = File(...)):
+    reject_read_only_judge(AuthManager.get_current_user(request))
     uploads_dir = os.path.join("static", "uploads")
     os.makedirs(uploads_dir, exist_ok=True)
     filename = f"{int(datetime.datetime.now().timestamp()*1000)}_{file.filename}"
@@ -212,6 +218,7 @@ async def toggle_staff_presence(request: Request):
 
 @router.post("/call/initiate")
 async def initiate_voice_call(request: Request):
+    reject_read_only_judge(AuthManager.get_current_user(request))
     client_id, client_name, new_guest_id = get_call_client_context(request)
     
     target_role = None

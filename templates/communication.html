@@ -124,16 +124,25 @@
       <i class="fa-solid fa-comments" style="color:#25d366;filter:drop-shadow(0 0 8px rgba(37,211,102,0.5));"></i>
       SupportNova Live Chat
     </h1>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-top:3px;">Real-time client chats from chatbot Direct Support tab — all staff can view and reply</p>
+    <p style="color:var(--text-muted);font-size:0.8rem;margin-top:3px;">{% if current_user.role == 'judge' %}Read-only view: customer conversations and staff communication actions are restricted.{% else %}Real-time client chats from chatbot Direct Support tab — all staff can view and reply{% endif %}</p>
   </div>
+  {% if current_user.role != 'judge' %}
   <div style="display:flex;gap:10px;align-items:center;">
     <div style="background:rgba(238, 240, 208, 0.1);border:1px solid rgba(238, 240, 208, 0.3);border-radius:9999px;padding:6px 16px;font-size:0.78rem;font-weight:800;color:var(--cream, #eef0d0);display:flex;align-items:center;gap:6px;">
       <span class="wa-online-dot"></span><span id="liveChatsCount">Loading...</span>
     </div>
     <button class="pill-tab" onclick="loadLiveChats()" style="font-size:0.8rem;"><i class="fa-solid fa-rotate" style="margin-right:5px;"></i> Refresh</button>
   </div>
+  {% endif %}
 </div>
 
+{% if current_user.role == 'judge' %}
+<section role="status" aria-live="polite" style="max-width:760px;margin:24px auto;padding:28px;border:1px solid var(--glass-border);border-radius:18px;background:var(--bg-card,rgba(255,255,255,.06));text-align:center;">
+  <i class="fa-solid fa-eye" aria-hidden="true" style="font-size:2rem;color:#25d366;"></i>
+  <h2 style="margin:14px 0 8px;color:var(--text-heading);">Judge read-only view</h2>
+  <p style="margin:0;color:var(--text-muted);line-height:1.6;">Customer chat history, file uploads, replies, broadcasts, and call requests are restricted to protect customer privacy.</p>
+</section>
+{% else %}
 <div class="wa-hub-grid">
 
   <div class="wa-panel">
@@ -551,8 +560,8 @@
   setInterval(loadLiveChats, 5500);
   setInterval(loadStaffPresence, 15000);
 </script>
+{% endif %}
 
 {% endblock %}
-
 
 
