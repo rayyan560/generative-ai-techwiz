@@ -1,8 +1,9 @@
-import os
+import asyncio
+import datetime
 import json
 import logging
-import datetime
-import asyncio
+import mimetypes
+import os
 import secrets
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, Form, HTTPException, Depends, WebSocket, WebSocketDisconnect
@@ -21,6 +22,7 @@ from src.genai_pipeline.pipeline import genai_pipeline
 from src.comparison_engine.engine import ComparisonEngine
 from src.analytics.sentiment import SentimentTelemetryEngine
 from src.security.auth import AuthManager
+from src.project_documentation import ADDITIONAL_TOPIC_DETAILS
 
 from routers.common import clean_doc, clean_docs, ws_manager
 from routers import auth, admin, agent, warranty, chat, analytics, knowledge
@@ -357,7 +359,7 @@ PROJECT_DOCUMENTS = {
         "title": "User Manual / User Guide",
         "subtitle": "A practical walkthrough of the SupportNova portal",
         "icon": "fa-book-open-reader",
-        "topics": ["Website Access", "Registration and Login", "AI Interface", "Prompt Submission", "File and Data Upload", "AI-Generated Output", "Chat and History", "Download and Export", "Error Handling", "Major Feature Screenshots"],
+        "topics": ["Website Access", "Registration and Login", "AI Interface", "Prompt Submission", "File and Data Upload", "AI-Generated Output", "Chat and History", "Download and Export", "Error Handling", "Major Feature Walkthrough"],
         "files": [("Read User Guide", "/project-docs/file/user-guide.html", "fa-arrow-up-right-from-square")],
     },
     "developer-guide": {
@@ -385,7 +387,7 @@ PROJECT_DOCUMENTS = {
         "title": "Installation, Configuration & Test Data",
         "subtitle": "Everything needed to run, configure and verify the project",
         "icon": "fa-screwdriver-wrench",
-        "topics": ["Python Installation", "Virtual Environment", "Required Python Version", "Libraries", "MongoDB Setup", "OpenAI/API Configuration", ".env Configuration", "Running the Application", "Browser Access", "Troubleshooting", "Test Data", "Sample Prompts", "Expected Outputs"],
+        "topics": ["Python Installation", "Virtual Environment", "Required Python Version", "Libraries", "MongoDB Setup", "Gemini API Configuration", ".env Configuration", "Running the Application", "Browser Access", "Troubleshooting", "Test Data", "Sample Prompts", "Expected Outputs"],
         "files": [("Open Project Documentation", "/project-docs/file/slides.html", "fa-images")],
     },
     "slides": {
@@ -395,6 +397,16 @@ PROJECT_DOCUMENTS = {
         "topics": ["Project Overview", "Problem and Solution", "Features", "User Journey", "Technical Architecture", "Data Flow", "AI Pipeline", "Database Design", "Security", "Installation", "Testing", "Limitations", "Future Roadmap"],
         "files": [("Open 50-Slide Deck", "/project-docs/file/slides.html", "fa-play")],
     },
+    "demo-videos": {
+        "title": "Project Demo Videos",
+        "subtitle": "Voice-over browser walkthroughs of the project and its documentation",
+        "icon": "fa-circle-play",
+        "topics": ["Full Project Walkthrough", "Authentication and Documents Walkthrough"],
+        "files": [
+            ("Play Full Project Walkthrough", "/project-docs/file/project-walkthrough.mp4", "fa-play"),
+            ("Play Authentication & Documents Walkthrough", "/project-docs/file/auth-docs-walkthrough.mp4", "fa-play"),
+        ],
+    },
 }
 
 PROJECT_FILES = {
@@ -402,6 +414,8 @@ PROJECT_FILES = {
     "user-guide.html": "SupportNova_User_Guide.html",
     "developer-guide.html": "SupportNova_Developer_Guide.html",
     "slides.html": "SupportNova_50_Slides_Project_Documentation.html",
+    "project-walkthrough.mp4": "video_assets/SupportNova_Project_Walkthrough_VoiceOver.mp4",
+    "auth-docs-walkthrough.mp4": "video_assets/SupportNova_Authentication_Documents_VoiceOver.mp4",
 }
 
 TOPIC_DETAILS = {
@@ -444,14 +458,15 @@ TOPIC_DETAILS = {
     "Future Roadmap": ("The roadmap focuses on stronger evaluation, richer integrations, production-grade observability and more configurable workflows.", ["Feedback-driven model improvements", "Enterprise notifications and CRM", "Advanced reporting and governance"]),
 }
 
+TOPIC_DETAILS.update(ADDITIONAL_TOPIC_DETAILS)
+
 def build_document_sections(document: Dict[str, Any]) -> Dict[str, Any]:
     """Attach readable project-specific content to every document topic."""
     sections = []
     for topic in document["topics"]:
-        summary, points = TOPIC_DETAILS.get(topic, (
-            f"This section explains how {topic.lower()} fits into the SupportNova Generative AI project and its submission workflow.",
-            [f"Define the purpose of {topic.lower()}", "Connect the topic to the application workflow", "Review this section before final submission"]
-        ))
+        if topic not in TOPIC_DETAILS:
+            raise ValueError(f"Project documentation is missing content for topic: {topic}")
+        summary, points = TOPIC_DETAILS[topic]
         sections.append({"title": topic, "summary": summary, "points": points})
     enriched = dict(document)
     enriched["sections"] = sections
@@ -491,7 +506,7 @@ async def project_document_file(request: Request, filename: str):
     file_path = os.path.join(BASE_DIR, PROJECT_FILES[filename])
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="Project file is missing")
-    media_type = "application/pdf" if filename.endswith(".pdf") else "text/html"
+    media_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
     return FileResponse(file_path, media_type=media_type)
 
 @app.get("/agent", response_class=HTMLResponse)
