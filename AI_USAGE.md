@@ -3,7 +3,7 @@
 **Project Name:** SupportNova - ResponseX Intelligence  
 **Competition:** Techwiz 7 - Aptech World Tech Championship  
 **Category:** Generative AI PowerPlay  
-**Date:** October 1, 2026
+**Date:** October 2, 2026
 
 ---
 
@@ -36,7 +36,7 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
 - **Modifications & Safety Controls Implemented**:
   - Untrusted data fencing (`<<<UNTRUSTED_TEXT_START>>>`) to mitigate prompt injection attacks.
   - Strict Pydantic JSON schema parser, bounded key rotation, and JSON fence extraction.
-  - Current policy version, source metadata, model/provider, prompt version, and UTC analysis time are stored with generated output; suspicious instructions inside retrieved policy text fail closed to manual review.
+  - Current policy version, source metadata, model/provider, prompt version, and UTC analysis time are stored with generated output; suspicious instructions in complaint text or retrieved policy text fail closed to manual review before any Gemini call.
   - Provider failures now result in manual review; no synthetic response is represented as GenAI output.
 - **Tests Performed**: `tests/test_genai_pipeline.py` (provider-unavailable/manual-review and no-retrieved-policy behavior). The pipeline now requires retrieved policy chunks before sending a complaint to GenAI. This is not a live provider integration test.
 - **Verification Status**: Automated provider-unavailable behavior is covered locally; live Gemini quality, credentials, rate limits, and production behavior were not tested.
@@ -64,8 +64,8 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
   - `src/comparison_engine/engine.py`
   - `src/hallucination_checks/detector.py`
   - `src/security/prompt_defense.py`
-- **Tests Performed**: `tests/test_comparison_engine.py`, `tests/test_security_injection.py`, and `tests/test_policy_versions.py`. Coverage and traceability are not defaulted to perfect when required actions or retrieved source/version evidence is missing; missing mandatory information without a clarification question requires review.
-- **Verification Status**: Local automated tests cover selected comparison and prompt-injection cases; no independent security audit is claimed.
+- **Tests Performed**: `tests/test_comparison_engine.py`, `tests/test_security_injection.py`, `tests/test_policy_versions.py`, and `tests/test_srs_dataset_coverage.py`. The detector is exercised against all 25 marked adversarial samples and checked for false positives across the ordinary, non-repeat sample set. Coverage and traceability are not defaulted to perfect when required actions or retrieved source/version evidence is missing; missing mandatory information without a clarification question requires review.
+- **Verification Status**: Local automated tests cover the repository's marked adversarial samples and selected comparison cases; this is not an independent security audit or a guarantee against unseen attacks.
 
 ---
 
@@ -76,8 +76,8 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
   - `src/document_processing/parser.py`
   - `src/knowledge_base/manager.py`
   - `sample_documents/generate_docs.py`
-- **Dataset**: 21 policy documents are present as PDF/DOCX artifacts. Tests cover upload validation and persistence with a mocked parser; extracted PDF/DOCX content still needs parser-fixture integration tests.
-- **Verification Status**: Local unit and route-function checks only; no architecture-board sign-off is claimed.
+- **Dataset**: 21 policy documents are present as 42 PDF/DOCX artifacts. Tests cover upload validation, persistence with a mocked parser, and actual parsing of all 42 bundled artifacts into traceable chunks.
+- **Verification Status**: Local fixture and route-function checks only; provider-backed knowledge ingestion and independent architecture-board sign-off are not claimed.
 
 ---
 

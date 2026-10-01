@@ -2,6 +2,7 @@ import io
 import zipfile
 import asyncio
 from datetime import date
+from pathlib import Path
 
 import pytest
 from fastapi import HTTPException, UploadFile
@@ -10,6 +11,14 @@ from src.document_processing.validation import (
     document_fingerprint,
     validate_document_file,
     validate_document_metadata,
+)
+from src.document_processing.parser import DocumentParser
+
+
+POLICY_FILES = sorted(
+    path
+    for path in (Path(__file__).resolve().parents[1] / "sample_documents" / "docs").iterdir()
+    if path.suffix.lower() in {".pdf", ".docx"}
 )
 
 
@@ -55,6 +64,22 @@ def test_rejects_invalid_metadata_and_expiry_order():
 def test_fingerprint_is_stable_and_content_sensitive():
     assert document_fingerprint(b"policy") == document_fingerprint(b"policy")
     assert document_fingerprint(b"policy") != document_fingerprint(b"other")
+
+
+@pytest.mark.parametrize("policy_path", POLICY_FILES, ids=lambda path: path.name)
+def test_shipped_policy_documents_parse_into_traceable_chunks(policy_path):
+    file_bytes = policy_path.read_bytes()
+    if policy_path.suffix.lower() == ".pdf":
+        chunks = DocumentParser.parse_pdf_content(file_bytes, policy_path.name, policy_path.stem, "v2.0")
+    else:
+        chunks = DocumentParser.parse_docx_content(file_bytes, policy_path.name, policy_path.stem, "v2.0")
+
+    assert chunks, f"{policy_path.name} produced no searchable policy chunks"
+    assert all(chunk["document_id"] == policy_path.stem for chunk in chunks)
+    assert all(chunk["document_name"] == policy_path.name for chunk in chunks)
+    assert all(chunk["version"] == "v2.0" for chunk in chunks)
+    assert all(chunk["content"].strip() for chunk in chunks)
+    assert all(chunk["character_count"] == len(chunk["content"]) for chunk in chunks)
 
 
 def test_upload_persists_document_once_with_traceable_metadata(monkeypatch):

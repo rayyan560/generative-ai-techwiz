@@ -10,6 +10,43 @@ REPORTS_DIR = os.path.dirname(__file__)
 os.makedirs(REPORTS_DIR, exist_ok=True)
 REPORT_FILE = os.path.join(REPORTS_DIR, "genai_python_comparison_report.csv")
 
+def build_comparison_row(complaint):
+    comparison = complaint.get("comparison") or {}
+    ground_truth = complaint.get("ground_truth") or {}
+    ai = complaint.get("genai_analysis") or {}
+    comparison_fields = ("category_match", "department_match", "urgency_match", "escalation_match")
+    ai_fields = ("category", "recommended_department", "urgency", "escalation_required")
+    ground_truth_fields = ("expected_category", "expected_department", "expected_urgency", "mandatory_escalation")
+    complete = (
+        all(field in comparison for field in comparison_fields)
+        and all(field in ai for field in ai_fields)
+        and all(field in ground_truth for field in ground_truth_fields)
+    )
+    if complete:
+        result = "MATCH" if all(comparison[field] is True for field in comparison_fields) else "MISMATCH"
+    else:
+        result = "INCOMPLETE"
+    verification_status = comparison.get("verification_status") or "Manual Review Required"
+    explanation = comparison.get("explanation_of_disagreement")
+    if not explanation:
+        explanation = "Comparison evidence is incomplete; manual review is required." if not complete else "No disagreement details recorded."
+    return [
+        complaint.get("complaint_id", "N/A"),
+        complaint.get("category", ground_truth.get("expected_category", "N/A")),
+        ai.get("category", "N/A"),
+        ground_truth.get("expected_category", "N/A"),
+        ai.get("recommended_department", "N/A"),
+        ground_truth.get("expected_department", "N/A"),
+        ai.get("urgency", "N/A"),
+        ground_truth.get("expected_urgency", "N/A"),
+        ai.get("escalation_required", "N/A"),
+        ground_truth.get("mandatory_escalation", "N/A"),
+        ground_truth.get("applicable_policy_id", "Not recorded"),
+        result,
+        verification_status,
+        explanation,
+    ]
+
 def generate_comparison_report():
     col = get_complaints_col()
     complaints = list(col.find({}, limit=150))
@@ -30,39 +67,13 @@ def generate_comparison_report():
             "GenAI Escalation",
             "Python Escalation",
             "Policy Reference",
-            "Match/Mismatch",
+            "Match/Mismatch/Incomplete",
             "Verification Status",
             "Explanation of Disagreement"
         ])
 
         for c in complaints:
-            comp = c.get("comparison", {})
-            gt = c.get("ground_truth", {})
-            ai = c.get("genai_analysis", {})
-
-            is_match = (
-                comp.get("category_match", True) and
-                comp.get("department_match", True) and
-                comp.get("urgency_match", True) and
-                comp.get("escalation_match", True)
-            )
-
-            writer.writerow([
-                c.get("complaint_id"),
-                gt.get("expected_category", "N/A"),
-                ai.get("category", "N/A"),
-                gt.get("expected_category", "N/A"),
-                ai.get("recommended_department", "N/A"),
-                gt.get("expected_department", "N/A"),
-                ai.get("urgency", "N/A"),
-                gt.get("expected_urgency", "N/A"),
-                ai.get("escalation_required", False),
-                gt.get("mandatory_escalation", False),
-                gt.get("applicable_policy_id", "POL-CMP-01"),
-                "MATCH" if is_match else "MISMATCH",
-                comp.get("verification_status", "Verified"),
-                comp.get("explanation_of_disagreement", "Compliant")
-            ])
+            writer.writerow(build_comparison_row(c))
 
     print(f"Comparison report written successfully to {REPORT_FILE}")
 

@@ -53,7 +53,8 @@ SupportNova is an AI-powered enterprise complaint triage and ground-truth valida
 - **20+ Parsed Policies & SOPs (PDF & DOCX)**: Ingested using PyMuPDF and python-docx with section chunking, heading extraction, and version status (Active vs Superseded).
 - **175 Ground-Truth Rules**: Deterministic mappings across 12 complaint categories and configured departments.
 - **34 Escalation Conditions**: Named safety, legal, privacy, financial, and operational triggers; staff must verify outcomes.
-- **Adversarial & Prompt Injection Defense**: Neutralizes attempts to bypass refund policies or extract system prompts.
+- **Adversarial & Prompt Injection Defense**: Fences untrusted complaint/policy text and routes suspicious sources for review; all 25 marked corpus cases are detected in local tests.
+- **Security Test Evidence**: [Local adversarial test scope and limitations](reports/SECURITY_ADVERSARIAL_REPORT.md).
 - **Repeat Complaint Review**: Exact/near-duplicate checks are scoped to the same customer; unresolved repeat history drives Python escalation at three total attempts.
 - **MongoDB Atlas + Local Development Store**: Hosted deployments require a configured MongoDB URI; local JSON storage is for development only.
 - **Rich Dashboard & Analytics**: Volume trends, department breakdown, SLA risk detection, and 1-click CSV export.
@@ -145,4 +146,4 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Structured Resolution Rules | >= 100 | **175 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **34 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **76 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **124 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |

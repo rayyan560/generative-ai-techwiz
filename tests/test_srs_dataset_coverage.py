@@ -6,6 +6,7 @@ from src.escalation_rules.manager import ESCALATION_CONDITIONS
 from src.python_validation.pipeline import PythonGroundTruthPipeline
 from src.routing_rules.router import ROUTING_MAP
 from src.complaint_processing.duplicates import identify_related_complaints
+from src.security.prompt_defense import PromptDefense
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,38 @@ def test_supportnova_sample_pack_meets_srs_minimums():
     assert sum(bool(item.get("is_adversarial")) for item in COMPLAINTS) >= 20
     assert sum(item.get("issue_type") == "Multi-issue" for item in COMPLAINTS) >= 25
     assert sum(bool(item.get("is_duplicate")) for item in COMPLAINTS) >= 25
+
+
+def test_every_adversarial_sample_triggers_prompt_defense():
+    adversarial_cases = [item for item in COMPLAINTS if item.get("is_adversarial")]
+    missed_cases = []
+
+    for case in adversarial_cases:
+        text = f"{case.get('complaint_title', '')}\n{case.get('complaint_description', '')}"
+        suspicious, _ = PromptDefense.inspect_text_for_injections(text)
+        if not suspicious:
+            missed_cases.append(case.get("complaint_id", "unknown"))
+
+    assert len(adversarial_cases) >= 25
+    assert missed_cases == []
+
+
+def test_prompt_defense_does_not_flag_non_adversarial_non_repeat_samples():
+    ordinary_cases = [
+        item
+        for item in COMPLAINTS
+        if not item.get("is_adversarial") and item.get("issue_type") != "Repeated complaint"
+    ]
+    false_positives = []
+
+    for case in ordinary_cases:
+        text = f"{case.get('complaint_title', '')}\n{case.get('complaint_description', '')}"
+        suspicious, _ = PromptDefense.inspect_text_for_injections(text)
+        if suspicious:
+            false_positives.append(case.get("complaint_id", "unknown"))
+
+    assert ordinary_cases
+    assert false_positives == []
 
 
 def test_new_subcategories_match_ground_truth_and_approved_policy_ids():

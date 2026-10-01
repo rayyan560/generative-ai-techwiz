@@ -45,9 +45,12 @@ class GenAIPipeline:
     def generate_intelligence(self, complaint_dict: Dict[str, Any]) -> GenAIIntelligenceOutput:
         title = complaint_dict.get("complaint_title", "")
         description = complaint_dict.get("complaint_description", "")
+        suspicious, flags = PromptDefense.inspect_text_for_injections(f"{title} {description}")
+        if suspicious:
+            complaint_dict["adversarial_input_warnings"] = flags
+            raise GenAIUnavailableError("Adversarial instructions were detected in complaint text; the complaint must be reviewed by a human.")
         if not self.api_keys:
             raise GenAIUnavailableError("GenAI analysis is unavailable; the complaint must be reviewed by a human.")
-        suspicious, flags = PromptDefense.inspect_text_for_injections(f"{title} {description}")
         policies = KnowledgeBaseManager.retrieve_relevant_policy_chunks(
             category=complaint_dict.get("category", "General"),
             query=f"{title} {description}",
@@ -108,8 +111,6 @@ class GenAIPipeline:
                     raise ValueError("Provider returned an empty response.")
                 data = json.loads(self._clean_json(response.text))
                 data["complaint_id"] = complaint_dict.get("complaint_id") or "UNASSIGNED"
-                if suspicious:
-                    data["adversarial_warning"] = "; ".join(flags)
                 data["analysis_metadata"] = {
                     "provider": self.provider,
                     "model": self.model_name,

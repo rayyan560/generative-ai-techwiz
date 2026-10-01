@@ -90,7 +90,7 @@ SupportNova connects to MongoDB Atlas through `MONGODB_URI` in hosted deployment
 
 SupportNova treats all customer-submitted text and file attachments as **untrusted data**.
 1. **Fencing Wrappers**: Complaint inputs are framed within strict markdown boundary fencing (`<<<UNTRUSTED_TEXT_START>>>`).
-2. **Regex Pattern Inspection**: `PromptDefense` scans input for 15+ prompt injection vectors (`"ignore previous instructions"`, `"system override"`, `"jailbreak"`, `"dan mode"`, `"grant admin access"`).
+2. **Regex Pattern Inspection**: `PromptDefense` scans input for prompt injection vectors; suspicious complaint text is stopped before provider submission and routed to human review.
 3. **Adversarial Compensation Trap Mitigation**: Prohibits GenAI models from executing customer demands for unauthorized refunds or financial compensation.
 
 ---
@@ -106,11 +106,11 @@ SupportNova treats all customer-submitted text and file attachments as **untrust
 | Policy Documents (PDF/DOCX) | >= 20 | **21 Documents (42 files)** | ✅ Meets target |
 | Resolution Rules Matrix | >= 100 | **175 Ground-Truth Rules** | ✅ Meets target |
 | Mandatory Escalations | >= 30 | **34 Conditions** | ✅ Meets target |
-| Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Meets target |
-| Automated Test Suite | All Passing | **76 passed** | ✅ Verified locally on October 2, 2026; provider-backed and browser interaction tests remain separate |
+| Prompt Injection Test Cases | >= 20 | **25 marked cases; 25/25 detected locally** | ✅ Dataset detector check; not an independent security audit |
+| Automated Test Suite | All Passing | **124 passed** | ✅ Verified locally on October 2, 2026; provider-backed and full browser interaction tests remain separate |
 
 ---
 
 ## 7. Conclusion
 
-SupportNova demonstrates a design for combining generative analysis with deterministic review controls. This development snapshot does not certify zero hallucinations, zero vulnerabilities, production reliability, or live provider performance. The complaint tracker is an initial React component; the remaining dashboards still use server-rendered HTML and JavaScript, so the full React-component requirement in `docs/rules.md` remains unmet.
+SupportNova demonstrates a design for combining generative analysis with deterministic review controls. This development snapshot does not certify zero hallucinations, zero vulnerabilities, production reliability, or live provider performance. The existing 150-row comparison CSV is historical and has not been verified as 100 unseen, live-provider cases. Performance under 20 seconds, scale to 10,000 complaints/1,000 policies, and 99% uptime have not been load-tested or measured. The complaint tracker is an initial React component; the remaining dashboards still use server-rendered HTML and JavaScript, so the full React-component and file-size requirements in `docs/rules.md` remain unmet.
