@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import PROJECT_DOCUMENTS, TOPIC_DETAILS, app, build_document_sections
@@ -33,16 +34,41 @@ def test_documents_hub_lists_both_project_walkthroughs(monkeypatch):
     assert "/project-docs/file/auth-docs-walkthrough.mp4" in response.text
 
 
-def test_project_walkthrough_is_served_as_playable_mp4(monkeypatch):
+@pytest.mark.parametrize(
+    ("route", "filename"),
+    [
+        ("project-walkthrough.mp4", "SupportNova_Project_Walkthrough_VoiceOver.mp4"),
+        ("auth-docs-walkthrough.mp4", "SupportNova_Authentication_Documents_VoiceOver.mp4"),
+    ],
+)
+def test_walkthroughs_are_served_as_playable_mp4(monkeypatch, route, filename):
     monkeypatch.setattr(
         AuthManager,
         "get_current_user",
         staticmethod(lambda request: {"user_id": "read-only-reviewer", "role": "judge"}),
     )
 
-    response = TestClient(app).get("/project-docs/file/project-walkthrough.mp4")
+    response = TestClient(app).get(f"/project-docs/file/{route}")
 
-    expected = Path("video_assets/SupportNova_Project_Walkthrough_VoiceOver.mp4")
+    expected = Path("video_assets") / filename
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("video/mp4")
     assert response.content[:8] == expected.read_bytes()[:8]
+
+
+def test_project_walkthrough_supports_browser_range_requests(monkeypatch):
+    monkeypatch.setattr(
+        AuthManager,
+        "get_current_user",
+        staticmethod(lambda request: {"user_id": "read-only-reviewer", "role": "judge"}),
+    )
+
+    response = TestClient(app).get(
+        "/project-docs/file/project-walkthrough.mp4",
+        headers={"Range": "bytes=0-1023"},
+    )
+
+    assert response.status_code == 206
+    assert response.headers["content-range"].startswith("bytes 0-1023/")
+    assert response.headers["content-type"].startswith("video/mp4")
+    assert len(response.content) == 1024

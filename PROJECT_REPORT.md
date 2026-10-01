@@ -99,18 +99,20 @@ SupportNova treats all customer-submitted text and file attachments as **untrust
 
 | Requirement | Specification Target | SupportNova Achieved | Verification Status |
 | :--- | :--- | :--- | :--- |
-| Unique Customer Complaints | >= 500 | **528 Unique Cases** | ✅ Meets target |
+| Complaint Records (unique IDs) | >= 500 | **528 records** | ✅ Meets target |
 | Complaint Categories | >= 10 | **12 Categories** | ✅ Meets target |
-| Complaint Subcategories | >= 20 | **26 Subcategories** | ✅ Meets target |
+| Complaint Subcategories | >= 20 | **20 in the bundled dataset** | ✅ Meets target |
 | Responsible Departments | >= 8 | **10 Departments** | ✅ Meets target |
 | Policy Documents (PDF/DOCX) | >= 20 | **21 Documents (42 files)** | ✅ Meets target |
 | Resolution Rules Matrix | >= 100 | **175 Ground-Truth Rules** | ✅ Meets target |
 | Mandatory Escalations | >= 30 | **34 Conditions** | ✅ Meets target |
 | Prompt Injection Test Cases | >= 20 | **25 marked cases; 25/25 detected locally** | ✅ Dataset detector check; not an independent security audit |
-| Automated Test Suite | All Passing | **124 passed** | ✅ Verified locally on October 2, 2026; provider-backed and full browser interaction tests remain separate |
+| Automated Test Suite | All Passing | **126 passed** | ✅ Verified locally on October 2, 2026; provider-backed and full browser interaction tests remain separate |
 
 ---
 
 ## 7. Conclusion
 
-SupportNova demonstrates a design for combining generative analysis with deterministic review controls. This development snapshot does not certify zero hallucinations, zero vulnerabilities, production reliability, or live provider performance. The existing 150-row comparison CSV is historical and has not been verified as 100 unseen, live-provider cases. Performance under 20 seconds, scale to 10,000 complaints/1,000 policies, and 99% uptime have not been load-tested or measured. The complaint tracker is an initial React component; the remaining dashboards still use server-rendered HTML and JavaScript, so the full React-component and file-size requirements in `docs/rules.md` remain unmet.
+SupportNova demonstrates a design for combining generative analysis with deterministic review controls. This development snapshot does not certify zero hallucinations, zero vulnerabilities, production reliability, or live provider performance. The 150-row comparison report and 525-row hidden-evaluation CSV are historical artifacts; neither has verified input provenance proving 100 unseen cases or live Gemini output. Performance under 20 seconds, scale to 10,000 complaints/1,000 policies, and 99% uptime have not been load-tested or measured. The complaint tracker is an initial React component; the remaining dashboards still use server-rendered HTML and JavaScript, so the full React-component and file-size requirements in `docs/rules.md` remain unmet.
+
+The current Git history shows activity on four calendar dates, not all five competition days. No team-contribution record or independent team sign-off is present. Two voice-over videos are included and their representative frames were inspected, but they have not been verified against every required demonstration scenario. Automated route and behavior tests do not constitute an exhaustive manual test of every live button and workflow.

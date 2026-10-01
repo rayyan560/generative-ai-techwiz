@@ -49,7 +49,7 @@ SupportNova is an AI-powered enterprise complaint triage and ground-truth valida
 
 ## 🚀 Key Features
 
-- **528 Unique Pre-seeded Complaints**: Covers simple, multi-issue, high-risk safety, calm-critical, prompt injections, and duplicate resubmissions.
+- **528 Pre-seeded Complaint Records**: Unique record IDs; includes simple, multi-issue, high-risk safety, calm-critical, prompt-injection, and repeated-submission cases.
 - **20+ Parsed Policies & SOPs (PDF & DOCX)**: Ingested using PyMuPDF and python-docx with section chunking, heading extraction, and version status (Active vs Superseded).
 - **175 Ground-Truth Rules**: Deterministic mappings across 12 complaint categories and configured departments.
 - **34 Escalation Conditions**: Named safety, legal, privacy, financial, and operational triggers; staff must verify outcomes.
@@ -106,7 +106,7 @@ The review login page then shows the built-in competition accounts `admin / admi
 # Generate 20+ policy documents in PDF and DOCX
 python sample_documents/generate_docs.py
 
-# Generate 528 unique complaints dataset
+# Generate the 528-record complaint dataset
 python sample_complaints/generate_dataset.py
 ```
 
@@ -138,12 +138,12 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 
 | Requirement | Target | Achieved | Status |
 | :--- | :--- | :--- | :--- |
-| Unique Customer Complaints | >= 500 | **528** | ✅ Pass |
+| Complaint Records (unique IDs) | >= 500 | **528 records** | ✅ Pass |
 | Complaint Categories | >= 10 | **12** | ✅ Pass |
-| Complaint Subcategories | >= 20 | **26** | ✅ Pass |
+| Complaint Subcategories | >= 20 | **20 in the bundled dataset** | ✅ Pass |
 | Responsible Departments | >= 8 | **10** | ✅ Pass |
 | Policy & SOP Documents | >= 20 | **21 (PDF & DOCX)** | ✅ Pass |
 | Structured Resolution Rules | >= 100 | **175 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **34 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **124 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **126 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |
