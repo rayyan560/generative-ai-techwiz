@@ -92,7 +92,7 @@ npm ci
 npm run build
 ```
 
-For local-only demo accounts, copy `.env.example` to `.env` and set `DEMO_MODE=true`. Never enable demo mode on a public deployment. For hosted use, configure `MONGODB_URI`, `SESSION_SECRET_KEY`, `ADMIN_EMAIL`, and a strong `ADMIN_PASSWORD` in the host's private variables. Configure `GEMINI_API_KEYS` and Google OAuth credentials only when those integrations are enabled. Hosted startup refuses to use the local JSON store when MongoDB is missing or unreachable.
+For local-only demo accounts, copy `.env.example` to `.env` and set `DEMO_MODE=true`. Never enable demo mode on a public deployment. For hosted use, configure `MONGODB_URI`, `SESSION_SECRET_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `AGENT_EMAIL`, and `AGENT_PASSWORD` in the host's private variables. The admin and agent accounts are created or updated from these private variables at startup; their usernames are derived from the email local-part (for example, `admin@supportnova.io` signs in as `admin`). Configure `GEMINI_API_KEYS` and Google OAuth credentials only when those integrations are enabled. Hosted startup refuses to use the local JSON store when MongoDB is missing or unreachable.
 
 ### 3. Generate Knowledge Base Documents & 500+ Dataset
 ```bash

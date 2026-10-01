@@ -171,6 +171,30 @@ class AuthManager:
                     users_col.update_one({"email": settings.ADMIN_EMAIL}, {"$set": profile})
                 else:
                     users_col.insert_one(profile)
+
+            if not settings.DEMO_MODE and settings.AGENT_EMAIL and settings.AGENT_PASSWORD:
+                username = settings.AGENT_EMAIL.split("@", 1)[0].replace(".", "_")
+                existing = users_col.find_one({"email": settings.AGENT_EMAIL})
+                user_id = (existing or {}).get("user_id")
+                if user_id in {"USR-ADMIN-001", "USR-AGENT-002", "USR-WARRANTY-003"}:
+                    user_id = None
+                profile = {
+                    "user_id": user_id or f"USR-AGENT-BOOTSTRAP-{int(time.time())}",
+                    "username": (existing or {}).get("username") or username,
+                    "email": settings.AGENT_EMAIL,
+                    "password": get_password_hash(settings.AGENT_PASSWORD),
+                    "role": "agent",
+                    "display_name": (existing or {}).get("display_name") or username.replace("_", " ").title(),
+                    "designation": (existing or {}).get("designation") or "Lead Triage & Hardware Forensic Specialist",
+                    "avatar": (existing or {}).get("avatar") or "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80",
+                    "auth_provider": (existing or {}).get("auth_provider", "local"),
+                    "phone": (existing or {}).get("phone", ""),
+                    "created_at": (existing or {}).get("created_at") or time.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                if existing:
+                    users_col.update_one({"email": settings.AGENT_EMAIL}, {"$set": profile})
+                else:
+                    users_col.insert_one(profile)
             _USERS_INITIALIZED = True
         except Exception as e:
             logger.error(f"Error initializing default users: {e}")

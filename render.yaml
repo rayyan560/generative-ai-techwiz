@@ -17,6 +17,10 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: AGENT_EMAIL
+        sync: false
+      - key: AGENT_PASSWORD
+        sync: false
       - key: DEMO_MODE
         value: "false"
       - key: COOKIE_SECURE

@@ -28,6 +28,8 @@ class AppSettings(BaseModel):
     ).lower() in ("true", "1", "yes")
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "").strip().lower()
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
+    AGENT_EMAIL: str = os.getenv("AGENT_EMAIL", "").strip().lower()
+    AGENT_PASSWORD: str = os.getenv("AGENT_PASSWORD", "")
     COOKIE_SECURE: bool = os.getenv(
         "COOKIE_SECURE",
         "true" if os.getenv("RAILWAY_ENVIRONMENT_ID") or os.getenv("RENDER") else "false"
