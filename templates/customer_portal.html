@@ -676,6 +676,27 @@
       from { opacity: 0; transform: translateX(-15px); }
       to { opacity: 1; transform: translateX(0); }
     }
+    .portal-brand,
+    .portal-actions { min-width: 0; }
+    .portal-actions { flex-wrap: wrap; justify-content: flex-end; }
+    @media (max-width: 760px) {
+      .portal-nav { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+      .portal-brand { flex: 1 1 100%; }
+      .portal-actions { flex: 1 1 100%; justify-content: center; gap: 8px !important; }
+      .portal-actions > * { max-width: 100%; }
+      .portal-actions .portal-hotline { display: none; }
+      .portal-actions .sn-pill-primary,
+      .portal-actions .google-btn { padding: 8px 12px !important; font-size: 0.78rem !important; }
+      .portal-hero { min-height: 470px; padding: 58px 18px 52px; }
+      .sn-hero-title { font-size: clamp(2rem, 7vw, 2.8rem); line-height: 1.12; text-wrap: balance; }
+      .portal-container { margin: 0 12px 42px; padding: 24px 18px; }
+    }
+    @media (max-width: 420px) {
+      .portal-nav > .portal-brand > a > div:last-child > div:first-child { font-size: 0.98rem !important; }
+      .portal-actions .cyber-badge { padding: 7px 9px; font-size: 0.72rem; }
+      .portal-actions .portal-google-login { display: none; }
+      .portal-hero { min-height: 440px; }
+    }
   </style>
 </head>
 <body>
@@ -704,7 +725,7 @@
   </aside>
 
   <nav class="portal-nav">
-    <div style="display: flex; align-items: center; gap: 14px;">
+    <div class="portal-brand" style="display: flex; align-items: center; gap: 14px;">
       <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
         <div style="width: 38px; height: 38px; border-radius: 12px; background: #eef0d0; display: flex; align-items: center; justify-content: center; color: #101010; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(238, 240, 208, 0.4);">N</div>
         <div>
@@ -714,8 +735,8 @@
       </a>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div class="cyber-badge">
+    <div class="portal-actions" style="display: flex; align-items: center; gap: 12px;">
+      <div class="cyber-badge portal-hotline">
         <i class="fa-solid fa-language" style="color: var(--primary);"></i>
         <select id="portalLangSelect" onchange="changePortalLanguage(this.value)" style="background: transparent; border: none; font-size: 0.82rem; font-weight: 700; color: #fbfcf8; outline: none; cursor: pointer;">
           <option value="en" style="background: #181714; color: #fbfcf8;">English (US)</option>
@@ -758,7 +779,7 @@
       </a>
 
       {% else %}
-      <button class="google-btn" onclick="triggerCustomerGoogleLogin()" style="margin-bottom: 0; padding: 8px 18px; font-size: 0.86rem; border-radius: 9999px; background: rgba(238, 240, 208, 0.1); border-color: rgba(214, 217, 170, 0.35); color: #eef0d0;">
+      <button class="google-btn portal-google-login" onclick="triggerCustomerGoogleLogin()" style="margin-bottom: 0; padding: 8px 18px; font-size: 0.86rem; border-radius: 9999px; background: rgba(238, 240, 208, 0.1); border-color: rgba(214, 217, 170, 0.35); color: #eef0d0;">
         <i class="fa-solid fa-bolt" style="color: #eef0d0; font-size: 0.95rem;"></i>
         <span>Account Login</span>
       </button>
