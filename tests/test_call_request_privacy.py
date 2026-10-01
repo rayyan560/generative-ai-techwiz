@@ -72,6 +72,7 @@ def test_judge_page_has_single_read_only_status_without_floating_banner(monkeypa
     assert "Judge review mode · read-only" not in response.text
     assert "Prompt Injection / Traps" in response.text
     assert "Manual Review Queue" in response.text
+    assert "complaint-filter-pills" in response.text
     assert "ï¸" not in response.text
 
 
