@@ -76,10 +76,10 @@ class ComplaintPreprocessor:
     @staticmethod
     def validate_complaint_input(title: str, description: str) -> Tuple[bool, Optional[str]]:
         """Validates complaint completeness and detects trivial or empty submissions."""
-        if not title or len(title.strip()) < 3:
-            return False, "Complaint title is too short or missing (minimum 3 characters required)."
         if not description or len(description.strip()) < 10:
             return False, "Complaint description is too short or empty (minimum 10 characters required)."
+        if not title or len(title.strip()) < 3:
+            return False, "Complaint title is too short or missing (minimum 3 characters required)."
         return True, None
 
     @staticmethod

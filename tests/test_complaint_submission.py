@@ -39,7 +39,7 @@ def test_customer_form_explains_validation_and_uses_fresh_script_asset():
     response = TestClient(app).get("/")
 
     assert response.status_code == 200
-    assert '/static/js/customer.js?v=5.4' in response.text
+    assert '/static/js/customer.js?v=5.5' in response.text
     assert 'id="complaintTitleInputError"' in response.text
     assert 'id="complaintDescriptionInputError"' in response.text
     assert 'minlength="10"' in response.text
@@ -104,4 +104,19 @@ def test_complaint_submission_explains_description_minimum(monkeypatch):
 
     assert response.status_code == 400
     assert "description" in response.json()["detail"].lower()
+    assert collection.records == []
+
+
+def test_short_description_gets_correct_error_when_title_is_also_short(monkeypatch):
+    collection = InMemoryComplaintCollection()
+    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
+
+    response = TestClient(app).post(
+        "/api/complaints/submit",
+        data=_submission_data(complaint_title="ha", complaint_description="haha"),
+    )
+
+    assert response.status_code == 400
+    assert "description" in response.json()["detail"].lower()
+    assert "title" not in response.json()["detail"].lower()
     assert collection.records == []
