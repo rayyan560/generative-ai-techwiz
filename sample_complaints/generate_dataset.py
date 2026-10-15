@@ -2,9 +2,29 @@ import json
 import os
 import random
 import datetime
+import re
+import sys
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from src.python_validation.pipeline import PythonGroundTruthPipeline
+from sample_documents.generate_docs import POLICIES
 
 SAMPLE_COMPLAINTS_DIR = os.path.dirname(__file__)
 DATASET_FILE = os.path.join(SAMPLE_COMPLAINTS_DIR, "complaints_500.json")
+DATASET_REFERENCE = datetime.datetime(2026, 10, 1, 0, 56, 51)
+POLICY_METADATA = [
+    {
+        "document_id": policy["doc_id"],
+        "version": policy["version"],
+        "status": policy["status"],
+        "effective_date": policy["effective_date"],
+        "expiry_date": policy.get("expiry_date"),
+    }
+    for policy in POLICIES
+]
 
 # Base templates for generating 520+ diverse, realistic complaints
 TEMPLATES = [
@@ -191,16 +211,25 @@ ADVERSARIAL_CASES = [
 # Dedicated Multi-Issue & Ambiguous Complaints (25+ items)
 MULTI_ISSUE_CASES = [
     {
+        "category": "Billing & Charges",
+        "subcategory": "Double Charge",
+        "secondary_issues": ["Wrong item delivered", "Package arrived crushed"],
         "title": "Delivered wrong item, charged twice, and package arrived crushed",
         "desc": "I received order ORD-77821 today. First, the outer box was completely crushed. Second, inside was a cheap mouse instead of the $1,200 4K Monitor I bought. Third, checking my credit card, I was billed twice ($2,400 total). I want the double charge refunded and the correct monitor express shipped.",
         "type": "Multi-issue"
     },
     {
+        "category": "Safety Hazard",
+        "subcategory": "Battery Overheating / Swelling",
+        "secondary_issues": ["Support agent misconduct", "Legal escalation request"],
         "title": "Charger melted, battery puffed, and agent insulted me when I called",
         "desc": "Order ORD-99214: The laptop charger melted my desk and the battery is swollen and boiling hot. When I called your phone support line in a panic, the agent accused me of lying and hung up. I am considering hiring a lawyer if this is not resolved by executive management.",
         "type": "Multi-issue"
     },
     {
+        "category": "Billing & Charges",
+        "subcategory": "Subscription Overcharge",
+        "secondary_issues": ["Account access blocked"],
         "title": "Subscription cancelled, card charged anyway, and login access blocked",
         "desc": "I cancelled my SaaS cloud subscription last week. Yesterday my credit card was debited $149, and today when I tried to log in to download the invoice, your system says 'Account Suspended'. Fix my login and refund the charge.",
         "type": "Multi-issue"
@@ -240,11 +269,13 @@ def generate_520_dataset():
             "transaction_reference": f"TXN-{80000+i}",
             "preferred_channel": "Web Form",
             "attachment_names": ["injection_payload.txt"],
-            "created_at": (datetime.datetime.now() - datetime.timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": (DATASET_REFERENCE - datetime.timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d %H:%M:%S"),
             "category": "Account Security",
-            "subcategory": "Suspicious Login",
+            "subcategory": "Prompt Injection Attempt",
             "issue_type": "Prompt-injection",
-            "is_adversarial": True
+            "is_adversarial": True,
+            "is_multi_issue": False,
+            "secondary_issues": [],
         })
 
     # 2. Add 30 dedicated Multi-Issue & Ambiguous Complaints
@@ -264,11 +295,13 @@ def generate_520_dataset():
             "transaction_reference": f"TXN-{70000+i}",
             "preferred_channel": "Email" if i % 2 == 0 else "Web Form",
             "attachment_names": ["invoice.pdf", "photo_evidence.jpg"],
-            "created_at": (datetime.datetime.now() - datetime.timedelta(days=random.randint(1, 20))).strftime("%Y-%m-%d %H:%M:%S"),
-            "category": "Product Defect",
-            "subcategory": "Physical Damage",
+            "created_at": (DATASET_REFERENCE - datetime.timedelta(days=random.randint(1, 20))).strftime("%Y-%m-%d %H:%M:%S"),
+            "category": base_multi["category"],
+            "subcategory": base_multi["subcategory"],
             "issue_type": "Multi-issue",
-            "is_adversarial": False
+            "is_adversarial": False,
+            "is_multi_issue": True,
+            "secondary_issues": list(base_multi["secondary_issues"]),
         })
 
     # 3. Add 30 Duplicate / Repeated Complaints
@@ -289,11 +322,15 @@ def generate_520_dataset():
             "transaction_reference": orig["transaction_reference"],
             "preferred_channel": "Web Form",
             "attachment_names": [],
-            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": DATASET_REFERENCE.strftime("%Y-%m-%d %H:%M:%S"),
             "category": orig["category"],
             "subcategory": orig["subcategory"],
             "issue_type": "Repeated complaint",
             "is_duplicate": True,
+            "is_adversarial": bool(orig.get("is_adversarial")),
+            "is_repeat_complaint": True,
+            "is_multi_issue": bool(orig.get("is_multi_issue")),
+            "secondary_issues": list(orig.get("secondary_issues", [])),
             "duplicate_of_id": orig["complaint_id"]
         })
 
@@ -306,7 +343,7 @@ def generate_520_dataset():
         trk_id = f"TRK-{random.randint(100000, 999999)}"
         sn_id = f"SN-{random.randint(10000, 99999)}-X"
         amt = random.choice([29.99, 49.00, 99.50, 149.99, 299.00, 499.00, 899.00, 1299.99, 2450.00])
-        dt = (datetime.datetime.now() - datetime.timedelta(days=random.randint(1, 45))).strftime("%Y-%m-%d")
+        dt = (DATASET_REFERENCE - datetime.timedelta(days=random.randint(1, 45))).strftime("%Y-%m-%d")
         cust_name = random.choice(CUSTOMER_NAMES)
         email = f"{cust_name.lower().replace(' ', '.')}@samplemail.com"
         
@@ -330,7 +367,7 @@ def generate_520_dataset():
             "transaction_reference": txn_id,
             "preferred_channel": random.choice(["Web Form", "Email", "Chat", "Phone"]),
             "attachment_names": ["receipt.pdf"] if random.random() > 0.6 else [],
-            "created_at": (datetime.datetime.now() - datetime.timedelta(days=random.randint(0, 30))).strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": (DATASET_REFERENCE - datetime.timedelta(days=random.randint(0, 30))).strftime("%Y-%m-%d %H:%M:%S"),
             "category": tmpl["category"],
             "subcategory": tmpl["subcategory"],
             "issue_type": tmpl["type"],
@@ -382,12 +419,89 @@ def generate_520_dataset():
             "transaction_reference": item["transaction"],
             "preferred_channel": "Web Form",
             "attachment_names": [],
-            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": DATASET_REFERENCE.strftime("%Y-%m-%d %H:%M:%S"),
             "category": item["category"],
             "subcategory": item["subcategory"],
             "issue_type": "Boundary case",
             "is_adversarial": False,
         })
+
+    policy_conflict_cases = [
+        item for item in complaints
+        if item.get("category") == "Refund Request"
+        and item.get("issue_type") != "Repeated complaint"
+        and not item.get("is_adversarial")
+    ][:20]
+    if len(policy_conflict_cases) < 20:
+        raise ValueError("The generated dataset must include at least 20 refund-policy conflict cases.")
+
+    for item in policy_conflict_cases:
+        item["is_policy_conflict"] = True
+        item["policy_conflict"] = {
+            "superseded_policy_id": "POL-REF-02-OLD",
+            "superseded_version": "v1.0",
+            "superseded_refund_window_days": 14,
+            "active_policy_id": "POL-REF-02",
+            "active_version": "v2.0",
+            "active_refund_window_days": 30,
+            "expected_precedence": "Active Policy",
+        }
+        item["complaint_description"] += " A saved POL-REF-02-OLD v1.0 says the refund window is 14 days, while active POL-REF-02 v2.0 sets a 30-day window for eligible returns. Please apply the current policy version."
+
+    incomplete_order_cases = [
+        item for item in complaints
+        if item.get("category") in {"Billing & Charges", "Delivery & Shipping", "Product Defect", "Refund Request"}
+        and item.get("order_reference")
+        and not item.get("is_adversarial")
+        and not item.get("is_multi_issue")
+        and not item.get("is_duplicate")
+        and not item.get("is_policy_conflict")
+    ][:10]
+    incomplete_contact_cases = [
+        item for item in complaints
+        if item not in incomplete_order_cases
+        and item.get("order_reference")
+        and not item.get("is_adversarial")
+        and not item.get("is_multi_issue")
+        and not item.get("is_duplicate")
+        and not item.get("is_policy_conflict")
+    ][:15]
+    if len(incomplete_order_cases) < 10 or len(incomplete_contact_cases) < 15:
+        raise ValueError("The dataset needs 10 missing-order and 15 missing-contact cases.")
+
+    for item in incomplete_order_cases:
+        order_reference = item["order_reference"]
+        item["complaint_title"] = re.sub(re.escape(order_reference), "[order reference omitted]", item["complaint_title"], flags=re.IGNORECASE)
+        item["complaint_description"] = re.sub(re.escape(order_reference), "[order reference omitted]", item["complaint_description"], flags=re.IGNORECASE)
+        item["order_reference"] = None
+        item["is_incomplete"] = True
+        item["incomplete_fields"] = ["order_reference"]
+
+    for item in incomplete_contact_cases:
+        item["customer_email"] = None
+        item["customer_phone"] = None
+        item["is_incomplete"] = True
+        item["incomplete_fields"] = ["customer_email", "customer_phone"]
+
+    for item in complaints:
+        result = PythonGroundTruthPipeline.validate_complaint(item, policy_documents=POLICY_METADATA)
+        if item.get("category") != result.expected_category or item.get("subcategory") != result.expected_subcategory:
+            raise ValueError(f"Dataset label disagrees with Python ground truth for {item.get('complaint_id')}.")
+        item["expected_category"] = result.expected_category
+        item["expected_subcategory"] = result.expected_subcategory
+        item["expected_department"] = result.expected_department
+        item["expected_supporting_department"] = result.expected_supporting_department
+        item["expected_urgency"] = result.expected_urgency
+        item["expected_priority"] = result.expected_priority
+        item["expected_escalation"] = result.mandatory_escalation
+        item["expected_escalation_tier"] = result.escalation_tier
+        item["expected_policy_id"] = result.applicable_policy_id
+        item["expected_policy_version"] = result.policy_version
+        item["expected_policy_status"] = result.policy_status
+        item["expected_resolution_steps"] = list(result.mandatory_resolution_steps)
+        item["expected_follow_up"] = result.required_follow_up
+        item["expected_missing_fields"] = list(result.missing_mandatory_fields)
+        item["ground_truth_source"] = "Python complaint rules, routing map, and escalation matrix"
 
     with open(DATASET_FILE, "w", encoding="utf-8") as f:
         json.dump(complaints, f, indent=2)

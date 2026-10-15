@@ -9,50 +9,44 @@
 SupportNova is an AI-powered enterprise complaint triage and ground-truth validation solution built for **NovaTech Global Commerce & Electronics**. Traditional complaint resolution often suffers from delayed routing, inconsistent policy interpretation, and manual bottlenecks. SupportNova resolves this with a dual-pipeline architecture:
 
 1. **Pipeline 1 (GenAI Complaint Intelligence)**: Uses the configured Google Gemini model (default `gemini-3.8-flash`) with bounded key rotation to analyze complaints and produce structured agent-assist recommendations. Provider failure sends the case to manual review.
-2. **Pipeline 2 (Deterministic Python Ground-Truth Validation)**: An independent Python rule engine that checks recommendations against **175 complaint rules**, **34 named escalation conditions**, and the policy library.
+2. **Pipeline 2 (Deterministic Python Ground-Truth Validation)**: An independent Python rule engine that checks recommendations against **178 complaint rules**, **36 named escalation conditions**, and the policy library.
 3. **Comparison & Verification Engine**: Measures consistency, mandatory action coverage, and source traceability. Flags unauthorized commitments (e.g. unverified refund promises, hallucinations, prompt injections) and routes edge cases to a **Manual Review Queue**.
 
-> 🔒 **Customer Privacy & Trust**: In strict accordance with enterprise standards, the customer-facing intake portal presents a clean, authoritative service ticketing experience with zero internal AI exposure. Behind the scenes, the dual-pipeline powers the support agent workspace.
+> 🔒 **Customer Privacy & Trust**: The customer portal includes a separate public help assistant, while staff-only GenAI analysis, deterministic findings, and comparison details remain in the protected support workspace. Complaint analysis is decision support, not an automatic final warranty or refund decision.
 
 ---
 
 ## 📸 System Architecture & Theming
 
+```mermaid
+flowchart TD
+    C[Customer submits complaint] --> V[Validate and sanitize intake]
+    V --> D[(Save initial case)]
+    D --> R[Return ticket ID and processing status]
+    D --> BG[Background analysis task]
+    BG --> G[Gemini analysis with retrieved active policies]
+    G -->|Structured result| P[Python ground-truth rules]
+    P --> X[Compare and verify]
+    G -->|Unavailable or rejected| F[Python fallback; require staff review]
+    X --> S{Manual review required?}
+    S -->|No| A[Analyzed case]
+    S -->|Yes| H[Staff review queue]
+    F --> H
+    A --> DB[(Update case record)]
+    H --> DB
+    DB --> UI[Customer tracking and protected staff workspace]
 ```
-[ Customer Submissions ] --> [ Untrusted Data Sanitizer ] --> [ Preprocessing & Entity Extraction ]
-                                                                       │
-                         ┌─────────────────────────────────────────────┴─────────────────────────────────────────────┐
-                         ▼                                                                                           ▼
-            [ Pipeline 1: Python + GenAI ]                                                             [ Pipeline 2: Python Ground-Truth ]
-            • Configurable Gemini API Key Rotation                                                     • 175 Complaint Resolution Rules Matrix
-            • Sentiment & Emotion Analysis                                                             • 34 Named Escalation Conditions
-            • Structured Pydantic JSON Output                                                          • Active Policy Precedence (v2.0 > v1.0)
-            • Professional Draft Response                                                              • Refund & Replacement Eligibility Matrix
-                         │                                                                                           │
-                         └─────────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                                                       ▼
-                                                       [ Comparison & Scoring Engine ]
-                                                       • Mandatory Coverage Score %
-                                                       • Source Traceability Score %
-                                                       • Consistency & Alignment Score %
-                                                       • Hallucination & Injection Defense
-                                                                       │
-                                                                       ▼
-                                                       [ Agent & Admin Workspace Hub ]
-                                                       • Modern Slate & Indigo SaaS Theme
-                                                       • Agent Review & Decision Logging
-                                                       • Call Request Signaling (audio not connected)
-                                                       • Dashboard Analytics & CSV Export
-```
+
+The engines are independent in implementation, not parallel in orchestration: GenAI runs first; Python validation follows on the success path, then comparison. Provider or policy-source failures retain the Python result for staff and require human review.
 
 ---
 
 ## 🚀 Key Features
 
-- **528 Pre-seeded Complaint Records**: Unique record IDs; includes simple, multi-issue, high-risk safety, calm-critical, prompt-injection, and repeated-submission cases.
+- **528 Pre-seeded Complaint Records**: Unique record IDs with rule-engine-derived expected classifications, routing, urgency, priority, escalation, policy version, and missing-information labels. The pack includes simple, multi-issue, high-risk safety, calm-critical, prompt-injection, repeat, incomplete, and active-versus-superseded policy cases. These synthetic labels are not human annotations or an independent hidden evaluation.
 - **20+ Parsed Policies & SOPs (PDF & DOCX)**: Ingested using PyMuPDF and python-docx with section chunking, heading extraction, and version status (Active vs Superseded).
-- **175 Ground-Truth Rules**: Deterministic mappings across 12 complaint categories and configured departments.
-- **34 Escalation Conditions**: Named safety, legal, privacy, financial, and operational triggers; staff must verify outcomes.
+- **178 Ground-Truth Rules**: Deterministic mappings across 12 complaint categories and configured departments.
+- **36 Escalation Conditions**: Named safety, legal, privacy, financial, repeat-case, prompt-injection, and operational triggers; staff must verify outcomes.
 - **Adversarial & Prompt Injection Defense**: Fences untrusted complaint/policy text and routes suspicious sources for review; all 25 marked corpus cases are detected in local tests.
 - **Security Test Evidence**: [Local adversarial test scope and limitations](reports/SECURITY_ADVERSARIAL_REPORT.md).
 - **Repeat Complaint Review**: Exact/near-duplicate checks are scoped to the same customer; unresolved repeat history drives Python escalation at three total attempts.
@@ -106,7 +100,7 @@ The review login page then shows the built-in competition accounts `admin / admi
 # Generate 20+ policy documents in PDF and DOCX
 python sample_documents/generate_docs.py
 
-# Generate the 528-record complaint dataset
+# Generate the 528-record synthetic dataset and Python-derived expected labels
 python sample_complaints/generate_dataset.py
 ```
 
@@ -132,7 +126,7 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 - **Customer Portal**: `http://127.0.0.1:8000/`
 - **Admin / Support Agent Workspace**: `http://127.0.0.1:8000/admin`
 - **Knowledge Base & Versioning**: `http://127.0.0.1:8000/knowledge`
-- **175 Rules Matrix**: `http://127.0.0.1:8000/rules`
+- **178 Rules Matrix**: `http://127.0.0.1:8000/rules`
 - **Analytics & SLA Reports**: `http://127.0.0.1:8000/analytics`
 
 ---
@@ -147,11 +141,14 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Requirement | Target | Achieved | Status |
 | :--- | :--- | :--- | :--- |
 | Complaint Records (unique IDs) | >= 500 | **528 records** | ✅ Pass |
+| Category / Subcategory / Department coverage | >= 10 / >= 20 / >= 8 | **12 / 21 / 8** | ✅ Pass |
+| Expected department, urgency, priority, escalation labels | Required in dataset | **528 records** | ✅ Derived deterministically from the rules; not independent annotations |
+| Difficult dataset challenges | >= 25 multi-issue; >= 20 incomplete and policy-conflict | **30 / 25 / 20** | ✅ Included; repeated complaints: 30 |
 | Complaint Categories | >= 10 | **12** | ✅ Pass |
-| Complaint Subcategories | >= 20 | **20 in the bundled dataset** | ✅ Pass |
-| Responsible Departments | >= 8 | **10** | ✅ Pass |
-| Policy & SOP Documents | >= 20 | **21 (PDF & DOCX)** | ✅ Pass |
-| Structured Resolution Rules | >= 100 | **175 Rules** | ✅ Pass |
-| Mandatory Escalation Conditions | >= 30 | **34 Conditions** | ✅ Pass |
+| Complaint Subcategories | >= 20 | **21 in the bundled dataset** | ✅ Pass |
+| Responsible Departments | >= 8 | **8 distinct expected departments in the bundled dataset** | ✅ Pass |
+| Policy & SOP Documents | >= 20 | **21 policy-version records (20 active, one superseded; 42 PDF/DOCX files)** | ✅ Pass |
+| Structured Resolution Rules | >= 100 | **178 Rules** | ✅ Pass |
+| Mandatory Escalation Conditions | >= 30 | **36 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **129 passed** | ✅ Verified locally on October 2, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **137 passed** | ✅ Verified locally on October 16, 2026; browser interactions and live-provider behavior need separate verification |

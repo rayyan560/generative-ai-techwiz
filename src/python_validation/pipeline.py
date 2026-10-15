@@ -5,10 +5,14 @@ from src.complaint_rules.matrix import RuleMatrixManager
 from src.escalation_rules.manager import EscalationManager
 from src.routing_rules.router import DepartmentRouter
 from src.knowledge_base.policy_versions import resolve_policy_metadata
+from src.security.prompt_defense import PromptDefense
 
 class PythonGroundTruthPipeline:
     @staticmethod
-    def validate_complaint(complaint_dict: Dict[str, Any]) -> PythonGroundTruthResult:
+    def validate_complaint(
+        complaint_dict: Dict[str, Any],
+        policy_documents: Optional[List[Dict[str, Any]]] = None,
+    ) -> PythonGroundTruthResult:
         """
         Executes Pipeline 2: 100% Deterministic Python Ground-Truth Validation.
         DOES NOT USE ANY GENAI API.
@@ -22,10 +26,14 @@ class PythonGroundTruthPipeline:
         # 1. Deterministic Category & Subcategory Detection from keywords
         category = "Customer Relations"
         subcategory = "General Inquiry"
-        
+
+        injection_detected, _ = PromptDefense.inspect_text_for_injections(full_text)
         if any(w in full_text for w in ["fire", "spark", "shock", "smoke", "swollen", "fume", "burn", "explosion"]):
             category = "Safety Hazard"
             subcategory = "Battery Overheating / Swelling" if "battery" in full_text or "swollen" in full_text else "Electrical Spark / Shock Hazard"
+        elif injection_detected:
+            category = "Account Security"
+            subcategory = "Prompt Injection Attempt"
         elif any(w in full_text for w in ["hacked", "stolen", "unauthorized login", "unauthorized access", "accessed my account", "unknown login", "account takeover", "stolen credentials", "data breach", "privacy", "gdpr", "compromised"]):
             category = "Account Security" if any(term in full_text for term in ("account", "login", "password", "hacked", "stolen credentials", "accessed my account")) else "Data Privacy"
             subcategory = "Suspicious Login" if category == "Account Security" else "Data Deletion Request"
@@ -42,7 +50,7 @@ class PythonGroundTruthPipeline:
         elif any(w in full_text for w in ["refund", "money back", "return my money", "where is my refund"]):
             category = "Refund Request"
             subcategory = "Refund Not Processed"
-        elif any(w in full_text for w in ["late delivery", "delayed delivery", "lost package", "package not arrived", "tracking stuck", "wrong item", "wrong product", "incorrect item"]):
+        elif any(w in full_text for w in ["late delivery", "delayed delivery", "days late", "lost package", "lost in transit", "package not arrived", "tracking stuck", "wrong item", "wrong product", "incorrect item"]):
             category = "Delivery & Shipping"
             if any(w in full_text for w in ["wrong item", "wrong product", "incorrect item"]):
                 subcategory = "Wrong Item Delivered"
@@ -50,15 +58,19 @@ class PythonGroundTruthPipeline:
                 subcategory = "Delayed Delivery"
             else:
                 subcategory = "Package Lost in Transit"
-        elif any(w in full_text for w in ["dead on arrival", "doa", "broken", "cracked screen", "defect", "damage", "malfunction", "intermittent", "shuts down"]):
+        elif any(w in full_text for w in ["dead on arrival", "doa", "failed to turn on", "out of the box", "missing power adapter", "missing accessories", "accessories compartment", "broken", "cracked screen", "defect", "damage", "malfunction", "intermittent", "shuts down"]):
             category = "Product Defect"
             if "doa" in full_text or "dead" in full_text:
                 subcategory = "Dead on Arrival"
+            elif any(w in full_text for w in ["failed to turn on", "out of the box"]):
+                subcategory = "Dead on Arrival"
+            elif any(w in full_text for w in ["missing power adapter", "missing accessories", "accessories compartment"]):
+                subcategory = "Missing Parts"
             elif "intermittent" in full_text or "randomly shuts down" in full_text:
                 subcategory = "Intermittent Failure"
             else:
                 subcategory = "Physical Damage"
-        elif any(w in full_text for w in ["rude agent", "unprofessional staff", "hung up on me", "harassed", "insulted"]):
+        elif any(w in full_text for w in ["rude agent", "unprofessional staff", "hung up on me", "hung up", "abusive", "harassed", "insulted"]):
             category = "Staff Conduct"
             subcategory = "Agent Misbehavior"
         elif any(w in full_text for w in ["poor installation", "misleading information", "service quality", "installation service"]):
@@ -70,7 +82,7 @@ class PythonGroundTruthPipeline:
         elif any(w in full_text for w in ["warranty", "repair", "service center"]):
             category = "Warranty Claim"
             subcategory = "Repair Delay"
-        elif any(w in full_text for w in ["cancel order", "cancellation denied", "stop shipment"]):
+        elif any(w in full_text for w in ["cancel order", "cancellation denied", "cancellation request", "requested cancellation", "cancelled my", "cancelled before shipment", "stop shipment"]):
             category = "Order Cancellation"
             subcategory = "Cancellation Denied"
 
@@ -83,7 +95,7 @@ class PythonGroundTruthPipeline:
         # 4. Mandatory Escalation Evaluation (32+ conditions)
         is_escalated, esc_tier, esc_reason, esc_id = EscalationManager.evaluate_escalation(complaint_dict)
         policy_id = matched_rule.get("policy_id", "POL-CMP-01")
-        policy_version, policy_status = resolve_policy_metadata(policy_id)
+        policy_version, policy_status = resolve_policy_metadata(policy_id, documents=policy_documents)
         tier_match = re.search(r"Tier\s+(\d+)", str(esc_tier or ""))
         escalation_level = int(tier_match.group(1)) if tier_match else 0
         expected_urgency = "Critical" if escalation_level >= 5 else "High" if is_escalated and escalation_level >= 3 else matched_rule.get("urgency", "Medium")

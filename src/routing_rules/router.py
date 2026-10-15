@@ -1,4 +1,5 @@
 import re
+from src.security.prompt_defense import PromptDefense
 from typing import Tuple, Optional, List, Dict, Any
 
 ROUTING_MAP = {
@@ -25,6 +26,9 @@ class DepartmentRouter:
         """
         primary, supporting = ROUTING_MAP.get(category, ("Customer Relations", "Management Escalations"))
         desc_lower = description.lower()
+        suspicious, _ = PromptDefense.inspect_text_for_injections(desc_lower)
+        if suspicious and category == "Account Security":
+            return primary, supporting
         
         # Multi-department detection heuristics
         # 1. Product damaged + refund delay

@@ -527,7 +527,7 @@ def build_full_rule_matrix() -> List[Dict[str, Any]]:
         "Billing & Charges": ["Double Charge", "Incorrect Amount", "Subscription Overcharge", "Unauthorized Charge", "Missing Invoice"],
         "Delivery & Shipping": ["Delayed Delivery", "Package Lost in Transit", "Wrong Item Delivered", "Damaged Packaging", "Failed Courier Attempt"],
         "Refund Request": ["Refund Not Processed", "Partial Refund Dispute", "Refund Mode Disagreement", "Cancelled Order Refund"],
-        "Account Security": ["Suspicious Login", "Password Reset Failure", "Unauthorized Profile Change", "2FA Lockout"],
+        "Account Security": ["Suspicious Login", "Password Reset Failure", "Unauthorized Profile Change", "2FA Lockout", "Prompt Injection Attempt"],
         "Technical Support": ["Software Crash", "Firmware Update Error", "Connectivity Issue", "Compatibility Problem"],
         "Service Quality": ["Rude Staff Interaction", "Unresolved Long-standing Issue", "Poor Installation Service", "Misleading Information"],
         "Warranty Claim": ["Claim Denied Dispute", "Extended Warranty Inquiry", "Repair Delay", "Service Center Refusal"],

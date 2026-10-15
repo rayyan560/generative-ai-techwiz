@@ -17,7 +17,7 @@ BUILT_IN_HANDLERS = {
 }
 
 
-def test_inline_controls_call_defined_functions_and_broken_filters_stay_fixed():
+def test_inline_controls_in_templates_and_generated_markup_call_defined_functions():
     templates = list(TEMPLATE_DIR.glob("*.html"))
     scripts = list(SCRIPT_DIR.rglob("*.js"))
     sources = [path.read_text(encoding="utf-8", errors="ignore") for path in templates + scripts]
@@ -31,7 +31,7 @@ def test_inline_controls_call_defined_functions_and_broken_filters_stay_fixed():
     )
 
     missing_handlers = []
-    for path in templates:
+    for path in templates + scripts:
         source = path.read_text(encoding="utf-8", errors="ignore")
         handlers = re.findall(
             r"\bon(?:click|submit|change|input|keyup|keydown|focus|blur)\s*=\s*['\"]([^'\"]+)",

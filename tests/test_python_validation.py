@@ -82,7 +82,7 @@ def test_rule_matrix_prefers_exact_subcategory_over_category_keyword():
 
 
 def test_escalation_conditions_are_named_and_not_placeholder_rules():
-    assert len(ESCALATION_CONDITIONS) == 34
+    assert len(ESCALATION_CONDITIONS) == 36
     assert all(not condition["name"].startswith("Specific Regulatory / Operational") for condition in ESCALATION_CONDITIONS)
     escalated, tier, _, rule_id = EscalationManager.evaluate_escalation({
         "complaint_title": "Hospitalized after chemical exposure",

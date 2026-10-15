@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, List, Tuple
+from src.security.prompt_defense import PromptDefense
 
 # 32+ Mandatory Escalation Rules & Conditions as required by SRS
 ESCALATION_CONDITIONS = [
@@ -145,6 +146,8 @@ ESCALATION_CONDITIONS.extend([
     {"esc_id": "ESC-032", "name": "High-Value Shipment Theft", "condition_fn": lambda c: c.get("category") == "Delivery & Shipping" and float((c.get("genai_analysis") or {}).get("extracted_entities", {}).get("amount") or 0) >= 5000, "required_tier": "Tier 3 - Department Manager", "reason": "High-value shipment loss needs management and carrier review", "mandatory": True},
     {"esc_id": "ESC-033", "name": "Time-Sensitive Payment Dispute", "pattern": r"\b(chargeback deadline|bank dispute deadline|fraud claim deadline|payment dispute deadline)\b", "required_tier": "Tier 3 - Department Manager", "reason": "Potential time-limited payment dispute response", "mandatory": True},
     {"esc_id": "ESC-034", "name": "Journalist or National Media Inquiry", "pattern": r"\b(journalist contacted|national news contacted|reporter requested comment|media inquiry)\b", "required_tier": "Tier 3 - Department Manager", "reason": "External media inquiry requires communications review", "mandatory": True},
+    {"esc_id": "ESC-035", "name": "Prompt-Injection or Administrative Override Attempt", "condition_fn": lambda complaint: PromptDefense.inspect_text_for_injections(f"{complaint.get('complaint_title', '')} {complaint.get('complaint_description', '')}")[0], "required_tier": "Tier 4 - Compliance & Legal Team", "reason": "Untrusted complaint text attempted to override application instructions or obtain restricted data", "mandatory": True},
+    {"esc_id": "ESC-036", "name": "Unresolved Repeat Complaint", "pattern": r"\b(resubmitting this because nobody answered|nobody responded to my (previous|earlier) complaint|repeated unresolved complaint)\b", "required_tier": "Tier 3 - Department Manager", "reason": "A repeated unresolved complaint requires management review and ownership", "mandatory": True},
 ])
 
 class EscalationManager:
@@ -156,18 +159,20 @@ class EscalationManager:
         """
         text = f"{complaint_dict.get('complaint_title', '')} {complaint_dict.get('complaint_description', '')}".lower()
         
-        # Check all escalation conditions
-        for cond in ESCALATION_CONDITIONS:
-            # 1. Regex pattern check
-            if "pattern" in cond and re.search(cond["pattern"], text):
-                return True, cond["required_tier"], cond["reason"], cond["esc_id"]
-                
-            # 2. Lambda condition check
-            if "condition_fn" in cond:
+        matches = []
+        for index, cond in enumerate(ESCALATION_CONDITIONS):
+            matched = bool("pattern" in cond and re.search(cond["pattern"], text))
+            if not matched and "condition_fn" in cond:
                 try:
-                    if cond["condition_fn"](complaint_dict):
-                        return True, cond["required_tier"], cond["reason"], cond["esc_id"]
+                    matched = bool(cond["condition_fn"](complaint_dict))
                 except Exception:
-                    pass
+                    matched = False
+            if matched:
+                tier = re.search(r"Tier\s+(\d+)", cond.get("required_tier", ""))
+                matches.append((int(tier.group(1)) if tier else 0, -index, cond))
+
+        if matches:
+            _, _, condition = max(matches, key=lambda match: (match[0], match[1]))
+            return True, condition["required_tier"], condition["reason"], condition["esc_id"]
 
         return False, "Tier 1 - Standard Agent", "Standard frontline agent resolution", "ESC-NONE"

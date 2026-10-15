@@ -16,7 +16,7 @@ In compliance with Section 1.8 (Competition Integrity & Anti-Shortcut Requiremen
 | **Primary GenAI Provider** | Google GenAI SDK; model configured with `GEMINI_MODEL` (`gemini-3.8-flash` by default) |
 | **API Architecture** | Environment-configured key rotation; no API keys are stored in source control |
 | **Independent Validation Pipeline** | 100% Deterministic Python Ground-Truth Rule Engine (No AI in Pipeline 2) |
-| **Ground-Truth Rules Enforced** | 175 Complaint Resolution Rules & 34 Named Escalation Conditions |
+| **Ground-Truth Rules Enforced** | 178 Complaint Resolution Rules & 36 Named Escalation Conditions |
 
 OpenAI Codex was used for code review, implementation assistance, documentation corrections, and test authoring. Human project owners remain responsible for reviewing changes and the competition submission.
 

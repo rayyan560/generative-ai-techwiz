@@ -3,13 +3,13 @@
 **Author:** SupportNova Engineering Directorate  
 **Project:** SupportNova - ResponseX Intelligence  
 **Competition:** Aptech Techwiz 7 Global Championship  
-**Word Count:** 2,250+ words  
+**Word Count:** More than 2,000 words
 
 ---
 
 ## 1. Introduction: The High-Stakes Dilemma of Enterprise Customer Support
 
-Customer service operations represent one of the most demanding fronts of modern digital commerce. In an omnichannel organization receiving tens of thousands of customer complaints daily across web intake forms, emails, live chats, and telephone channels, support teams face a continuous balancing act between speed, empathy, regulatory compliance, and fiscal accuracy.
+In the fictional NovaTech scenario, an omnichannel organization may receive complaints through Web intake forms, email, chat, and telephone channels. The scenario highlights the balancing act between speed, empathy, policy compliance, and accurate financial handling; the project does not measure real-world complaint volume or agent handling time.
 
 When a customer submits a complaint stating:
 > *"The lithium battery on my laptop expanded and started emitting smoke while charging. I demand a full refund and replacement immediately or I will call my attorney!"*
@@ -40,34 +40,26 @@ $$\text{Intelligence} \ne \text{Authority}$$
 
 Generative AI is exceptional at understanding language, parsing context, detecting emotions, extracting entities, and drafting polite human communication. However, **GenAI should never have unverified authority over corporate compliance, financial authorizations, or statutory safety escalations.**
 
-To implement this principle, SupportNova operates two parallel, independent processing pipelines for every incoming customer complaint:
+To implement this principle, SupportNova uses two logically independent analysis engines, orchestrated sequentially for each complaint. The background worker attempts grounded GenAI analysis first; after a valid structured result, it runs deterministic Python validation and compares the outputs. If GenAI is unavailable or the input/source is rejected, Python findings remain available but the case is routed for human review:
 
 ```
-                              [ Raw Customer Complaint Input ]
+                              [ Complaint accepted and stored ]
                                              │
+                                  Background task
                                              ▼
-                             [ Preprocessing & Input Sanitizer ]
-                                             │
-                     ┌───────────────────────┴───────────────────────┐
-                     ▼                                               ▼
-     ┌───────────────────────────────┐               ┌───────────────────────────────┐
-     │ Pipeline 1: GenAI Pipeline    │               │ Pipeline 2: Ground-Truth Rule │
-     │ • Configured Gemini SDK       │               │ • 175 Rules Matrix Engine     │
-     │ • Sentiment & Entity Parsing  │               │ • 34 Named Escalations       │
-     │ • Draft Customer Reply        │               │ • Active Policy Precedence    │
-     │ • Agent Guidance Synthesis    │               │ • Prohibited Action Filter    │
-     └───────────────┬───────────────┘               └───────────────┬───────────────┘
-                     │                                               │
-                     └───────────────────────┬───────────────────────┘
-                                             ▼
-                             [ Comparison & Verification Engine ]
-                             • Mandatory Coverage Score %
-                             • Source Traceability Score %
-                             • Consistency & Alignment Index %
-                             • Hallucination & Promise Scanner
-                                             │
-                                             ▼
-                             [ Verified Result -> Support Hub ]
+                         [ Gemini + active policy retrieval ]
+                               │                    │
+                       structured result     unavailable / rejected
+                               ▼                    ▼
+                       [ Python rules ]      [ Python fallback ]
+                               │                    │
+                               ▼                    └──> [ Manual review ]
+                      [ Compare on success ]
+                         │             │
+                   analyzed case    review required
+                         └──────┬──────┘
+                                ▼
+                    [ Persist status; notify staff ]
 ```
 
 ---
@@ -76,8 +68,8 @@ To implement this principle, SupportNova operates two parallel, independent proc
 
 Pipeline 1 uses the supported Google GenAI Python SDK and the model configured through `GEMINI_MODEL` (default `gemini-3.8-flash`). Provider responses are validated against the application's structured schema; if analysis is unavailable, the case is routed for human review.
 
-### Multi-Key Load Balancer & High-Availability Rotation
-Enterprise systems cannot afford downtime due to rate limits or API key quotas. SupportNova implements an automated multi-key rotation pool:
+### Bounded Multi-Key Retry and Rotation
+SupportNova can rotate among configured keys for a bounded number of attempts. This may help with per-key quota failures, but it does not guarantee provider availability or service uptime:
 ```python
 class GenAIPipeline:
     def __init__(self):
@@ -94,7 +86,7 @@ When a provider request fails, the pipeline tries the next configured API key up
 ### Structured Output Enforcement with Strict Pydantic Schemas
 Unlike unstructured conversational bots, Pipeline 1 enforces a strict, typed schema using Pydantic:
 - `primary_issue` & `secondary_issues`: Disentangling multi-issue complaints.
-- `category` & `subcategory`: Mapping to 12 primary enterprise categories and 26 subcategories.
+- `category` & `subcategory`: The included synthetic sample pack covers 12 primary categories and 21 subcategory labels.
 - `sentiment`: Classified into Positive, Neutral, Negative, or Strongly Negative.
 - `urgency` & `priority`: Rated from P3 (Low) to P0 (Critical).
 - `extracted_entities`: Parsing Order IDs, Transaction IDs, Dollar Amounts, Dates, Tracking Numbers, and Serial Numbers.
@@ -107,8 +99,8 @@ Unlike unstructured conversational bots, Pipeline 1 enforces a strict, typed sch
 
 Pipeline 2 is completely independent of Generative AI. It executes pure, deterministic Python code to enforce organizational policies, business rules, and legal mandates.
 
-### The 175 Complaint Resolution Rules Matrix
-Pipeline 2 builds 175 deterministic rules from explicit entries and configured category/subcategory/customer-type variants. This is finite rule coverage, not proof that every real-world case is covered. Each rule defines:
+### The 178 Complaint Resolution Rules Matrix
+Pipeline 2 builds 178 deterministic rules from explicit entries and configured category/subcategory/customer-type variants. This is finite rule coverage, not proof that every real-world case is covered. The synthetic dataset's expected classification and routing fields are generated from this Python rules configuration, so they are useful regression labels but not independent human annotations or a hidden evaluation. Each rule defines:
 1. `Assigned Department` and `Supporting Department`.
 2. `Target Urgency` and `Priority SLA`.
 3. `Mandatory Actions Required` (e.g. "Request serial number", "Check warehouse RMA reception log").
@@ -116,55 +108,22 @@ Pipeline 2 builds 175 deterministic rules from explicit entries and configured c
 5. `Refund & Replacement Eligibility`.
 6. `Maximum Authorized Goodwill Credit Limit`.
 
-### Mandatory Escalation Manager (34 Conditions)
-The escalation manager evaluates 34 named deterministic triggers; staff must still verify the result:
+### Mandatory Escalation Manager (36 Conditions)
+The escalation manager evaluates 36 named deterministic triggers and selects the highest-severity matched tier when several triggers apply; staff must still verify the result:
 - **Tier 5 (Executive Management)**: Swollen batteries, fire/smoke sparks, electrocution, child safety choking hazards.
 - **Tier 4 (Legal & Compliance)**: Formal attorney threats, litigation notices, GDPR erasure requests, FTC regulatory complaints, account credential theft.
 - **Tier 3 (Department Manager)**: Abusive staff behavior, transaction disputes exceeding $1,000, repeat complaints unresolved after 3 attempts.
 - **Tier 2 (Senior Specialist)**: VIP enterprise customer SLA requests, courier supply-chain theft.
 
-```python
-class EscalationManager:
-    @staticmethod
-    def evaluate_escalation(complaint_dict: Dict[str, Any]) -> Tuple[bool, str, str, str]:
-        text = f"{complaint_dict.get('complaint_title', '')} {complaint_dict.get('complaint_description', '')}".lower()
-        for cond in ESCALATION_CONDITIONS:
-            if "pattern" in cond and re.search(cond["pattern"], text):
-                return True, cond["required_tier"], cond["reason"], cond["esc_id"]
-        return False, "Tier 1 - Standard Agent", "Standard frontline agent resolution", "ESC-NONE"
-```
+Evaluation scans each named regex or condition function, retains all matches, then selects the highest escalation tier. When multiple conditions have the same tier, the earlier configured rule wins. With no match, the result is the standard frontline tier.
 
 ---
 
 ## 5. The Comparison & Hallucination Defense Engine
 
-Once both pipelines complete their analysis, the **Comparison Engine** executes an automated cross-validation audit:
+When GenAI returns a valid structured result, Python validation runs next and the **Comparison Engine** executes the cross-validation audit. On GenAI unavailability, the Python fallback is retained for staff context, but the system does not claim a completed cross-pipeline comparison:
 
-```python
-class ComparisonEngine:
-    @staticmethod
-    def compare_and_verify(genai_out, ground_truth, complaint_dict):
-        # 1. Field Alignment
-        category_match = (genai_out.category.lower() == ground_truth.expected_category.lower())
-        dept_match = (genai_out.recommended_department.lower() == ground_truth.expected_department.lower())
-        urgency_match = (genai_out.urgency.lower() == ground_truth.expected_urgency.lower())
-        escalation_match = (genai_out.escalation_required == ground_truth.mandatory_escalation)
-
-        # 2. Mandatory Step Coverage Calculation
-        mandatory_steps = ground_truth.mandatory_resolution_steps
-        coverage_score = calculate_coverage(genai_out.resolution_steps, mandatory_steps)
-
-        # 3. Unauthorized Promise & Hallucination Check
-        has_unsupported_promises, promise_flags = HallucinationDetector.detect_unsupported_promises(genai_out, ground_truth)
-        
-        # 4. Final Verification State Assignment
-        if contradiction or has_unsupported_promises or (ground_truth.mandatory_escalation and not genai_out.escalation_required):
-            status = "Manual Review Required"
-        elif not dept_match or coverage_score < 70.0:
-            status = "Verified with Warning"
-        else:
-            status = "Verified"
-```
+The implemented comparison checks category, subcategory, department, urgency, priority, escalation, policy ID, and policy version. It measures required-action coverage and source traceability, then routes contradictions, unsupported promises, missing support, and incomplete mandatory actions to manual review. Other field mismatches are also marked “Verified with Warning” and require review; that label does not mean the mismatch is approved.
 
 ### Quantitative Scoring Metrics:
 1. **Mandatory Requirement Coverage Score ($\%$):**  
@@ -197,8 +156,8 @@ In accordance with enterprise cybersecurity standards, SupportNova treats all cu
 
 A critical design requirement of SupportNova is maintaining customer confidence:
 
-### Customer Portal (AI-Free Branding)
-On the customer-facing intake portal, customers experience an official, reassuring corporate support ticketing portal. There is **zero disclosure of internal AI analysis**. Customers submit their details, receive an official ticket reference (`CMP-xxxxx`), and track progress through a clean, chronological milestone timeline.
+### Customer Portal and Public Assistant
+The customer-facing portal labels its separate chat widget as the **SupportNova AI Assistant**. Complaint intake and tracking show the ticket status and latest update; they do not expose the staff-only dual-pipeline scores, Python rules, or internal agent guidance. The status view is not a verified chronological event timeline.
 
 ### Admin & Agent Intelligence Workspace
 Support agents and supervisors access a high-density, modern SaaS dashboard inspired by top-tier enterprise platforms. The dashboard presents:
@@ -206,15 +165,15 @@ Support agents and supervisors access a high-density, modern SaaS dashboard insp
 - Call requests are signaled to available staff; live audio and recording are not integrated.
 - Side-by-side Dual-Pipeline view comparing GenAI proposals with Ground-Truth rules.
 - Triage actions record review decisions; outbound email and payment execution require configured integrations and are not performed by the current app.
-- Full immutable audit log tracking every automated recommendation and reviewer override.
+- Audit records cover selected automated analyses and staff actions; they are not cryptographically immutable, and not every recommendation or override is guaranteed to be logged.
 
 ---
 
 ## 9. Comprehensive Testing, Performance & Evaluation
 
-The repository includes a 528-record sample complaint dataset and 21 policy documents. The current local automated test suite has 62 passing tests (with four dependency/framework deprecation warnings); this is not an end-to-end evaluation across every sample or proof of live-provider behavior.
+The repository includes 528 synthetic complaint records, 21 policy-version records (20 active and one superseded), and 137 passing local automated tests (with four dependency/framework deprecation warnings). Dataset expected labels are derived from the same deterministic Python rules and are regression fixtures, not independent human annotations. The test suite is not an end-to-end evaluation across every possible interaction or proof of live-provider behavior.
 
-The test transcript previously included in this report is historical and is not a current verification result. In particular, its GenAI test exercised a synthetic fallback rather than a live provider. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. Execute `pytest -q` in the target environment and record the actual output before using test results as submission evidence. Live model quality, rate limits, and integration credentials require separate provider-backed tests.
+GenAI tests use controlled local fixtures and provider-unavailable cases; they do not call a live provider or establish live model quality, rate limits, or integration reliability. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. The passing count is a local automated result, not a manual button-by-button or production end-to-end certification.
 
 ### Performance and assurance limits:
 - No reproducible latency benchmark is currently checked in. Deterministic rule evaluation is designed to run locally; provider latency varies with network, model availability, and quota.
