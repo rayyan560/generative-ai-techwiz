@@ -151,4 +151,4 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Structured Resolution Rules | >= 100 | **178 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **36 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **138 passed** | ✅ Verified locally on October 16, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **139 passed** | ✅ Verified locally on October 16, 2026; browser interactions and live-provider behavior need separate verification |

@@ -171,7 +171,7 @@ Support agents and supervisors access a high-density, modern SaaS dashboard insp
 
 ## 9. Comprehensive Testing, Performance & Evaluation
 
-The repository includes 528 synthetic complaint records, 21 policy-version records (20 active and one superseded), and 138 passing local automated tests (with four dependency/framework deprecation warnings). Dataset expected labels are derived from the same deterministic Python rules and are regression fixtures, not independent human annotations. The test suite is not an end-to-end evaluation across every possible interaction or proof of live-provider behavior.
+The repository includes 528 synthetic complaint records, 21 policy-version records (20 active and one superseded), and 139 passing local automated tests (with four dependency/framework deprecation warnings). Dataset expected labels are derived from the same deterministic Python rules and are regression fixtures, not independent human annotations. The test suite is not an end-to-end evaluation across every possible interaction or proof of live-provider behavior.
 
 GenAI tests use controlled local fixtures and provider-unavailable cases; they do not call a live provider or establish live model quality, rate limits, or integration reliability. The current suite checks deterministic policy logic, comparison behavior, prompt-defense cases, local-store query behavior, and safe handling when the GenAI provider is unavailable. The passing count is a local automated result, not a manual button-by-button or production end-to-end certification.
 
