@@ -393,14 +393,14 @@ function triggerRulePreview() {
     const desc = document.getElementById("complaintDescriptionInput")?.value.trim() || "";
     const tier = document.getElementById("customerTierSelect").value;
 
-    if (!title || !desc) {
+    if (desc.length < 10) {
       const box = document.getElementById("aiPreCheckBox");
       if (box) box.style.display = "none";
       return;
     }
 
     const formData = new FormData();
-    formData.append("complaint_title", title);
+    formData.append("complaint_title", title.length >= 3 ? title : deriveComplaintTitle(desc));
     formData.append("complaint_description", desc);
     formData.append("customer_type", tier);
 

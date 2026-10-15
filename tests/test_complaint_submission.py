@@ -39,10 +39,12 @@ def test_customer_form_explains_validation_and_uses_fresh_script_asset():
     response = TestClient(app).get("/")
 
     assert response.status_code == 200
-    assert '/static/js/customer.js?v=5.5' in response.text
+    assert '/static/js/customer.js?v=5.6' in response.text
     assert 'id="complaintTitleInputError"' in response.text
     assert 'id="complaintDescriptionInputError"' in response.text
     assert 'minlength="10"' in response.text
+    assert 'id="productSelectDropdown" name="product_or_service" class="form-control" onchange="onProductSelectChange(event)" required' not in response.text
+    assert "Select Registered Hardware / Software Product (optional; 50 Official Product IDs)" in response.text
     assert "If blank or too short, a title will be created from your detailed description." in response.text
 
 
@@ -76,6 +78,28 @@ def test_complaint_submission_generates_title_when_missing(monkeypatch):
     assert response.status_code == 200
     assert response.json()["title_generated"] is True
     assert collection.records[0]["complaint_title"] == "The screen arrived with a crack"
+
+
+def test_general_complaint_submits_without_a_catalog_product(monkeypatch):
+    collection = InMemoryComplaintCollection()
+    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+    data = _submission_data(complaint_description="I need help with my customer account.")
+
+    response = TestClient(app).post("/api/complaints/submit", data=data)
+
+    assert response.status_code == 200
+    assert collection.records[0]["product_or_service"] == "General Item"
+
+
+def test_precheck_generates_title_when_optional_title_is_missing():
+    response = TestClient(app).post(
+        "/api/complaints/pre-check",
+        data={"complaint_description": "The screen arrived with a crack."},
+    )
+
+    assert response.status_code == 200
+    assert "estimated_category" in response.json()
 
 
 def test_complaint_submission_replaces_too_short_title_from_description(monkeypatch):

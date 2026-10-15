@@ -291,10 +291,12 @@ async def inspect_hardware_image(
 
 @router.post("/complaints/pre-check")
 async def pre_check_complaint(
-    complaint_title: str = Form(...),
+    complaint_title: Optional[str] = Form(None),
     complaint_description: str = Form(...),
     customer_type: str = Form("Standard")
 ):
+    if not complaint_title or len(complaint_title.strip()) < 3:
+        complaint_title = ComplaintPreprocessor.derive_complaint_title(complaint_description)
     is_valid, error_message = ComplaintPreprocessor.validate_complaint_input(complaint_title, complaint_description)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_message)
