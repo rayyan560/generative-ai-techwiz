@@ -211,7 +211,7 @@ SupportNova treats all customer-submitted text and file attachments as **untrust
 | Resolution Rules Matrix | >= 100 | **178 Ground-Truth Rules** | ✅ Meets target |
 | Mandatory Escalations | >= 30 | **36 Conditions** | ✅ Meets target |
 | Prompt Injection Test Cases | >= 20 | **25 marked cases; 25/25 detected locally** | ✅ Dataset detector check; not an independent security audit |
-| Automated Test Suite | All Passing | **137 passed** | ✅ Verified locally on October 16, 2026; provider-backed and full browser interaction tests remain separate |
+| Automated Test Suite | All Passing | **138 passed** | ✅ Verified locally on October 16, 2026; provider-backed and full browser interaction tests remain separate |
 
 ---
 

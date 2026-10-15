@@ -34,6 +34,25 @@ def test_documents_hub_lists_both_project_walkthroughs(monkeypatch):
     assert "/project-docs/file/auth-docs-walkthrough.mp4" in response.text
 
 
+def test_architecture_document_links_and_serves_comprehensive_report(monkeypatch):
+    monkeypatch.setattr(
+        AuthManager,
+        "get_current_user",
+        staticmethod(lambda request: {"user_id": "read-only-reviewer", "role": "judge"}),
+    )
+    client = TestClient(app)
+
+    page = client.get("/admin/documents/architecture")
+    report = client.get("/project-docs/file/project-report.md")
+
+    assert page.status_code == 200
+    assert "Read Comprehensive Report (DFD/UML)" in page.text
+    assert "/project-docs/file/project-report.md" in page.text
+    assert report.status_code == 200
+    assert report.text.startswith("# SupportNova")
+    assert "#### Data-Flow Diagram (DFD)" in report.text
+
+
 @pytest.mark.parametrize(
     ("route", "filename"),
     [

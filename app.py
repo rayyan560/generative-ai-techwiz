@@ -374,7 +374,10 @@ PROJECT_DOCUMENTS = {
         "subtitle": "Visual system design and end-to-end data movement",
         "icon": "fa-diagram-project",
         "topics": ["System Architecture Diagram", "Context Diagram", "Level 0 DFD", "Level 1 DFD", "AI Request Flow", "Authentication Flow", "Use Case Diagram", "Class Diagram", "Sequence Diagram", "Activity Diagram", "Component Diagram", "Deployment Diagram"],
-        "files": [("Open Project Documentation", "/project-docs/file/slides.html", "fa-images")],
+        "files": [
+            ("Open Project Documentation", "/project-docs/file/slides.html", "fa-images"),
+            ("Read Comprehensive Report (DFD/UML)", "/project-docs/file/project-report.md", "fa-file-lines"),
+        ],
     },
     "database": {
         "title": "Database Documentation",
@@ -414,6 +417,7 @@ PROJECT_FILES = {
     "user-guide.html": "SupportNova_User_Guide.html",
     "developer-guide.html": "SupportNova_Developer_Guide.html",
     "slides.html": "SupportNova_50_Slides_Project_Documentation.html",
+    "project-report.md": "PROJECT_REPORT.md",
     "project-walkthrough.mp4": "video_assets/SupportNova_Project_Walkthrough_VoiceOver.mp4",
     "auth-docs-walkthrough.mp4": "video_assets/SupportNova_Authentication_Documents_VoiceOver.mp4",
 }
