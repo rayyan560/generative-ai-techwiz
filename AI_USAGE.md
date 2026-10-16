@@ -82,7 +82,7 @@ OpenAI Codex was used for code review, implementation assistance, documentation 
 ### Module 5: Application Structure, Authentication, Chat Privacy, Complaint Intake, and UI Verification
 - **Tool / Model**: OpenAI Codex code review and implementation assistance; deterministic local tests and static analysis.
 - **Files Affected**: `app.py`, `routers/`, `src/application_startup.py`, `src/chat_assistant.py`, `src/project_document_catalog.py`, `src/project_document_topics.py`, `src/project_documentation.py`, `static/js/customer.js`, `static/css/style.css`, affected templates, and tests.
-- **Verification Status**: 152 local automated tests pass; Python compilation and whitespace checks pass; the frontend production bundle builds; production health and a non-mutating complaint pre-check return successfully. Google sign-in now uses only provider-verified identity claims. No synthetic complaint was inserted into production, no live Gemini quality run was performed, and exhaustive browser interaction coverage is still outstanding. Two dependency deprecation warnings remain.
+- **Verification Status**: 153 local automated tests pass; Python compilation and whitespace checks pass; the frontend production bundle builds; production health and a non-mutating complaint pre-check return successfully. Google sign-in now uses only provider-verified identity claims. No synthetic complaint was inserted into production, no live Gemini quality run was performed, and exhaustive browser interaction coverage is still outstanding. Two dependency deprecation warnings remain.
 
 ---
 
