@@ -41,7 +41,7 @@
 
   /* Status Colors */
   --success: #22c55e;
-  --success-gradient: linear-gradient(135deg, #059669 0%, #34d399 100%);
+  --success-gradient: linear-gradient(135deg, #065f46 0%, #047857 100%);
   --success-light: rgba(34, 197, 94, 0.15);
   --success-glow: rgba(5, 150, 105, 0.4);
 
@@ -360,7 +360,7 @@ a {
   background-size: 200% 200%;
   animation: gradientShift 5s ease infinite;
   border: none;
-  color: white;
+  color: var(--ink);
   font-weight: 800;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
@@ -441,7 +441,7 @@ h6,
 .logo {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--emerald), var(--gold));
+  background: var(--primary-gradient);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -459,6 +459,10 @@ h6,
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+[data-theme="light"] .logo-text {
+  background-image: linear-gradient(135deg, #047857, #854d0e);
 }
 
 .brand-title {
@@ -1065,8 +1069,8 @@ select.form-control:focus {
 }
 
 .pill-tab.active {
-  background: linear-gradient(135deg, var(--emerald), var(--emerald-light)) !important;
-  color: #ffffff !important;
+  background: var(--primary-gradient) !important;
+  color: var(--primary-text) !important;
   border-color: transparent !important;
   box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35) !important;
   font-weight: 600 !important;
@@ -1075,8 +1079,8 @@ select.form-control:focus {
 .btn-primary,
 .submit-btn,
 .submit-auth-btn {
-  background: linear-gradient(135deg, var(--emerald), var(--emerald-light)) !important;
-  color: #ffffff !important;
+  background: var(--primary-gradient) !important;
+  color: var(--primary-text) !important;
   border: none !important;
   padding: 13px 28px !important;
   border-radius: 12px !important;
@@ -3214,7 +3218,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+    background: var(--primary-gradient);
     border: none;
     box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
 }

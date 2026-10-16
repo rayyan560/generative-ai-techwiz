@@ -1,0 +1,2 @@
+class GenAIUnavailableError(RuntimeError):
+    pass

@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app import app
-from routers import warranty
+from routers import complaint_tracking
 
 
 class ComplaintCollection:
@@ -20,7 +20,7 @@ class ComplaintCollection:
 
 
 def test_complaint_tracking_requires_matching_email_and_returns_minimal_data(monkeypatch):
-    monkeypatch.setattr(warranty, "get_complaints_col", ComplaintCollection)
+    monkeypatch.setattr(complaint_tracking, "get_complaints_col", ComplaintCollection)
     client = TestClient(app)
 
     denied = client.get("/api/complaints/track/CMP-00001?email=other%40example.com")

@@ -1,5 +1,6 @@
 import pytest
 from src.genai_pipeline import pipeline as pipeline_module
+from src.genai_pipeline import policy_context as policy_context_module
 from src.genai_pipeline.pipeline import GenAIPipeline, GenAIUnavailableError
 
 def test_genai_unavailable_requires_manual_review():
@@ -36,8 +37,8 @@ def test_genai_pipeline_validates_provider_json(monkeypatch):
             return Response()
 
     monkeypatch.setattr(pipeline_module.genai, "Client", ModelClient)
-    monkeypatch.setattr(pipeline_module.KnowledgeBaseManager, "retrieve_relevant_policy_chunks", lambda **kwargs: [{"document_id": "POL-BIL-06", "section_id": "1.0", "version": "v2.0", "status": "Active", "content": "Billing policy excerpt."}])
-    monkeypatch.setattr(pipeline_module.PromptDefense, "inspect_text_for_injections", lambda text: (False, []))
+    monkeypatch.setattr(policy_context_module.KnowledgeBaseManager, "retrieve_relevant_policy_chunks", lambda **kwargs: [{"document_id": "POL-BIL-06", "section_id": "1.0", "version": "v2.0", "status": "Active", "content": "Billing policy excerpt."}])
+    monkeypatch.setattr(policy_context_module.PromptDefense, "inspect_text_for_injections", lambda text: (False, []))
     pipeline = GenAIPipeline()
     pipeline.api_keys = ["test-key"]
     result = pipeline.generate_intelligence({"complaint_id": "CMP-TEST-2", "complaint_title": "Screen broken"})
@@ -49,7 +50,7 @@ def test_genai_pipeline_validates_provider_json(monkeypatch):
 
 
 def test_genai_pipeline_fails_closed_without_retrieved_policy(monkeypatch):
-    monkeypatch.setattr(pipeline_module.KnowledgeBaseManager, "retrieve_relevant_policy_chunks", lambda **kwargs: [{"content": "Unindexed policy text", "status": "Draft"}])
+    monkeypatch.setattr(policy_context_module.KnowledgeBaseManager, "retrieve_relevant_policy_chunks", lambda **kwargs: [{"content": "Unindexed policy text", "status": "Draft"}])
     pipeline = GenAIPipeline()
     pipeline.api_keys = ["test-key"]
 
@@ -59,7 +60,7 @@ def test_genai_pipeline_fails_closed_without_retrieved_policy(monkeypatch):
 
 def test_genai_pipeline_blocks_malicious_policy_source(monkeypatch):
     monkeypatch.setattr(
-        pipeline_module.KnowledgeBaseManager,
+        policy_context_module.KnowledgeBaseManager,
         "retrieve_relevant_policy_chunks",
         lambda **kwargs: [{
             "document_id": "POL-MALICIOUS",
@@ -81,7 +82,7 @@ def test_genai_pipeline_blocks_malicious_policy_source(monkeypatch):
 
 def test_genai_pipeline_fails_closed_before_provider_for_adversarial_complaint(monkeypatch):
     monkeypatch.setattr(
-        pipeline_module.KnowledgeBaseManager,
+        policy_context_module.KnowledgeBaseManager,
         "retrieve_relevant_policy_chunks",
         lambda **kwargs: pytest.fail("Policy retrieval should not run for adversarial complaint text."),
     )

@@ -7,16 +7,12 @@ from google import genai
 from google.genai import types
 
 from config.settings import settings
-from src.knowledge_base.manager import KnowledgeBaseManager
+from src.genai_pipeline.pipeline_errors import GenAIUnavailableError
+from src.genai_pipeline.policy_context import ensure_complaint_is_safe, prepare_policy_context
 from src.prompt_templates.templates import PROMPT_VERSION, SYSTEM_INSTRUCTION, build_complaint_analysis_prompt
 from src.schemas.models import GenAIIntelligenceOutput
-from src.security.prompt_defense import PromptDefense
 
 logger = logging.getLogger("SupportNova.GenAIPipeline")
-
-
-class GenAIUnavailableError(RuntimeError):
-    pass
 
 
 class GenAIPipeline:
@@ -45,47 +41,10 @@ class GenAIPipeline:
     def generate_intelligence(self, complaint_dict: Dict[str, Any]) -> GenAIIntelligenceOutput:
         title = complaint_dict.get("complaint_title", "")
         description = complaint_dict.get("complaint_description", "")
-        suspicious, flags = PromptDefense.inspect_text_for_injections(f"{title} {description}")
-        if suspicious:
-            complaint_dict["adversarial_input_warnings"] = flags
-            raise GenAIUnavailableError("Adversarial instructions were detected in complaint text; the complaint must be reviewed by a human.")
+        ensure_complaint_is_safe(complaint_dict)
         if not self.api_keys:
             raise GenAIUnavailableError("GenAI analysis is unavailable; the complaint must be reviewed by a human.")
-        policies = KnowledgeBaseManager.retrieve_relevant_policy_chunks(
-            category=complaint_dict.get("category", "General"),
-            query=f"{title} {description}",
-            top_k=3,
-        )
-        policies = [
-            policy for policy in policies
-            if str(policy.get("status", "")).strip().casefold() == "active"
-            and str(policy.get("document_id", "")).strip()
-            and str(policy.get("content", "")).strip()
-        ]
-        if not policies:
-            raise GenAIUnavailableError("No active policy source is indexed; the complaint must be reviewed by a human.")
-        suspicious_policy_sources = []
-        for policy in policies:
-            malicious, source_flags = PromptDefense.inspect_text_for_injections(str(policy.get("content", "")))
-            if malicious:
-                suspicious_policy_sources.append({
-                    "document_id": str(policy.get("document_id", "Unknown")),
-                    "section_id": str(policy.get("section_id", "Unknown")),
-                    "flags": source_flags,
-                })
-        if suspicious_policy_sources:
-            complaint_dict["policy_source_warnings"] = suspicious_policy_sources
-            raise GenAIUnavailableError("A retrieved policy source contains suspicious instructions; the complaint must be reviewed by a human.")
-        complaint_dict["retrieved_policy_sources"] = [
-            {
-                "document_id": str(policy.get("document_id", "")).strip(),
-                "section_id": str(policy.get("section_id", "")).strip(),
-                "version": str(policy.get("version", "")).strip(),
-                "status": str(policy.get("status", "")).strip(),
-            }
-            for policy in policies
-            if policy.get("document_id")
-        ]
+        policies = prepare_policy_context(complaint_dict)
         prompt = build_complaint_analysis_prompt(complaint_dict, policies)
         last_error = "No API key configured"
 

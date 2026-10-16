@@ -1,5 +1,7 @@
 import re
-from typing import Tuple, List, Dict, Any
+from typing import List, Tuple
+
+from src.security.roles import USER_ROLES
 
 INJECTION_PATTERNS = [
     r"ignore\s+(all\s+)?(previous|prior|above|system)\s+instructions",
@@ -35,7 +37,6 @@ ADVERSARIAL_COMPENSATION_TRAPS = [
 class PromptDefense:
     @staticmethod
     def inspect_text_for_injections(text: str) -> Tuple[bool, List[str]]:
-        """Inspects customer complaint text for adversarial prompt injection or override instructions."""
         if not text:
             return False, []
         
@@ -55,7 +56,6 @@ class PromptDefense:
 
     @staticmethod
     def sanitize_untrusted_input(text: str) -> str:
-        """Sanitizes text to avoid delimiter breakouts while keeping semantic content intact."""
         if not text:
             return ""
         for marker in (
@@ -65,59 +65,9 @@ class PromptDefense:
             "<<<POLICY_SOURCE_END>>>",
         ):
             text = re.sub(re.escape(marker), "[literal prompt boundary marker]", text, flags=re.IGNORECASE)
-        # Neutralize markdown system prompt injection wrappers
         sanitized = text.replace("```system", "'''system")
         sanitized = sanitized.replace("```assistant", "'''assistant")
         sanitized = sanitized.replace("```json", "'''json")
         sanitized = sanitized.replace("<|im_start|>", "")
         sanitized = sanitized.replace("<|im_end|>", "")
         return sanitized.strip()
-
-# User Roles & RBAC Matrix
-USER_ROLES = {
-    "customer": {
-        "can_submit_complaint": True,
-        "can_view_own_complaint": True,
-        "can_view_internal_ai_analysis": False,  # Customer must NEVER see AI backend
-        "can_view_validation_rules": False,
-        "can_perform_triage": False,
-        "can_override_decisions": False,
-        "can_manage_knowledge_base": False
-    },
-    "agent": {
-        "can_submit_complaint": True,
-        "can_view_own_complaint": True,
-        "can_view_internal_ai_analysis": True,
-        "can_view_validation_rules": True,
-        "can_perform_triage": True,
-        "can_override_decisions": False,
-        "can_manage_knowledge_base": False
-    },
-    "reviewer": {
-        "can_submit_complaint": True,
-        "can_view_own_complaint": True,
-        "can_view_internal_ai_analysis": True,
-        "can_view_validation_rules": True,
-        "can_perform_triage": True,
-        "can_override_decisions": True,
-        "can_manage_knowledge_base": False
-    },
-    "manager": {
-        "can_submit_complaint": True,
-        "can_view_own_complaint": True,
-        "can_view_internal_ai_analysis": True,
-        "can_view_validation_rules": True,
-        "can_perform_triage": True,
-        "can_override_decisions": True,
-        "can_manage_knowledge_base": True
-    },
-    "admin": {
-        "can_submit_complaint": True,
-        "can_view_own_complaint": True,
-        "can_view_internal_ai_analysis": True,
-        "can_view_validation_rules": True,
-        "can_perform_triage": True,
-        "can_override_decisions": True,
-        "can_manage_knowledge_base": True
-    }
-}

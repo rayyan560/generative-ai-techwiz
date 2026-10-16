@@ -49,3 +49,39 @@ def test_primary_theme_text_and_status_colors_meet_wcag_aa_on_page_backgrounds()
             foreground = _resolve_hex(variables[token], variables)
             ratio = _contrast_ratio(foreground, background)
             assert ratio >= 4.5, f"{name} theme {token} contrast is {ratio:.2f}:1"
+
+
+def test_primary_and_success_button_text_meet_wcag_aa_across_gradients():
+    stylesheet = (ROOT / "static" / "css" / "style.css").read_text(encoding="utf-8")
+    variables = _theme_variables(stylesheet, ":root")
+
+    for background_token in ("--primary-gradient", "--success-gradient"):
+        endpoints = re.findall(r"#[0-9a-fA-F]{3,6}", variables[background_token])
+        assert len(endpoints) >= 2, f"{background_token} should expose two testable color endpoints"
+        foreground = _resolve_hex(variables["--primary-text"], variables)
+        for endpoint in endpoints:
+            background = _resolve_hex(endpoint, variables)
+            ratio = _contrast_ratio(foreground, background)
+            assert ratio >= 4.5, f"--primary-text on {background_token} endpoint {endpoint} is {ratio:.2f}:1"
+
+
+def test_critical_action_colors_meet_wcag_aa_in_dark_and_light_themes():
+    stylesheet = (ROOT / "static" / "css" / "style.css").read_text(encoding="utf-8")
+    dark = _theme_variables(stylesheet, ":root")
+    light = {**dark, **_theme_variables(stylesheet, '[data-theme="light"]')}
+    pairs = (("#be123c", "#ffffff"), ("#047857", "#ffffff"), ("--cream", "--ink"))
+
+    for theme_name, variables in (("dark", dark), ("light", light)):
+        for background_token, foreground_token in pairs:
+            background = _resolve_hex(variables.get(background_token, background_token), variables)
+            foreground = _resolve_hex(variables.get(foreground_token, foreground_token), variables)
+            ratio = _contrast_ratio(foreground, background)
+            assert ratio >= 4.5, f"{theme_name} theme {foreground_token} on {background_token} is {ratio:.2f}:1"
+
+
+def test_communication_bubbles_use_theme_aware_foreground_colors():
+    communication = (ROOT / "templates" / "communication.html").read_text(encoding="utf-8")
+
+    assert ".wa-client-avatar" in communication and "color: var(--ink)" in communication
+    assert ".wa-msg-out" in communication and "color: var(--ink)" in communication
+    assert ".wa-qchip" in communication and "color: var(--text-heading)" in communication

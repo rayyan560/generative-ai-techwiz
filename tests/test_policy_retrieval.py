@@ -1,4 +1,5 @@
 from src.knowledge_base.manager import filter_current_policy_chunks, keyword_policy_search
+from src.knowledge_base.policy_metadata import precedence_score_for
 
 
 def test_policy_retrieval_excludes_draft_expired_and_future_chunks():
@@ -36,3 +37,9 @@ def test_keyword_retrieval_ranks_chunks_by_query_term_overlap():
     result = keyword_policy_search("refund transaction review", chunks, 2)
 
     assert [chunk["document_id"] for chunk in result] == ["POL-REF-03", "POL-REF-01"]
+
+
+def test_policy_precedence_uses_document_type_and_superseded_status():
+    assert precedence_score_for("Active Policy", "Active") == 100
+    assert precedence_score_for("Standard Operating Procedure (SOP)", "Active") == 80
+    assert precedence_score_for("Active Policy", "Superseded") == 0

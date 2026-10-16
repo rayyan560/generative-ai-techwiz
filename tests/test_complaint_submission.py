@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app import app
-from routers import warranty
+from routers import complaint_submission
 
 
 class InMemoryComplaintCollection:
@@ -39,7 +39,7 @@ def test_customer_form_explains_validation_and_uses_fresh_script_asset():
     response = TestClient(app).get("/")
 
     assert response.status_code == 200
-    assert '/static/js/customer.js?v=5.7' in response.text
+    assert '/static/js/customer.js?v=5.8' in response.text
     assert 'id="complaintTitleInputError"' in response.text
     assert 'id="complaintDescriptionInputError"' in response.text
     assert 'minlength="10"' in response.text
@@ -51,8 +51,8 @@ def test_customer_form_explains_validation_and_uses_fresh_script_asset():
 def test_valid_complaint_submission_creates_a_ticket_without_external_storage(monkeypatch):
     collection = InMemoryComplaintCollection()
 
-    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
-    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "process_complaint_background", skip_background_processing)
 
     response = TestClient(app).post("/api/complaints/submit", data=_submission_data())
 
@@ -65,8 +65,8 @@ def test_valid_complaint_submission_creates_a_ticket_without_external_storage(mo
 
 def test_complaint_submission_generates_title_when_missing(monkeypatch):
     collection = InMemoryComplaintCollection()
-    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
-    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "process_complaint_background", skip_background_processing)
     data = _submission_data(complaint_description="The screen arrived with a crack.")
     data.pop("complaint_title")
 
@@ -80,10 +80,25 @@ def test_complaint_submission_generates_title_when_missing(monkeypatch):
     assert collection.records[0]["complaint_title"] == "The screen arrived with a crack"
 
 
+def test_complaint_submission_generates_title_when_browser_sends_blank_title(monkeypatch):
+    collection = InMemoryComplaintCollection()
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "process_complaint_background", skip_background_processing)
+
+    response = TestClient(app).post(
+        "/api/complaints/submit",
+        data=_submission_data(complaint_title=""),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["title_generated"] is True
+    assert collection.records[0]["complaint_title"] == "The display arrived with a crack across one corner"
+
+
 def test_general_complaint_submits_without_a_catalog_product(monkeypatch):
     collection = InMemoryComplaintCollection()
-    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
-    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "process_complaint_background", skip_background_processing)
     data = _submission_data(complaint_description="I need help with my customer account.")
 
     response = TestClient(app).post("/api/complaints/submit", data=data)
@@ -104,8 +119,8 @@ def test_precheck_generates_title_when_optional_title_is_missing():
 
 def test_complaint_submission_replaces_too_short_title_from_description(monkeypatch):
     collection = InMemoryComplaintCollection()
-    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
-    monkeypatch.setattr(warranty, "_process_complaint_bg", skip_background_processing)
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "process_complaint_background", skip_background_processing)
 
     response = TestClient(app).post(
         "/api/complaints/submit",
@@ -119,7 +134,7 @@ def test_complaint_submission_replaces_too_short_title_from_description(monkeypa
 
 def test_complaint_submission_explains_description_minimum(monkeypatch):
     collection = InMemoryComplaintCollection()
-    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
 
     response = TestClient(app).post(
         "/api/complaints/submit",
@@ -133,7 +148,7 @@ def test_complaint_submission_explains_description_minimum(monkeypatch):
 
 def test_short_description_gets_correct_error_when_title_is_also_short(monkeypatch):
     collection = InMemoryComplaintCollection()
-    monkeypatch.setattr(warranty, "get_complaints_col", lambda: collection)
+    monkeypatch.setattr(complaint_submission, "get_complaints_col", lambda: collection)
 
     response = TestClient(app).post(
         "/api/complaints/submit",

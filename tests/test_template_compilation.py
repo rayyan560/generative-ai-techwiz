@@ -16,6 +16,8 @@ def test_react_tracker_is_mounted_and_assets_are_served():
     portal = client.get("/")
     assert portal.status_code == 200
     assert 'id="reactComplaintTracker"' in portal.text
+    assert "/static/css/customer_portal.css?v=1.0" in portal.text
+    assert client.get("/static/css/customer_portal.css").status_code == 200
     assert "/static/react/complaint-tracker.js" in portal.text
     assert client.get("/static/react/complaint-tracker.js").status_code == 200
     assert client.get("/static/react/complaint-tracker.css").status_code == 200

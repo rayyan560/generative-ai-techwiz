@@ -83,7 +83,7 @@ def test_shipped_policy_documents_parse_into_traceable_chunks(policy_path):
 
 
 def test_upload_persists_document_once_with_traceable_metadata(monkeypatch):
-    from routers import knowledge
+    from routers import knowledge_upload as knowledge
 
     class Collection:
         def __init__(self):
@@ -150,7 +150,7 @@ def test_upload_persists_document_once_with_traceable_metadata(monkeypatch):
 
 
 def test_uploading_new_active_version_supersedes_old_document_and_chunks(monkeypatch):
-    from routers import knowledge
+    from routers import knowledge_upload as knowledge
 
     class Collection:
         def __init__(self):

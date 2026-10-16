@@ -135,6 +135,7 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 
 - [Full SupportNova project walkthrough (voice-over)](video_assets/SupportNova_Project_Walkthrough_VoiceOver.mp4)
 - [Authentication and project documents walkthrough (voice-over)](video_assets/SupportNova_Authentication_Documents_VoiceOver.mp4)
+- [Technical deep-dive blog](TECHNICAL_BLOG.md) (2,378 words)
 
 ## 📊 Evaluation & Verification Summary
 
@@ -151,4 +152,5 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 | Structured Resolution Rules | >= 100 | **178 Rules** | ✅ Pass |
 | Mandatory Escalation Conditions | >= 30 | **36 Conditions** | ✅ Pass |
 | Prompt Injection Test Cases | >= 20 | **25 Cases** | ✅ Pass |
-| Automated Test Suite | All Passing | **139 passed** | ✅ Verified locally on October 16, 2026; browser interactions and live-provider behavior need separate verification |
+| Automated Test Suite | All Passing | **153 passed** | ✅ Verified locally on October 17, 2026; exhaustive browser interactions and live-provider behavior need separate verification |
+| Public Application URL | Publicly accessible deployment | [SupportNova on Railway](https://web-production-6057f.up.railway.app/) | ✅ Home, health, and non-mutating pre-check returned successfully on October 17, 2026; full production workflows are not certified |

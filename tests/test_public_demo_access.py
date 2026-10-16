@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from app import app
 from config.database import DatabaseManager
 from config.settings import AppSettings, settings, validate_public_demo_settings
-from src.security import auth as auth_module
+from src.security import auth_bootstrap, auth_lookup
 from src.security.auth import AuthManager
 
 
@@ -90,8 +90,9 @@ def test_public_demo_credentials_are_only_rendered_when_enabled(monkeypatch):
 
 def test_public_demo_accounts_use_builtin_credentials_and_open_their_portals(monkeypatch):
     users = MemoryUsersCollection()
-    monkeypatch.setattr(auth_module, "get_users_col", lambda: users)
-    monkeypatch.setattr(auth_module, "_USERS_INITIALIZED", False)
+    monkeypatch.setattr(auth_bootstrap, "get_users_col", lambda: users)
+    monkeypatch.setattr(auth_bootstrap, "_USERS_INITIALIZED", False)
+    monkeypatch.setattr(auth_lookup, "get_users_col", lambda: users)
     monkeypatch.setattr(settings, "DEMO_MODE", False)
     monkeypatch.setattr(settings, "PUBLIC_DEMO_MODE", True)
     monkeypatch.setattr(settings, "ADMIN_EMAIL", "")

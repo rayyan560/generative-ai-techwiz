@@ -1,7 +1,7 @@
 # Security and Adversarial Testing Report
 
 **Project:** SupportNova - ResponseX Intelligence
-**Verification date:** October 2, 2026
+**Verification date:** October 17, 2026
 **Scope:** Repository-local prompt-injection and access-control checks. This report is not an external penetration-test certificate.
 
 ## Prompt-injection corpus

@@ -1,8 +1,14 @@
 from typing import Dict, Any, List, Set
-from fastapi import WebSocket
+from fastapi import HTTPException, WebSocket
 import logging
 
 logger = logging.getLogger("SupportNova.Common")
+
+def require_page_role(user: Dict[str, Any], *allowed_roles: str) -> None:
+    if user.get("role") == "judge" and set(allowed_roles).intersection({"admin", "agent", "warranty_manager"}):
+        return
+    if user.get("role") not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Your role cannot access this page.")
 
 def clean_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
     """Ensures MongoDB ObjectId is converted to string for clean JSON serialization."""
